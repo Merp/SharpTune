@@ -64,6 +64,13 @@ namespace SharpTune
             bw.DoWork += (senderr, ee) => {
             this.sharpTuner.availableDevices = new AvailableDevices("rommetadata");
 
+            foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys)
+            {
+                Definition.ConvertXML(deffile);
+                Definition.ConvertXML("rommetadata\\bases\\32BITBASE.xml");
+                Definition.ConvertXML("rommetadata\\bases\\16BITBASE.xml");
+            }
+
             //backgroundWorker1.ReportProgress(prog);
 
             };

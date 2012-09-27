@@ -249,6 +249,67 @@ namespace SharpTune
             
         }
 
+        /// <summary>
+        /// Load parameters from XML an XML file
+        /// </summary>
+        public static void ConvertXML(string fetchPath)
+        {
+            if (fetchPath == null) return;
+            XDocument xmlDoc = XDocument.Load(fetchPath);
+            XElement xmlEle = XElement.Load(fetchPath);
+
+            
+
+            // ROM table fetches here!
+            var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
+                             //where table.Ancestors("table").First().IsEmpty
+                             select t;
+            foreach (XElement table in tableQuery)
+            {
+                //skip tables with no name
+                if (table.Attribute("name") == null) continue;
+                bool xaxis = false;
+                bool yaxis = false;
+                foreach (XElement xel in table.Descendants())
+                {
+
+                    if (xel.Name == "table")
+                    {
+                        if (xel.Attribute("name") != null && xel.Attribute("name").Value == "X")
+                        {
+                            xel.Name = "xaxis";
+                            xel.Attribute("name").Remove();
+                            xaxis = true;
+                        }
+                        else if (xel.Attribute("type") != null && xel.Attribute("type").Value.ContainsCI("x axis"))
+                        {
+                            xel.Name = "xaxis";
+                            xel.Attribute("type").Remove();
+                            xaxis = true;
+                        }
+                        else if (xel.Attribute("name") != null && xel.Attribute("name").Value == "Y")
+                        {
+                            xel.Name = "yaxis";
+                            xel.Attribute("name").Remove();
+                            yaxis = true;
+                        }
+                        else if (xel.Attribute("type") != null && xel.Attribute("type").Value.ContainsCI("y axis"))
+                        {
+                            xel.Name = "yaxis";
+                            xel.Attribute("type").Remove();
+                            yaxis = true;
+                        }
+                    }
+                }
+
+                if (xaxis && yaxis) table.Name = "table3d";
+                else if (xaxis || yaxis) table.Name = "table2d";
+                else table.Name = "table1d";
+                if(table.Attribute("type") != null) table.Attribute("type").Remove();
+            }
+            xmlDoc.Save(fetchPath);
+        }
+
         public void ExportXML(string filepath)
         {
             XmlWriterSettings objXmlWriterSettings = new XmlWriterSettings();
