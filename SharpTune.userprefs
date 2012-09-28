@@ -1,0 +1,36 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="..\SharpTune\SharpTuneCore\Definition.cs">
+    <Files>
+      <File FileName="SharpTuneCore\Definition.cs" Line="273" Column="33" />
+      <File FileName="SharpTune\GUI\MainWindow.cs" Line="588" Column="1" />
+      <File FileName="..\SharpTune\SharpTuneCore\Definition.cs" Line="259" Column="38" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="597" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="599" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="587" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="596" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="598" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="600" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="601" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="602" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="603" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="604" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="605" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="585" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="588" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="586" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="589" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="590" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="591" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="592" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="593" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="594" />
+      <Breakpoint file="C:\Dev\SharpTuneMono\SharpTune\GUI\MainWindow.cs" line="595" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
