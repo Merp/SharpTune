@@ -260,34 +260,42 @@ namespace SharpTune
 		/// </param>
 		public static void pullScalings (String fetchPath, ref List<XElement> xbs, ref List<XElement> xs)
 		{
+  
 			if (fetchPath == null) return;
             List<XElement> xlist = new List<XElement>();
 			XDocument xmlDoc = XDocument.Load(fetchPath);
-             var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
-                               //where table.Ancestors("table").First().IsEmpty
-                               select sc;
-             foreach (XElement scaling in scalingQuery)
-             {
-                 if (scaling.Attribute("storagetype") != null && scaling.Attribute("storagetype").Value == "bloblist")
-                 {
-                     scaling.Attribute("storagetype").Remove();
-                     xbs.Add(scaling);
-                 }
-                 else
-                 {
-                     xs.Add(scaling);
-                 }
-             }
-             scalingQuery.ToList().ForEach(x => x.Remove());
-             xmlDoc.Save(fetchPath);          
-
-		}
+                var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
+                                //where table.Ancestors("table").First().IsEmpty
+                                select sc;
+                foreach (XElement scaling in scalingQuery)
+                {
+                    if (scaling.Attribute("storagetype") != null && scaling.Attribute("storagetype").Value == "bloblist")
+                    {
+                        scaling.Attribute("storagetype").Remove();
+                        xbs.Add(scaling);
+                    }
+                    else
+                    {
+                        xs.Add(scaling);
+                    }
+                }
+                scalingQuery.ToList().ForEach(x => x.Remove());
+                using (XmlTextWriter xmlWriter = new XmlTextWriter(fetchPath, new UTF8Encoding(false)))
+                {
+                    xmlWriter.Formatting = Formatting.Indented;
+                    xmlWriter.Indentation = 4;
+                    xmlDoc.Save(xmlWriter);
+                }
+        }
+		
 
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
         public static void ConvertXML(string fetchPath, ref List<String> blobtables, bool isbase)
         {
+            
+        
             if (fetchPath == null) return;
             XDocument xmlDoc = XDocument.Load(fetchPath);
             List<String> newtables = new List<String>();
@@ -374,7 +382,12 @@ namespace SharpTune
                 else table.Name = "table1d";
                 if(table.Attribute("type") != null) table.Attribute("type").Remove();
             }
-            xmlDoc.Save(fetchPath);
+            using (XmlTextWriter writer = new XmlTextWriter(fetchPath, new UTF8Encoding(false)))
+            {
+                writer.Formatting = Formatting.Indented;
+                writer.Indentation = 4;
+                xmlDoc.Save(writer);
+            }
         }
 
         public void ExportXML(string filepath)

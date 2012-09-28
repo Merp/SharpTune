@@ -609,25 +609,21 @@ namespace SharpTune
 	
             string filename = "rommetadata\\scaling.xml";
 
-            using (FileStream fileStream = new FileStream(filename, FileMode.Create))
-            using (StreamWriter sw = new StreamWriter(fileStream))
-            using (XmlTextWriter xmlWriter = new XmlTextWriter(sw))
+            using (XmlTextWriter xmlWriter = new XmlTextWriter(filename, new UTF8Encoding(false)))
             {
                 xmlWriter.Formatting = Formatting.Indented;
                 xmlWriter.Indentation = 4;
-
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("scalings");
                 foreach (XElement xel in xscalings)
                 {
                     xel.WriteTo(xmlWriter);
                 }
-                xmlWriter.WriteStartElement("blob");
                 foreach (XElement xel in xblobscalings)
                 {
+                    xel.Name = "blobscaling";
                     xel.WriteTo(xmlWriter);
                 }
-                xmlWriter.WriteEndElement();
                 xmlWriter.WriteEndElement();
                 xmlWriter.WriteEndDocument();
             }
