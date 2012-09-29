@@ -292,7 +292,7 @@ namespace SharpTune
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
-        public static void ConvertXML(string fetchPath, ref List<String> blobtables, bool isbase)
+        public static void ConvertXML(string fetchPath, ref List<String> blobtables, ref List<String> tables3d, ref List<String> tables2d, ref List<string> tables1d, bool isbase)
         {
             
         
@@ -333,6 +333,8 @@ namespace SharpTune
 
                 bool xaxis = false;
                 bool yaxis = false;
+                
+
                 foreach (XElement xel in table.Descendants())
                 {
                     if (xel.Name == "table")
@@ -376,11 +378,49 @@ namespace SharpTune
                         
                     }
                 }
-
+                if (!isbase)
+                {
+                    if (tables3d.Contains(table.Attribute("name").Value.ToString()))
+                    {
+                        table.Name = "table3d";
+                        if (table.Attribute("type") != null) table.Attribute("type").Remove();
+                        continue;
+                    }
+                    if (tables2d.Contains(table.Attribute("name").Value.ToString()))
+                    {
+                        table.Name = "table2d";
+                        if (table.Attribute("type") != null) table.Attribute("type").Remove();
+                        continue;
+                    }
+                    if (tables1d.Contains(table.Attribute("name").Value.ToString()))
+                    {
+                        table.Name = "table1d";
+                        if (table.Attribute("type") != null) table.Attribute("type").Remove();
+                        continue;
+                    }
+                }
                 if (xaxis && yaxis) table.Name = "table3d";
                 else if (xaxis || yaxis) table.Name = "table2d";
                 else table.Name = "table1d";
                 if(table.Attribute("type") != null) table.Attribute("type").Remove();
+                if (isbase)
+                {
+                    switch (table.Name.ToString())
+                    {
+                        case "table3d":
+                            tables3d.Add(table.Attribute("name").Value);
+                            break;
+                        case "table2d":
+                            tables2d.Add(table.Attribute("name").Value);
+                            break;
+                        case "table1d":
+                            tables1d.Add(table.Attribute("name").Value);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
             }
             using (XmlTextWriter writer = new XmlTextWriter(fetchPath, new UTF8Encoding(false)))
             {
