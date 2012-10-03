@@ -588,9 +588,18 @@ namespace SharpTune
 			List<XElement> xscalings = new List<XElement> ();
             List<XElement> xblobscalings = new List<XElement>();
 			List<String> blobscalings = new List<string>();
-            List<String> t3d = new List<string>();
-            List<String> t2d = new List<string>();
-            List<String> t1d = new List<string>();
+            Dictionary<String, List<String>> t3d = new Dictionary<String, List<String>>();
+            Dictionary<String, List<String>> t2d = new Dictionary<String, List<String>>();
+            Dictionary<String, List<String>> t1d = new Dictionary<String, List<String>>();
+            t3d.Add("32BITBASE",new List<String>());
+            t2d.Add("32BITBASE",new List<String>());
+            t1d.Add("32BITBASE",new List<String>());
+            t3d.Add("16BITBASE",new List<String>());
+            t2d.Add("16BITBASE", new List<String>());
+            t1d.Add("16BITBASE", new List<String>());
+
+            Dictionary<String,String> imap = sharpTuner.availableDevices.BuildInheritanceMap();
+            
 			foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys) {
 				Definition.pullScalings (deffile, ref xblobscalings, ref xscalings);
 			}
@@ -602,11 +611,11 @@ namespace SharpTune
                 blobscalings.Add(xbs.Attribute("name").Value);
             }
 
-            Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, true);
-			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, true);
+            Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
+			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			
             foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys) {
-				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, false);
+				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
 			}
 			
 	

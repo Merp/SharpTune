@@ -288,18 +288,36 @@ namespace SharpTune
                 }
         }
 		
+        
 
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
-        public static void ConvertXML(string fetchPath, ref List<String> blobtables, ref List<String> tables3d, ref List<String> tables2d, ref List<string> tables1d, bool isbase)
+        public static void ConvertXML(string fetchPath, ref List<String> blobtables, 
+            ref Dictionary<String, List<String>> t3d, 
+            ref Dictionary<String, List<String>> t2d, 
+            ref Dictionary<String, List<String>> t1d, 
+            Dictionary<String,String> imap,
+            bool isbase)
         {
-            
-        
+
             if (fetchPath == null) return;
             XDocument xmlDoc = XDocument.Load(fetchPath);
             List<String> newtables = new List<String>();
-            
+            String rombase;
+
+            Dictionary<String, List<String>> includes = new Dictionary<String, List<String>>();
+
+
+            if (!isbase)
+            {
+                rombase = imap[fetchPath];
+            }
+            else
+            {
+                var xi = xmlDoc.XPathSelectElement("/rom/romid/xmlid");
+                rombase = xi.Value.ToString();
+            }
 
             // ROM table fetches here!
             var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
@@ -333,8 +351,11 @@ namespace SharpTune
 
                 bool xaxis = false;
                 bool yaxis = false;
-                
 
+                if (table.Attribute("name").Value.ContainsCI("idle speed target b"))
+                {
+                    int i = 0;
+                }
                 foreach (XElement xel in table.Descendants())
                 {
                     if (xel.Name == "table")
@@ -378,21 +399,22 @@ namespace SharpTune
                         
                     }
                 }
+
                 if (!isbase)
                 {
-                    if (tables3d.Contains(table.Attribute("name").Value.ToString()))
+                    if (t3d[rombase].Contains(table.Attribute("name").Value.ToString()))
                     {
                         table.Name = "table3d";
                         if (table.Attribute("type") != null) table.Attribute("type").Remove();
                         continue;
                     }
-                    if (tables2d.Contains(table.Attribute("name").Value.ToString()))
+                    if (t2d[rombase].Contains(table.Attribute("name").Value.ToString()))
                     {
                         table.Name = "table2d";
                         if (table.Attribute("type") != null) table.Attribute("type").Remove();
                         continue;
                     }
-                    if (tables1d.Contains(table.Attribute("name").Value.ToString()))
+                    if (t1d[rombase].Contains(table.Attribute("name").Value.ToString()))
                     {
                         table.Name = "table1d";
                         if (table.Attribute("type") != null) table.Attribute("type").Remove();
@@ -408,13 +430,13 @@ namespace SharpTune
                     switch (table.Name.ToString())
                     {
                         case "table3d":
-                            tables3d.Add(table.Attribute("name").Value);
+                            t3d[rombase].Add(table.Attribute("name").Value);
                             break;
                         case "table2d":
-                            tables2d.Add(table.Attribute("name").Value);
+                            t2d[rombase].Add(table.Attribute("name").Value);
                             break;
                         case "table1d":
-                            tables1d.Add(table.Attribute("name").Value);
+                            t1d[rombase].Add(table.Attribute("name").Value);
                             break;
                         default:
                             break;

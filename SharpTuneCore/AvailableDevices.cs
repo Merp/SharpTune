@@ -105,6 +105,35 @@ namespace SharpTune
             
         }
 
+        public Dictionary<String, String> BuildInheritanceMap()
+        {
+            Dictionary<String, String> imap = new Dictionary<String, String>();
+
+            foreach (KeyValuePair<String, Pair<int, String>> pair in this.IdentifierMap)
+            {
+                imap.Add(pair.Key, findInherit(pair.Value.Second));
+            }
+            return imap;
+        }
+
+        public String findInherit(String xmlid)
+        {
+            String fetchpath = "";
+            foreach(KeyValuePair<string,Pair<int,String>> pair in this.IdentifierMap){
+                if(pair.Value.Second.Equals(xmlid)){
+                    fetchpath = pair.Key.ToString();
+                    break;
+                }
+            }
+            String rombase;
+            XDocument xmlDoc = XDocument.Load(fetchpath);
+            XElement inc = xmlDoc.XPathSelectElement("/rom/include");
+            if (inc != null && inc.Value.ToString().Contains("BASE"))
+                    return inc.Value.ToString();
+            else
+                return findInherit(inc.Value.ToString());
+        }  
+
 
         public bool GetDevices(string directory)
         {
