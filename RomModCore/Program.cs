@@ -97,7 +97,17 @@ namespace RomModCore
 
             if (args.Length == 3 && args[0] == "baselinedefine")
             {
+<<<<<<< HEAD
                 return Program.TryBaselineAndDefine(args[1], args[2]);
+=======
+                string path = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
+                if (Environment.OSVersion.Version.Major >= 6)
+                {
+                    path = Directory.GetParent(path).ToString();
+                }
+                
+                return Program.TryBaselineAndDefine(args[1], args[2], path + @"\\Dev\\SubaruDefs\\ECUFlash\\subaru standard\");
+>>>>>>> 4dfa93c... Changed HEW integration paths to user folder instead of C drive root. Fixed missing pre build copy events for sharptunecore.dll and merp.dll.
             }
 
             Program.PrintHelp();

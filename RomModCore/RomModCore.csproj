@@ -108,8 +108,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>Copy RomModCore.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\RomModCore.exe"
+<<<<<<< HEAD
 Copy test.xml "C:\Program Files\OpenECU\EcuFlash\rommetadata\subaru\test.xml"
 </PostBuildEvent>
+=======
+Copy SharpTuneCore.dll "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\SharpTuneCore.dll"
+Copy Merp.dll "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\Merp.dll"</PostBuildEvent>
+>>>>>>> 4dfa93c... Changed HEW integration paths to user folder instead of C drive root. Fixed missing pre build copy events for sharptunecore.dll and merp.dll.
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
