@@ -201,7 +201,12 @@ namespace RomModCore
                     if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
                     {
                         // found modName, output to string!
+<<<<<<< HEAD
                         this.xRomTableList.Add(CreateTable(metaString, (int)metaOffset));
+=======
+                       KeyValuePair<String,XElement> tempTable = CreateTable(metaString, (int)metaOffset, false);
+                       if(tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
+>>>>>>> 9e648e3... Fixed bug in creation of RAM parameters from base definition.
                     }
                     else
                     {
@@ -216,7 +221,12 @@ namespace RomModCore
                     if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
                     {
                         // found modName, output to string!
+<<<<<<< HEAD
                         this.xRamTableList.Add(CreateTable(metaString, (int)metaOffset));
+=======
+                        KeyValuePair<String, XElement> tempTable = CreateTable(metaString, (int)metaOffset, true);
+                        if(tempTable.Key != null) this.xRamTableList.Add(tempTable.Key, tempTable.Value);
+>>>>>>> 9e648e3... Fixed bug in creation of RAM parameters from base definition.
                     }
                     else
                     {
@@ -238,9 +248,19 @@ namespace RomModCore
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
+<<<<<<< HEAD
         private KeyValuePair<string,XElement> CreateTable(string name, int offset)
         {
             foreach (KeyValuePair<string,XElement> table in this.definition.xRomTableList)
+=======
+        private KeyValuePair<string,XElement> CreateTable(string name, int offset, bool isRam)
+        { 
+            Dictionary<string,XElement> list = new Dictionary<string,XElement>();
+            if (isRam) list = this.baseDefinition.xRamTableList;
+            else list = this.baseDefinition.xRomTableList;
+
+            foreach (KeyValuePair<string,XElement> table in this.baseDefinition.xRomTableList)
+>>>>>>> 9e648e3... Fixed bug in creation of RAM parameters from base definition.
             {
                 if (table.Key == name)
                 {
