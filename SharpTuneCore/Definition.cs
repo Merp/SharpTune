@@ -491,17 +491,6 @@ namespace SharpTune
                         table.Value.WriteTo(writer);
                     }
                 }
-
-                //Write RAM tables
-                if (this.xRamTableList != null)
-                {
-                    writer.WriteStartElement("ram");
-                    foreach (KeyValuePair<string, XElement> table in this.xRamTableList)
-                    {
-                        table.Value.WriteTo(writer);
-                    }
-                    writer.WriteEndElement();
-                }
                 writer.WriteEndDocument();
             }
         }
