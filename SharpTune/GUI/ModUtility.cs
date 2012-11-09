@@ -244,8 +244,8 @@ namespace SharpTune
             else
             {
                 MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.currentMainWindow.sharpTuner.fileQueued = true;
-                this.currentMainWindow.sharpTuner.QueuedFilePath = d.FileName;
+                SharpTuner.fileQueued = true;
+                SharpTuner.QueuedFilePath = d.FileName;
             }
 
             this.Close();
@@ -272,6 +272,11 @@ namespace SharpTune
                 buttonPatchRom.Enabled = false;
                 buttonTestPatch.Enabled = false;
             }
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
 
 

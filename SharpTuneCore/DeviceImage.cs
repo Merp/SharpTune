@@ -51,7 +51,7 @@ namespace SharpTune
         public List<Table> tableList { get; set; }
 
         public TableTree imageTree { get; set; }
-        public SharpTuner parent { get; set; }
+
         public Stream imageStream;
 
         
@@ -60,9 +60,8 @@ namespace SharpTune
         /// Constructor
         /// </summary>
         /// 
-        public DeviceImage(string fPath, SharpTuner window)
+        public DeviceImage(string fPath)
         {
-            this.parent = window;
             FileInfo f = new FileInfo(fPath);
             this.FileSize = f.Length;
             this.FileName = f.Name;
@@ -79,7 +78,7 @@ namespace SharpTune
             }
             //this.imageStream = File.Open(this.FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
-                foreach (KeyValuePair<string, Pair<int, string>> device in this.parent.availableDevices.IdentifierMap)
+                foreach (KeyValuePair<string, Pair<int, string>> device in SharpTuner.availableDevices.IdentifierMap)
                 {
                     this.imageStream.Seek(device.Value.First, SeekOrigin.Begin);
 

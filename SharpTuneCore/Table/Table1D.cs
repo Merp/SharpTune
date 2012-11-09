@@ -131,12 +131,12 @@ namespace SharpTune.Tables
             this.scaling = this.defaultScaling;
 
             //Check SSM interface ID vs the device ID
-            if(this.parentImage.parent.ssmInterface.EcuIdentifier != this.parentImage.CalId)
+            if(SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)
             {
                 throw new System.Exception("Device Image does not match connected device!");
             }
 
-            SsmInterface ssmInterface = this.parentImage.parent.ssmInterface;
+            SsmInterface ssmInterface = SharpTuner.ssmInterface;
             
             //May have an issue with this while logging???
             //Is it necessary??

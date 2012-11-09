@@ -310,8 +310,8 @@ namespace RomModCore
         /// </summary>
         public bool TryPrintBaselines(string patchPath)
         {
-
-            File.Copy(patchPath, this.InitialCalibrationId + "_" + this.FinalCalibrationId + "_" + this.ModAuthor + "_" + this.ModName + "_" + this.ModVersion + ".patch", true);
+            string p = this.InitialCalibrationId + "_" + this.FinalCalibrationId + "_" + this.ModAuthor + "_" + this.ModName + "_" + this.ModVersion + ".patch";
+            File.Copy(patchPath, p , true);
 
             bool result = true;
             foreach (Patch patch in this.patchList)

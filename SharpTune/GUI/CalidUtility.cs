@@ -31,7 +31,7 @@ namespace SharpTune
         public CalidUtility(MainWindow window)
         {
             this.mainWindow = window;
-            this.currentImage = window.sharpTuner.activeImage;
+            this.currentImage = SharpTuner.activeImage;
             InitializeComponent();
         }
 
@@ -110,7 +110,7 @@ namespace SharpTune
                 return;
             }
 
-            foreach (KeyValuePair<string, Pair<int, string>> device in this.mainWindow.sharpTuner.availableDevices.IdentifierMap)
+            foreach (KeyValuePair<string, Pair<int, string>> device in SharpTuner.availableDevices.IdentifierMap)
             {
                 if (newcalidbox.Text.ToString() == device.Value.Second.ToString())
                 {

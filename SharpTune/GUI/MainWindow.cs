@@ -42,8 +42,6 @@ namespace SharpTune
     {
         TextWriter _writer = null;
 
-        public SharpTuner sharpTuner { get; set; }
-
         OpenFileDialog ofd = new OpenFileDialog();
 
         public MainWindow()
@@ -51,34 +49,34 @@ namespace SharpTune
             InitializeComponent();       
         }
 
-      
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.sharpTuner = new SharpTuner();
-             // Instantiate the writer
+            // Instantiate the writer
             _writer = new TextBoxStreamWriter(txtConsole);
-           // Redirect the out Console stream
-           Console.SetOut(_writer);
+            // Redirect the out Console stream
+            Console.SetOut(_writer);
 
+            loadDevices();
+        }
 
+        public void loadDevices()
+        {
             BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += (senderr, ee) => {
-            this.sharpTuner.availableDevices = new AvailableDevices("rommetadata");
+            bw.DoWork += (senderr, ee) =>
+            {
+                SharpTuner.populateAvailableDevices();
 
-            //backgroundWorker1.ReportProgress(prog);
+                //backgroundWorker1.ReportProgress(prog);
 
             };
             bw.RunWorkerAsync();
 
-            this.sharpTuner.imageList = new List<DeviceImage>();
+            SharpTuner.imageList = new List<DeviceImage>();
             refreshPorts();
-
         }
-
       
-
-
         private void refreshPorts()
         {
             // Get a list of serial port names.
@@ -119,7 +117,7 @@ namespace SharpTune
         public void openDeviceImage(string filename)
         {
             //Construct new romimage
-                DeviceImage newImage = new DeviceImage(filename, this.sharpTuner);
+                DeviceImage newImage = new DeviceImage(filename);
 
                 if (newImage.CalId == null)
                 {
@@ -128,7 +126,7 @@ namespace SharpTune
                     return;
                 }
 
-                foreach (DeviceImage image in this.sharpTuner.imageList)
+                foreach (DeviceImage image in SharpTuner.imageList)
                 {
                     if (image.FilePath == filename)
                     {
@@ -140,17 +138,17 @@ namespace SharpTune
                 this.closeDeviceImageToolStripMenuItem.Enabled = true;
                 modUtilityToolStripMenuItem.Enabled = true;
                 obfuscateCALIDToolStripMenuItem.Enabled = true;
-                this.sharpTuner.imageList.Add(newImage);
+                SharpTuner.AddImage(newImage);
 
-                this.sharpTuner.activeImage = newImage;
-                this.openDeviceListBox.Items.Add(this.sharpTuner.activeImage.FileName);
+                SharpTuner.activeImage = newImage;
+                this.openDeviceListBox.Items.Add(SharpTuner.activeImage.FileName);
                 
-                // this is useful: this.sharpTuner.imageList.FindIndex(f => f.FileName == newImage.FileName);
+                // this is useful: SharpTuner.imageList.FindIndex(f => f.FileName == newImage.FileName);
 
                 
 
                 ImageTreeRefresh();
-                Console.WriteLine("Successfully opened " + this.sharpTuner.activeImage.CalId + " filename: " + this.sharpTuner.activeImage.FileName);
+                Console.WriteLine("Successfully opened " + SharpTuner.activeImage.CalId + " filename: " + SharpTuner.activeImage.FileName);
 
 
                 //Update GUI Info
@@ -165,9 +163,9 @@ namespace SharpTune
         public void ImageTreeRefresh()
         {
             this.imageTreeView.Nodes.Clear();
-            if(this.sharpTuner.activeImage != null)
+            if(SharpTuner.activeImage != null)
             {
-                this.imageTreeView.Nodes.Add(this.sharpTuner.activeImage.imageTree.Tree);
+                this.imageTreeView.Nodes.Add(SharpTuner.activeImage.imageTree.Tree);
             }
             this.imageTreeView.Refresh();
                 
@@ -316,19 +314,19 @@ namespace SharpTune
         {
             BackgroundWorker bw = new BackgroundWorker();
 
-            Table table = this.sharpTuner.activeImage.tableList.Find(t => t.Tag == tableTag);
+            Table table = SharpTuner.activeImage.tableList.Find(t => t.Tag == tableTag);
 
             bw.DoWork += (senderr, ee) =>
             {
-                //Application.Run(new TableView(ref table, this.sharpTuner));
+                //Application.Run(new TableView(ref table, SharpTuner));
             };
 
             bw.RunWorkerCompleted += (senderr, ee) =>
                 {
-                    if (this.sharpTuner.fileQueued == true)
+                    if (SharpTuner.fileQueued == true)
                     {
-                        openDeviceImage(this.sharpTuner.QueuedFilePath);
-                        this.sharpTuner.fileQueued = false;
+                        openDeviceImage(SharpTuner.QueuedFilePath);
+                        SharpTuner.fileQueued = false;
 
                     }
                 };
@@ -344,21 +342,21 @@ namespace SharpTune
 
         private void modUtilityToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ModUtility modUtil = new ModUtility(this.sharpTuner.activeImage, this);
+            ModUtility modUtil = new ModUtility(SharpTuner.activeImage, this);
             modUtil.ShowDialog();
             //BackgroundWorker bw = new BackgroundWorker();
 
             //bw.DoWork += (senderr, ee) =>
             //{
-            //    Application.Run(new ModUtility(this.sharpTuner.activeImage, this));
+            //    Application.Run(new ModUtility(SharpTuner.activeImage, this));
             //};
 
             //bw.RunWorkerCompleted += (senderr, ee) =>
             //    {
-            //        if (this.sharpTuner.fileQueued == true)
+            //        if (SharpTuner.fileQueued == true)
             //        {
-            //            openDeviceImage(this.sharpTuner.QueuedFilePath);
-            //            this.sharpTuner.fileQueued = false;
+            //            openDeviceImage(SharpTuner.QueuedFilePath);
+            //            SharpTuner.fileQueued = false;
 
             //        }
             //    };
@@ -378,7 +376,7 @@ namespace SharpTune
         //[STAThread]
         //private void SpawnModUtility()
         //{
-        //    Application.Run(new ModUtility(this.sharpTuner.activeImage,this));
+        //    Application.Run(new ModUtility(SharpTuner.activeImage,this));
         //}
 
         private void openDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -405,17 +403,17 @@ namespace SharpTune
         private void closeDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //Prompt to save file!
-            if (this.sharpTuner.activeImage.isChanged)
+            if (SharpTuner.activeImage.isChanged)
             {
                 if (MessageBox.Show("File is changed", "Would you like to save it?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    this.sharpTuner.activeImage.SaveAs();
+                    SharpTuner.activeImage.SaveAs();
                     // a 'DialogResult.Yes' value was returned from the MessageBox
                     // proceed with your deletion
                 }
             }
 
-            if(this.sharpTuner.imageList.Count == 0)
+            if(SharpTuner.imageList.Count == 0)
             {
                 closeDeviceImageToolStripMenuItem.Enabled = false;
                 modUtilityToolStripMenuItem.Enabled = false;
@@ -423,20 +421,20 @@ namespace SharpTune
                 return;
             }
 
-            int index = this.sharpTuner.imageList.FindIndex(f=> f.FilePath == this.sharpTuner.activeImage.FilePath);
-            this.sharpTuner.imageList.RemoveAt(index);
+            int index = SharpTuner.imageList.FindIndex(f=> f.FilePath == SharpTuner.activeImage.FilePath);
+            SharpTuner.imageList.RemoveAt(index);
             this.openDeviceListBox.Items.RemoveAt(index);
-                //this.imageTreeView.Nodes.Remove(n => n.Tag = this.sharpTuner.activeImage.FileName);
+                //this.imageTreeView.Nodes.Remove(n => n.Tag = SharpTuner.activeImage.FileName);
                 foreach (TreeNode node in this.imageTreeView.Nodes)
                 {
-                    if (node != null && node.Tag != null && node.Tag.ToString() == this.sharpTuner.activeImage.FilePath)
+                    if (node != null && node.Tag != null && node.Tag.ToString() == SharpTuner.activeImage.FilePath)
                     {
                         node.Remove();
                     }
                 }
-                if (this.sharpTuner.imageList.Count != 0)
+                if (SharpTuner.imageList.Count != 0)
                 {
-                    this.sharpTuner.activeImage = this.sharpTuner.imageList[0];
+                    SharpTuner.activeImage = SharpTuner.imageList[0];
                     ImageTreeRefresh();
                 }
                 else
@@ -449,50 +447,50 @@ namespace SharpTune
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            Application.Run(new ModUtility(this.sharpTuner.activeImage, this));
+            Application.Run(new ModUtility(SharpTuner.activeImage, this));
         }
 
         private void bw_DoWork(object sender, DoWorkEventArgs e)
         {
-            Application.Run(new ModUtility(this.sharpTuner.activeImage, this));
+            Application.Run(new ModUtility(SharpTuner.activeImage, this));
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (this.sharpTuner.fileQueued == true)
+            if (SharpTuner.fileQueued == true)
             {
-                openDeviceImage(this.sharpTuner.QueuedFilePath);
-                this.sharpTuner.fileQueued = false;
+                openDeviceImage(SharpTuner.QueuedFilePath);
+                SharpTuner.fileQueued = false;
 
             }
         }
 
         private void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (this.sharpTuner.fileQueued == true)
+            if (SharpTuner.fileQueued == true)
             {
-                openDeviceImage(this.sharpTuner.QueuedFilePath);
-                this.sharpTuner.fileQueued = false;
+                openDeviceImage(SharpTuner.QueuedFilePath);
+                SharpTuner.fileQueued = false;
 
             }
         }
 
         private void saveDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.sharpTuner.activeImage.Save();
+            SharpTuner.activeImage.Save();
         }
 
         private void saveDeviceImageAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.sharpTuner.activeImage.SaveAs();
+            SharpTuner.activeImage.SaveAs();
         }
 
         private void openDeviceListBox_SelectedValueChanged(object sender, EventArgs e)
         {
             if (this.openDeviceListBox.SelectedItem != null)
             {
-                int index = this.sharpTuner.imageList.FindIndex(i => i.FileName == this.openDeviceListBox.SelectedItem.ToString());
-                this.sharpTuner.activeImage = this.sharpTuner.imageList[index];
+                int index = SharpTuner.imageList.FindIndex(i => i.FileName == this.openDeviceListBox.SelectedItem.ToString());
+                SharpTuner.activeImage = SharpTuner.imageList[index];
             }
             ImageTreeRefresh();
         }
@@ -525,16 +523,16 @@ namespace SharpTune
             
             Console.WriteLine("Opening serial port {0}.", comboBoxPorts.SelectedText);
             SerialPort port = new SerialPort(comboBoxPorts.SelectedValue.ToString(), 4800, Parity.None, 8);
-            this.sharpTuner.Port = port;
+            SharpTuner.Port = port;
             try
             {
-                this.sharpTuner.Port.Open();
+                SharpTuner.Port.Open();
             }
             catch (System.Exception excpt)
             {
                 Console.WriteLine("Error opening port",excpt.Message);
             }
-            if (this.sharpTuner.Port.IsOpen)
+            if (SharpTuner.Port.IsOpen)
             {
                 SsmInterface ecu = SsmInterface.GetInstance(port.BaseStream);
 
@@ -551,26 +549,26 @@ namespace SharpTune
                 {
                     Console.WriteLine("Error sending init", excpt.Message );
                 }
-                this.sharpTuner.ssmInterface = ecu;
+                SharpTuner.setSsmInterface(ecu);
                 Console.WriteLine(ecu.EcuIdentifier);
                 MessageBox.Show("Port opened! Connected to " + ecu.EcuIdentifier);
             }
             else
             {
-                this.sharpTuner.Port.Close();
+                SharpTuner.Port.Close();
                 return;
             }
         }
 
         private void comboBoxPorts_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.sharpTuner.activePort = comboBoxPorts.SelectedValue.ToString();
+            SharpTuner.activePort = comboBoxPorts.SelectedValue.ToString();
             this.button1.Enabled = true;
         }
 
         private void sSMTestAppToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.sharpTuner.ssmInterface == null || this.sharpTuner.ssmInterface.EcuIdentifier == null)
+            if (SharpTuner.ssmInterface == null || SharpTuner.ssmInterface.EcuIdentifier == null)
             {
                 MessageBox.Show("Not connected to an ECU device");
                 return;
@@ -598,9 +596,9 @@ namespace SharpTune
             t2d.Add("16BITBASE", new List<String>());
             t1d.Add("16BITBASE", new List<String>());
 
-            Dictionary<String,String> imap = sharpTuner.availableDevices.BuildInheritanceMap();
+            Dictionary<String,String> imap = SharpTuner.availableDevices.BuildInheritanceMap();
             
-			foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys) {
+			foreach (String deffile in SharpTuner.availableDevices.IdentifierMap.Keys) {
 				Definition.pullScalings (deffile, ref xblobscalings, ref xscalings);
 			}
 			Definition.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
@@ -614,7 +612,7 @@ namespace SharpTune
             Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			
-            foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys) {
+            foreach (String deffile in SharpTuner.availableDevices.IdentifierMap.Keys) {
 				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
 			}
 			
@@ -639,7 +637,85 @@ namespace SharpTune
                 xmlWriter.WriteEndElement();
                 xmlWriter.WriteEndDocument();
             }
-        } 
+        }
+
+        private void definitionLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Open dialog to change patch file location
+            //Then refresh patches
+
+            FolderBrowserDialog d = new FolderBrowserDialog();
+            //d.RootFolder = Environment.SpecialFolder.MyComputer;
+            if (SharpTuner.activeImage != null)
+            {
+                string path = SharpTuner.activeImage.ToString();
+                d.SelectedPath = path;
+            }
+
+            //d.ShowDialog();
+            DialogResult ret = STAShowFDialog(d);
+
+            if (ret == DialogResult.OK)
+            {
+                SharpTuner.definitionPath = d.SelectedPath.ToString();
+                SharpTuner.populateAvailableDevices();
+                loadDevices();
+            } 
+            
+            
+        }
+
+        public class FDialogState
+        {
+
+            public DialogResult result;
+
+            public FolderBrowserDialog dialog;
+
+            public void ThreadProcShowDialog()
+            {
+
+                result = dialog.ShowDialog();
+
+            }
+
+
+        }
+
+        private DialogResult STAShowFDialog(FolderBrowserDialog dialog)
+        {
+
+            FDialogState state = new FDialogState();
+
+            state.dialog = dialog;
+
+            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
+
+
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+
+            t.Start();
+
+            t.Join();
+
+            return state.result;
+
+        }
+
+        public class SADialogState
+        {
+
+            public DialogResult result;
+
+            public SaveFileDialog dialog;
+
+
+            public void ThreadProcShowDialog()
+            {
+                result = dialog.ShowDialog();
+            }
+
+        }
       
     }
 

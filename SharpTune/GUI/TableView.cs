@@ -33,21 +33,21 @@ namespace SharpTune
 
         private Table parentTable { get; set; }
 
-        public TableView(ref Table3D table, SharpTuner sharpTuner)
+        public TableView(ref Table3D table)
         {
             this.parentTable = table;
             InitializeComponent();
             this.PopulateTableView(table);        
         }
 
-        public TableView(ref Table2D table, SharpTuner sharpTuner)
+        public TableView(ref Table2D table)
         {
             this.parentTable = table;
             InitializeComponent();
             this.PopulateTableView(table);
         }
 
-        public TableView(ref Table1D table, SharpTuner sharpTuner)
+        public TableView(ref Table1D table)
         {
             this.parentTable = table;
             InitializeComponent();

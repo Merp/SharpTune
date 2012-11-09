@@ -84,7 +84,7 @@ namespace SharpTune.GUI
         private void ssmInit()
         {
 
-            SsmInterface ecu = this.currentWindow.sharpTuner.ssmInterface;
+            SsmInterface ecu = SharpTuner.ssmInterface;
             try
             {
                 IAsyncResult result = ecu.BeginGetEcuIdentifier(null, null);
@@ -102,7 +102,7 @@ namespace SharpTune.GUI
 
         private void ssmReadSSM()
         {
-            SsmInterface ecu = this.currentWindow.sharpTuner.ssmInterface;
+            SsmInterface ecu = SharpTuner.ssmInterface;
             this.valueBox.AppendText("Reading SSM Param " + this.address.ToString());
             this.valueBox.AppendText(Environment.NewLine);
             List<int> addresses = new List<int>();
@@ -116,7 +116,7 @@ namespace SharpTune.GUI
 
         private void ssmReadBlock()
         {
-            SsmInterface ecu = this.currentWindow.sharpTuner.ssmInterface;
+            SsmInterface ecu = SharpTuner.ssmInterface;
             this.valueBox.AppendText("Reading " + this.length + " bytes from address " + this.address);
             this.valueBox.AppendText(Environment.NewLine);
             IAsyncResult result = ecu.BeginBlockRead(this.address,this.length, null, null);
@@ -130,7 +130,7 @@ namespace SharpTune.GUI
         private void ssmWriteBlock()
         {
             byte[] bytes = this.valueBox.Text.ToString().ToByteArray();
-            SsmInterface ecu = this.currentWindow.sharpTuner.ssmInterface;
+            SsmInterface ecu = SharpTuner.ssmInterface;
             this.valueBox.AppendText("Writing " + this.length + " bytes from address " + this.address);
             this.valueBox.AppendText(Environment.NewLine);
             IAsyncResult result = ecu.BeginBlockWrite(this.address, bytes, null, null);

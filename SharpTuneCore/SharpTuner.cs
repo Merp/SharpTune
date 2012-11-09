@@ -16,32 +16,48 @@ using System.Linq;
 using System.Text;
 using NateW.Ssm;
 using System.IO.Ports;
+using System.IO;
 
 namespace SharpTune
 {
     /// <summary>
     /// Container for a sharptune instance
     /// </summary>
-    public class SharpTuner
+    public static class SharpTuner
     {
-        public DeviceImage activeImage { get; set; }
+        public static DeviceImage activeImage { get; set; }
 
-        public List<DeviceImage> imageList { get; set; }
+        public static List<DeviceImage> imageList { get; set; }
 
-        public AvailableDevices availableDevices { get; set; }
+        public static AvailableDevices availableDevices { get; set; }
 
-        public string activePort { get; set; }
+        public static string definitionPath = "rommetadata";
 
-        public SerialPort Port { get; set; }
+        public static string activePort { get; set; }
 
-        public SsmInterface ssmInterface { get; set; }
+        public static SerialPort Port { get; set; }
 
-        public List<ModInfo> modList = new List<ModInfo>();
+        public static SsmInterface ssmInterface { get; set; }
 
-        public bool fileQueued { get; set; }
+        public static List<ModInfo> modList = new List<ModInfo>();
 
-        public string QueuedFilePath { get; set; }
+        public static bool fileQueued { get; set; }
 
+        public static string QueuedFilePath { get; set; }
 
+        public static void populateAvailableDevices()
+        {
+            availableDevices = new AvailableDevices(definitionPath.ToString());
+        }
+
+        public static void setSsmInterface(SsmInterface s)
+        {
+            ssmInterface = s;
+        }
+
+        public static void AddImage(DeviceImage d)
+        {
+            imageList.Add(d);
+        }
     }
 }

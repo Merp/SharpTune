@@ -50,8 +50,10 @@
             this.sSMTestAppToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportCurrentXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertEFXMLRRv2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.romRaiderIRCChannelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -65,7 +67,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.convertEFXMLRRv2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -274,12 +275,20 @@
             // xMLToolStripMenuItem
             // 
             this.xMLToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.definitionLocationToolStripMenuItem,
             this.definitionEditorToolStripMenuItem,
             this.exportCurrentXMLToolStripMenuItem,
             this.convertEFXMLRRv2ToolStripMenuItem});
             this.xMLToolStripMenuItem.Name = "xMLToolStripMenuItem";
             this.xMLToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.xMLToolStripMenuItem.Text = "XML";
+            // 
+            // definitionLocationToolStripMenuItem
+            // 
+            this.definitionLocationToolStripMenuItem.Name = "definitionLocationToolStripMenuItem";
+            this.definitionLocationToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.definitionLocationToolStripMenuItem.Text = "Definition Location";
+            this.definitionLocationToolStripMenuItem.Click += new System.EventHandler(this.definitionLocationToolStripMenuItem_Click);
             // 
             // definitionEditorToolStripMenuItem
             // 
@@ -292,6 +301,13 @@
             this.exportCurrentXMLToolStripMenuItem.Name = "exportCurrentXMLToolStripMenuItem";
             this.exportCurrentXMLToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.exportCurrentXMLToolStripMenuItem.Text = "Export Current XML";
+            // 
+            // convertEFXMLRRv2ToolStripMenuItem
+            // 
+            this.convertEFXMLRRv2ToolStripMenuItem.Name = "convertEFXMLRRv2ToolStripMenuItem";
+            this.convertEFXMLRRv2ToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.convertEFXMLRRv2ToolStripMenuItem.Text = "Convert EF XML -> RRv2";
+            this.convertEFXMLRRv2ToolStripMenuItem.Click += new System.EventHandler(this.convertEFXMLRRv2ToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -427,13 +443,6 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Log Window";
             // 
-            // convertEFXMLRRv2ToolStripMenuItem
-            // 
-            this.convertEFXMLRRv2ToolStripMenuItem.Name = "convertEFXMLRRv2ToolStripMenuItem";
-            this.convertEFXMLRRv2ToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
-            this.convertEFXMLRRv2ToolStripMenuItem.Text = "Convert EF XML -> RRv2";
-            this.convertEFXMLRRv2ToolStripMenuItem.Click += new System.EventHandler(this.convertEFXMLRRv2ToolStripMenuItem_Click);
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -510,6 +519,7 @@
         private System.Windows.Forms.ToolStripMenuItem exportCurrentXMLToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sSMTestAppToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem convertEFXMLRRv2ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem definitionLocationToolStripMenuItem;
     }
 }
 
