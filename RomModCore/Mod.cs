@@ -168,8 +168,7 @@ namespace RomModCore
 
 
                 //Swap contents
-                Blob tempblob = patch.Baseline.CloneWithNewStartAddress(patch.Baseline.StartAddress - BaselineOffset);
-                patch.Baseline = patch.Payload.CloneWithNewStartAddress(patch.Payload.StartAddress + BaselineOffset);
+                Blob tempblob;
 
                 if (patch.IsNewPatch)
                 {
@@ -182,6 +181,8 @@ namespace RomModCore
                 }
                 else
                 {
+                    tempblob = patch.Baseline.CloneWithNewStartAddress(patch.Baseline.StartAddress - BaselineOffset);
+                    patch.Baseline = patch.Payload.CloneWithNewStartAddress(patch.Payload.StartAddress + BaselineOffset);
                     patch.Payload.Content.Clear();
                     patch.Payload = tempblob;
                 }
@@ -310,7 +311,7 @@ namespace RomModCore
         /// </summary>
         public bool TryPrintBaselines(string patchPath)
         {
-            string p = this.InitialCalibrationId + "_" + this.FinalCalibrationId + "_" + this.ModAuthor + "_" + this.ModName + "_" + this.ModVersion + ".patch";
+            string p = this.ModAuthor + "_" + this.InitialCalibrationId + "_" + this.FinalCalibrationId + this.ModName + this.ModVersion + ".patch";
             File.Copy(patchPath, p , true);
 
             bool result = true;
@@ -949,7 +950,7 @@ namespace RomModCore
                 patch.MetaCheck((IEnumerable<byte>)buffer);
             }
 
-            using ( StreamWriter textWriter = File.AppendText(this.InitialCalibrationId + "_" + this.FinalCalibrationId + "_" + this.ModAuthor + "_" + this.ModName + "_" + this.ModVersion + ".patch"))
+            using ( StreamWriter textWriter = File.AppendText(this.ModAuthor + "_" + this.InitialCalibrationId + "_" + this.FinalCalibrationId + this.ModName + this.ModVersion + ".patch"))
             {
                 //TextWriter textWriter = new StreamWriter(consoleOutputStream);
                 
@@ -1015,18 +1016,24 @@ namespace RomModCore
             //            DumpBuffer("Expected", expectedData.Content, buffer.Length);
 
             int mismatches = 0;
+            byte expected;
 
             for (int index = 0; index < patchLength; index++)
             {
                 byte actual = buffer[index];
 
-                if (index >= patch.Baseline.Content.Count)
+                if (!patch.IsNewPatch)
                 {
-                    Console.WriteLine("Expected data is smaller than patch size.");
-                    return false;
-                }
+                    if (index >= patch.Baseline.Content.Count)
+                    {
+                        Console.WriteLine("Expected data is smaller than patch size.");
+                        return false;
+                    }
 
-                byte expected = patch.Baseline.Content[index];
+                    expected = patch.Baseline.Content[index];
+                }
+                else
+                    expected = 0xFF;
 
                 if (actual != expected)
                 {

@@ -139,56 +139,56 @@ namespace SharpTune
         {
             try
             {
-                string[] directories = Directory.GetDirectories(directory);
+                string[] files = Directory.GetFiles(directory);
+                Parallel.ForEach(
+                    files, f =>
+                    {
+                        string ident;
+                        int identaddress;
+                        try
+                        {
+                            if (!ReadIdent(f, out ident, out identaddress))
+                            {
+                                Console.WriteLine("no identifier found for " + f);
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    Pair<int, string> temppair = new Pair<int, string>(identaddress, ident);
+                                    lock (this.IdentifierMap)
+                                    {
+                                        this.IdentifierMap.Add(f, temppair);
+                                    }
+                                    //Console.WriteLine("Added Device {0} with identaddress {1}", ident, identaddress);
+                                    DeviceCount++;
+                                }
+                                catch (System.Exception excpt)
+                                {
+                                    Console.WriteLine("Error reading XML file, adding identifier to map " + f);
+                                    Console.WriteLine(excpt.Message);
+                                }
+                            }
+                        }
+                        catch (System.Exception excpt)
+                        {
+                            Console.WriteLine("Error reading XML file " + f);
+                            Console.WriteLine(excpt.Message);
+                        }
+
+                    });
+
+                List<string> directories = Directory.GetDirectories(directory).ToList();
+                
                 Parallel.ForEach(
                     directories, d =>
                     {
-                        string[] files = Directory.GetFiles(d);
-                        Parallel.ForEach(
-                            files, f =>
-                                {
-                                    string ident;
-                                    int identaddress;
-                                    try
-                                    {
-                                        if (!ReadIdent(f, out ident, out identaddress))
-                                        {
-                                            Console.WriteLine("no identifier found for " + f);
-                                        }
-                                        else
-                                        {
-                                            try
-                                            {
-                                                Pair<int, string> temppair = new Pair<int, string>(identaddress, ident);
-                                                lock (this.IdentifierMap)
-                                                {
-                                                    this.IdentifierMap.Add(f, temppair);
-                                                }
-                                                //Console.WriteLine("Added Device {0} with identaddress {1}", ident, identaddress);
-                                                DeviceCount++;
-                                            }
-                                            catch (System.Exception excpt)
-                                            {
-                                                Console.WriteLine("Error reading XML file, adding identifier to map " + f);
-                                                Console.WriteLine(excpt.Message);
-                                            }
-                                        }
-                                    }
-                                    catch (System.Exception excpt)
-                                    {
-                                        Console.WriteLine("Error reading XML file " + f);
-                                        Console.WriteLine(excpt.Message);
-                                    }
-
-                                });
                         if (!GetDevices(d))
                         {
                             return;
                         }
                     });
 
-               
-                
                 return true;
             }
             catch (System.Exception excpt)
