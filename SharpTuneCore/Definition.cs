@@ -64,7 +64,7 @@ namespace SharpTune
         /// Doesn't store XML because there is no inheritance among scalings
         /// TODO: Rethink this?
         /// </summary>
-        public List<Scaling> scalingList { get; set; }
+        //public List<Scaling> scalingList { get; set; }
 
         /// <summary>
         /// Constructor
@@ -75,9 +75,9 @@ namespace SharpTune
         public Definition(string filepath)
         {
             this.internalId = null;
-            this.xRomTableList = new Dictionary<string, XElement>();
-            this.xRamTableList = new Dictionary<string, XElement>();
-            this.scalingList = new List<Scaling>();
+            //this.xRomTableList = new Dictionary<string, XElement>();
+            //this.xRamTableList = new Dictionary<string, XElement>();
+            //this.scalingList = new List<Scaling>();
             this.defPath = filepath;
         }
 
@@ -148,6 +148,7 @@ namespace SharpTune
             }
             
 
+<<<<<<< HEAD
             // ROM table fetches here!
             var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
                              //where table.Ancestors("table").First().IsEmpty
@@ -234,6 +235,97 @@ namespace SharpTune
                     //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
                 }
             }
+=======
+            //// ROM table fetches here!
+            //var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
+            //                 //where table.Ancestors("table").First().IsEmpty
+            //                 select t;
+            //foreach (XElement table in tableQuery)
+            //{
+            //    //skip tables with no name
+            //    if (table.Attribute("name") == null) continue;
+
+            //    string tablename = table.Attribute("name").Value.ToString();
+
+            //        if (this.xRomTableList.ContainsKey(tablename)) 
+            //        {
+            //            //table already exists
+            //            //add data to existing table
+            //            this.xRomTableList[tablename].Merge(table);
+            //            //Console.WriteLine("table " + tablename + " already exists, merging tables");
+            //        }
+
+            //        else if (!tempcalid.ContainsCI("base") || isbase)
+            //        {
+            //            //table does not exist
+            //            //call constructor
+            //            this.xRomTableList.Add(tablename, table);
+            //            //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
+            //        }
+            //}
+
+            //// RAM table feteches here!
+            //var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
+            //                 //where table.Ancestors("table").First().IsEmpty
+            //                 select t;
+            //foreach (XElement table in ramtableQuery)
+            //{
+            //    //skip tables with no name
+            //    if (table.Attribute("name") == null) continue;
+
+            //    string tablename = table.Attribute("name").Value.ToString();
+
+            //    if (this.xRomTableList.ContainsKey(tablename))
+            //    {
+            //        //table already exists
+            //        //add data to existing table
+            //        this.xRamTableList[tablename].Merge(table);
+            //        //Console.WriteLine("table " + tablename + " already exists, merging tables");
+            //    }
+
+            //    else if (!tempcalid.ContainsCI("base") || isbase)
+            //    {
+            //        //table does not exist
+            //        //call constructor
+            //        this.xRamTableList.Add(tablename, table);
+            //        //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
+            //    }
+            //}
+
+            ////Read Scalings
+            //this.xScalingList = new Dictionary<string, XElement>();
+
+            //var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
+            //                   //where table.Ancestors("table").First().IsEmpty
+            //                   select sc;
+            //foreach (XElement scaling in scalingQuery)
+            //{
+            //    //skip scalings with no name
+            //    if (scaling.Attribute("name") == null) continue;
+            //    string scalingname = scaling.Attribute("name").Value.ToString();
+            //    if (!this.xScalingList.ContainsKey(scalingname))
+            //    {
+            //        this.xScalingList.Add(scalingname, scaling);
+            //    }
+
+            //    if (this.scalingList.Exists(sc => sc.name == scalingname)) //   this.fullTableList.Exists(o => o.name == tablename))
+            //    {
+            //        //scaling already exists
+            //        //add data to existing table
+            //        int index = this.scalingList.FindIndex(o => o.name == scalingname);
+            //        Scaling newscaling = this.scalingList.ElementAt(index);
+            //        this.scalingList[index] = this.scalingList.ElementAt(index).AddBase(ScalingFactory.CreateScaling(scaling));
+            //        //Console.WriteLine("scaling " + scalingname + " already exists, merging scalings");
+            //    }
+            //    else
+            //    {
+            //        //scaling does not exist
+            //        //call constructor
+            //        this.scalingList.Add(ScalingFactory.CreateScaling(scaling));
+            //        //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
+            //    }
+            //}
+>>>>>>> 49d24eb... Initial changes to make SharpTune into Mod-only application (no editor or comms).
 
             //Recurse if not working in the BASE
             if (!tempcalid.Contains("BASE") && recurse)

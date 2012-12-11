@@ -22,7 +22,7 @@ using System.IO;
 using ConsoleRedirection;
 using DumpXML;
 using System.IO.Ports;
-using NateW.Ssm;
+//using NateW.Ssm;
 using RomModCore;
 using System.Security.AccessControl;
 using System.Security.Permissions;
@@ -32,6 +32,7 @@ using SharpTune.Tables;
 using SharpTune.GUI;
 using System.Xml.Linq;
 using System.Xml;
+using System.Reflection;
 
 
 
@@ -41,6 +42,8 @@ namespace SharpTune
     public partial class MainWindow : Form
     {
         TextWriter _writer = null;
+
+        private int selectedModIndex;
 
         OpenFileDialog ofd = new OpenFileDialog();
 
@@ -74,7 +77,7 @@ namespace SharpTune
             bw.RunWorkerAsync();
 
             SharpTuner.imageList = new List<DeviceImage>();
-            refreshPorts();
+            //refreshPorts();
         }
       
         private void refreshPorts()
@@ -89,9 +92,6 @@ namespace SharpTune
             {
                 Console.WriteLine(port);
             }
-
-            comboBoxPorts.DataSource = ports;
-
         }
 
         public void button3_Click(object sender, EventArgs e)
@@ -136,20 +136,17 @@ namespace SharpTune
                 }
 
                 this.closeDeviceImageToolStripMenuItem.Enabled = true;
-                modUtilityToolStripMenuItem.Enabled = true;
+                //modUtilityToolStripMenuItem.Enabled = true;
                 obfuscateCALIDToolStripMenuItem.Enabled = true;
                 SharpTuner.AddImage(newImage);
 
                 SharpTuner.activeImage = newImage;
-                this.openDeviceListBox.Items.Add(SharpTuner.activeImage.FileName);
+                this.openDeviceListBox.Items.Add("("+SharpTuner.activeImage.CalId+") "+SharpTuner.activeImage.FileName);
                 
                 // this is useful: SharpTuner.imageList.FindIndex(f => f.FileName == newImage.FileName);
 
-                
-
-                ImageTreeRefresh();
+                //ImageTreeRefresh();
                 Console.WriteLine("Successfully opened " + SharpTuner.activeImage.CalId + " filename: " + SharpTuner.activeImage.FileName);
-
 
                 //Update GUI Info
                 //textBoxCurrentRom.Text = currentImage.FileName;
@@ -157,34 +154,36 @@ namespace SharpTune
                 //StatusLabel.Text = "ROM CALID: " + currentImage.CalId;
                 //textBoxCalIdOffset.Text = String.Format("0x{0:X}", currentImage.CalIdOffset);
 
-
+            //check patches
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            LoadPatches(assembly);
         }
 
-        public void ImageTreeRefresh()
-        {
-            this.imageTreeView.Nodes.Clear();
-            if(SharpTuner.activeImage != null)
-            {
-                this.imageTreeView.Nodes.Add(SharpTuner.activeImage.imageTree.Tree);
-            }
-            this.imageTreeView.Refresh();
+        //public void ImageTreeRefresh()
+        //{
+        //    this.imageTreeView.Nodes.Clear();
+        //    if(SharpTuner.activeImage != null)
+        //    {
+        //        this.imageTreeView.Nodes.Add(SharpTuner.activeImage.imageTree);
+        //    }
+        //    this.imageTreeView.Refresh();
                 
 
-        }
+        //}
 
-        private void imageTreeView_DoubleClick(object sender, EventArgs e)
-        {
-            if (imageTreeView.SelectedNode != null)
-            {
-                if (imageTreeView.SelectedNode.Tag != null)
-                {
-                    if (imageTreeView.SelectedNode.Tag.ToString().Contains(".table"))
-                    {
-                        spawnTableView(imageTreeView.SelectedNode.Tag.ToString());
-                    }
-                }
-            }
-        }
+        //private void imageTreeView_DoubleClick(object sender, EventArgs e)
+        //{
+        //    if (imageTreeView.SelectedNode != null)
+        //    {
+        //        if (imageTreeView.SelectedNode.Tag != null)
+        //        {
+        //            if (imageTreeView.SelectedNode.Tag.ToString().Contains(".table"))
+        //            {
+        //                spawnTableView(imageTreeView.SelectedNode.Tag.ToString());
+        //            }
+        //        }
+        //    }
+        //}
 
         private void imageTreeView_Click(object sender, EventArgs e)
         {
@@ -290,94 +289,44 @@ namespace SharpTune
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void buttonTestPatch_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void buttonPatchRom_Click(object sender, EventArgs e)
-        {
-           
-        }
-
         private void linkDonate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start("http://www.romraider.com/forum/viewtopic.php?f=37&t=8143");
         }
 
-        private void spawnTableView(string tableTag)
-        {
-            BackgroundWorker bw = new BackgroundWorker();
+        //private void spawnTableView(string tableTag)
+        //{
+        //    BackgroundWorker bw = new BackgroundWorker();
 
-            Table table = SharpTuner.activeImage.tableList.Find(t => t.Tag == tableTag);
+        //    Table table = SharpTuner.activeImage.tableList.Find(t => t.Tag == tableTag);
 
-            bw.DoWork += (senderr, ee) =>
-            {
-                //Application.Run(new TableView(ref table, SharpTuner));
-            };
+        //    bw.DoWork += (senderr, ee) =>
+        //    {
+        //        //Application.Run(new TableView(ref table, SharpTuner));
+        //    };
 
-            bw.RunWorkerCompleted += (senderr, ee) =>
-                {
-                    if (SharpTuner.fileQueued == true)
-                    {
-                        openDeviceImage(SharpTuner.QueuedFilePath);
-                        SharpTuner.fileQueued = false;
+        //    bw.RunWorkerCompleted += (senderr, ee) =>
+        //        {
+        //            if (SharpTuner.fileQueued == true)
+        //            {
+        //                openDeviceImage(SharpTuner.QueuedFilePath);
+        //                SharpTuner.fileQueued = false;
 
-                    }
-                };
+        //            }
+        //        };
 
 
-            bw.RunWorkerAsync();
-        }
+        //    bw.RunWorkerAsync();
+        //}
+
+
         // Declare our worker thread
         private Thread workerThread = null;
 
         // Boolean flag used to stop the
         //private bool stopProcess = false;
 
-        private void modUtilityToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ModUtility modUtil = new ModUtility(SharpTuner.activeImage, this);
-            modUtil.ShowDialog();
-            //BackgroundWorker bw = new BackgroundWorker();
-
-            //bw.DoWork += (senderr, ee) =>
-            //{
-            //    Application.Run(new ModUtility(SharpTuner.activeImage, this));
-            //};
-
-            //bw.RunWorkerCompleted += (senderr, ee) =>
-            //    {
-            //        if (SharpTuner.fileQueued == true)
-            //        {
-            //            openDeviceImage(SharpTuner.QueuedFilePath);
-            //            SharpTuner.fileQueued = false;
-
-            //        }
-            //    };
-
-
-            //bw.RunWorkerAsync();
-
-            ////this.stopProcess = false;
-
-            ////// Initialise and start worker thread
-            ////this.workerThread = new Thread(new ThreadStart(this.SpawnModUtility));
-            ////this.workerThread.Start();
-
-            
-        }
-
-        //[STAThread]
-        //private void SpawnModUtility()
-        //{
-        //    Application.Run(new ModUtility(SharpTuner.activeImage,this));
-        //}
+       
 
         private void openDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -416,7 +365,7 @@ namespace SharpTune
             if(SharpTuner.imageList.Count == 0)
             {
                 closeDeviceImageToolStripMenuItem.Enabled = false;
-                modUtilityToolStripMenuItem.Enabled = false;
+                //modUtilityToolStripMenuItem.Enabled = false;
                 obfuscateCALIDToolStripMenuItem.Enabled = false;
                 return;
             }
@@ -425,34 +374,24 @@ namespace SharpTune
             SharpTuner.imageList.RemoveAt(index);
             this.openDeviceListBox.Items.RemoveAt(index);
                 //this.imageTreeView.Nodes.Remove(n => n.Tag = SharpTuner.activeImage.FileName);
-                foreach (TreeNode node in this.imageTreeView.Nodes)
-                {
-                    if (node != null && node.Tag != null && node.Tag.ToString() == SharpTuner.activeImage.FilePath)
-                    {
-                        node.Remove();
-                    }
-                }
+                //foreach (TreeNode node in this.imageTreeView.Nodes)
+                //{
+                //    if (node != null && node.Tag != null && node.Tag.ToString() == SharpTuner.activeImage.FilePath)
+                //    {
+                //        node.Remove();
+                //    }
+                //}
                 if (SharpTuner.imageList.Count != 0)
                 {
                     SharpTuner.activeImage = SharpTuner.imageList[0];
-                    ImageTreeRefresh();
+                    //ImageTreeRefresh();
                 }
                 else
                 {
                     closeDeviceImageToolStripMenuItem.Enabled = false;
-                    modUtilityToolStripMenuItem.Enabled = false;
+                    //modUtilityToolStripMenuItem.Enabled = false;
                     obfuscateCALIDToolStripMenuItem.Enabled = false;
                 }
-        }
-
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            Application.Run(new ModUtility(SharpTuner.activeImage, this));
-        }
-
-        private void bw_DoWork(object sender, DoWorkEventArgs e)
-        {
-            Application.Run(new ModUtility(SharpTuner.activeImage, this));
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -489,10 +428,10 @@ namespace SharpTune
         {
             if (this.openDeviceListBox.SelectedItem != null)
             {
-                int index = SharpTuner.imageList.FindIndex(i => i.FileName == this.openDeviceListBox.SelectedItem.ToString());
+                int index = SharpTuner.imageList.FindIndex(i => i.FileName == this.openDeviceListBox.SelectedItem.ToString().Split(')')[1]);
                 SharpTuner.activeImage = SharpTuner.imageList[index];
             }
-            ImageTreeRefresh();
+            //ImageTreeRefresh();
         }
 
         private void romRaiderIRCChannelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -517,66 +456,66 @@ namespace SharpTune
             licensewindow.ShowDialog();
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
-        {
+        //private void button1_Click_1(object sender, EventArgs e)
+        //{
             
             
-            Console.WriteLine("Opening serial port {0}.", comboBoxPorts.SelectedText);
-            SerialPort port = new SerialPort(comboBoxPorts.SelectedValue.ToString(), 4800, Parity.None, 8);
-            SharpTuner.Port = port;
-            try
-            {
-                SharpTuner.Port.Open();
-            }
-            catch (System.Exception excpt)
-            {
-                Console.WriteLine("Error opening port",excpt.Message);
-            }
-            if (SharpTuner.Port.IsOpen)
-            {
-                SsmInterface ecu = SsmInterface.GetInstance(port.BaseStream);
+        //    Console.WriteLine("Opening serial port {0}.", comboBoxPorts.SelectedText);
+        //    SerialPort port = new SerialPort(comboBoxPorts.SelectedValue.ToString(), 4800, Parity.None, 8);
+        //    SharpTuner.Port = port;
+        //    try
+        //    {
+        //        SharpTuner.Port.Open();
+        //    }
+        //    catch (System.Exception excpt)
+        //    {
+        //        Console.WriteLine("Error opening port",excpt.Message);
+        //    }
+        //    if (SharpTuner.Port.IsOpen)
+        //    {
+        //        SsmInterface ecu = SsmInterface.GetInstance(port.BaseStream);
 
 
-                Console.WriteLine("Opened");
-                Console.WriteLine("Getting ECU identifier... ");
-                try
-                {
-                    IAsyncResult result = ecu.BeginGetEcuIdentifier(null, null);
-                    result.AsyncWaitHandle.WaitOne();
-                    ecu.EndGetEcuIdentifier(result);
-                }
-                catch (System.Exception excpt)
-                {
-                    Console.WriteLine("Error sending init", excpt.Message );
-                }
-                SharpTuner.setSsmInterface(ecu);
-                Console.WriteLine(ecu.EcuIdentifier);
-                MessageBox.Show("Port opened! Connected to " + ecu.EcuIdentifier);
-            }
-            else
-            {
-                SharpTuner.Port.Close();
-                return;
-            }
-        }
+        //        Console.WriteLine("Opened");
+        //        Console.WriteLine("Getting ECU identifier... ");
+        //        try
+        //        {
+        //            IAsyncResult result = ecu.BeginGetEcuIdentifier(null, null);
+        //            result.AsyncWaitHandle.WaitOne();
+        //            ecu.EndGetEcuIdentifier(result);
+        //        }
+        //        catch (System.Exception excpt)
+        //        {
+        //            Console.WriteLine("Error sending init", excpt.Message );
+        //        }
+        //        SharpTuner.setSsmInterface(ecu);
+        //        Console.WriteLine(ecu.EcuIdentifier);
+        //        MessageBox.Show("Port opened! Connected to " + ecu.EcuIdentifier);
+        //    }
+        //    else
+        //    {
+        //        SharpTuner.Port.Close();
+        //        return;
+        //    }
+        //}
 
-        private void comboBoxPorts_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SharpTuner.activePort = comboBoxPorts.SelectedValue.ToString();
-            this.button1.Enabled = true;
-        }
+        //private void comboBoxPorts_selectedModIndexChanged(object sender, EventArgs e)
+        //{
+        //    SharpTuner.activePort = comboBoxPorts.SelectedValue.ToString();
+        //    this.button1.Enabled = true;
+        //}
 
         private void sSMTestAppToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SharpTuner.ssmInterface == null || SharpTuner.ssmInterface.EcuIdentifier == null)
-            {
-                MessageBox.Show("Not connected to an ECU device");
-                return;
-            }
+            //if (SharpTuner.ssmInterface == null || SharpTuner.ssmInterface.EcuIdentifier == null)
+            //{
+            //    MessageBox.Show("Not connected to an ECU device");
+            //    return;
+            //}
 
-            //Spawn new window here
-            SSMTestApp testapp = new SSMTestApp(this);
-            testapp.ShowDialog();
+            ////Spawn new window here
+            //SSMTestApp testapp = new SSMTestApp(this);
+            //testapp.ShowDialog();
 
         }
 
@@ -651,7 +590,6 @@ namespace SharpTune
                 string path = SharpTuner.activeImage.ToString();
                 d.SelectedPath = path;
             }
-
             //d.ShowDialog();
             DialogResult ret = STAShowFDialog(d);
 
@@ -661,62 +599,233 @@ namespace SharpTune
                 SharpTuner.populateAvailableDevices();
                 loadDevices();
             } 
-            
-            
         }
 
         public class FDialogState
         {
-
             public DialogResult result;
-
             public FolderBrowserDialog dialog;
-
             public void ThreadProcShowDialog()
             {
-
                 result = dialog.ShowDialog();
-
             }
-
-
         }
 
         private DialogResult STAShowFDialog(FolderBrowserDialog dialog)
         {
-
             FDialogState state = new FDialogState();
-
             state.dialog = dialog;
-
             System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
-
-
             t.SetApartmentState(System.Threading.ApartmentState.STA);
-
             t.Start();
-
             t.Join();
-
             return state.result;
-
         }
 
         public class SADialogState
         {
-
             public DialogResult result;
-
             public SaveFileDialog dialog;
-
 
             public void ThreadProcShowDialog()
             {
                 result = dialog.ShowDialog();
             }
+        }
+
+        [STAThread]
+        private void patchFileLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Open dialog to change patch file location
+            //Then refresh patches
+
+            FolderBrowserDialog d = new FolderBrowserDialog();
+            //d.RootFolder = Environment.SpecialFolder.MyComputer;
+            string path = SharpTuner.activeImage.FileDirectory.ToString();
+            d.SelectedPath = path;
+
+            //d.ShowDialog();
+            DialogResult ret = STAShowFDialog(d);
+
+            if (ret == DialogResult.OK)
+            {
+                LoadPatches(d.SelectedPath);
+            }
+        }
+
+        private DialogResult STAShowSADialog(SaveFileDialog dialog)
+        {
+            SADialogState state = new SADialogState();
+            state.dialog = dialog;
+            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            return state.result;
+        }
+
+        private void LoadPatches(Assembly assembly)
+        {
+            treeView1.Nodes.Clear();
+            SharpTuner.activeImage.getValidMods(assembly);
+            if (SharpTuner.activeImage.ModList.Count == 0 || SharpTuner.activeImage.ModList == null)
+            {
+                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
+                return;
+            }
+            else
+            {
+                treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.activeImage.FileName);
+                foreach (ModInfo mod in SharpTuner.activeImage.ModList)
+                {
+                    Console.WriteLine("Loaded Patch: " + mod.FileName);
+                    TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
+                    patchTree.Tag = mod.FilePath;
+
+                    treeView1.Nodes.Add(patchTree);
+                }
+            }
+        }
+
+        private void LoadPatches(string path)
+        {
+            treeView1.Nodes.Clear();
+
+            if (!SharpTuner.activeImage.getValidMods(path))
+            {
+                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
+                return;
+            }
+
+            treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.activeImage.FileName);
+
+            // update treenode
+            if (SharpTuner.activeImage.ModList != null)
+            {
+                foreach (ModInfo mod in SharpTuner.activeImage.ModList)
+                {
+                    Console.WriteLine("Loaded Patch: " + mod.FileName);
+                    TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
+                    patchTree.Tag = mod.FilePath;
+
+                    treeView1.Nodes.Add(patchTree);
+                }
+            }
 
         }
-      
-    }
 
+        private void buttonTestPatch_Click(object sender, EventArgs e)
+        {
+
+            /// string[] command = new string[] { "test", SharpTuner.activeImage.ModList[comboBoxPatches.selectedModIndex].FilePath , SharpTuner.activeImage.FilePath };
+
+            // Thread t = new Thread( () => RomPatchThread (command) );
+
+            // t.Start();
+            // need to fix console output to work with threads!
+            //
+
+            //if (RomModCore.Program.Main(command) == 1)
+
+            if (!RomModCore.Program.ModTest(null, SharpTuner.activeImage.ModList[selectedModIndex].FilePath, SharpTuner.activeImage.FilePath, SharpTuner.activeImage.ModList[selectedModIndex].isApplied))
+            {
+                MessageBox.Show("INVALID Patch File!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                buttonPatchRom.Enabled = false;
+
+            }
+            else
+            {
+                MessageBox.Show("MOD TEST SUCCESS", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                buttonPatchRom.Enabled = true;
+
+            }
+        }
+
+        private void buttonPatchRom_Click(object sender, EventArgs e)
+        {
+            ModInfo currentmod = SharpTuner.activeImage.ModList[selectedModIndex];
+            SaveFileDialog d = new SaveFileDialog();
+            d.InitialDirectory = SharpTuner.activeImage.FilePath;
+            d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
+            //d.ShowDialog();
+            DialogResult ret = STAShowSADialog(d);
+
+            if (ret == DialogResult.OK && d.FileName != null)
+            {
+                try
+                {
+                    if (SharpTuner.activeImage.FilePath != d.FileName)
+                    {
+                        System.IO.File.Copy(SharpTuner.activeImage.FilePath, d.FileName, true);
+                    }
+                }
+                catch (System.Exception excpt)
+                {
+                    MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine("Error accessing file! It is locked!");
+                    Console.WriteLine(excpt.Message);
+                    return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            //string[] command = new string[] { "apply", SharpTuner.activeImage.ModList[comboBoxPatches.selectedModIndex].FilePath, SharpTuner.activeImage.FilePath };
+            //if (RomModCore.Program.Main(command) == 1)
+            bool trypatch;
+            if (!currentmod.isResource)
+                trypatch = RomModCore.Program.TryApply(currentmod.FilePath, d.FileName, !currentmod.isApplied, true);
+            else
+                trypatch = RomModCore.Program.TryApply(currentmod.FilePath, d.FileName, !currentmod.isApplied, true);
+
+            if (!trypatch)
+            {
+                MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                SharpTuner.fileQueued = true;
+                SharpTuner.QueuedFilePath = d.FileName;
+            }
+            this.Close();
+        }
+
+        private void manuallySelectPatchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Open dialog to change patch file location
+            //Then refresh patches
+
+            FolderBrowserDialog d = new FolderBrowserDialog();
+            //d.RootFolder = Environment.SpecialFolder.MyComputer;
+            string path = SharpTuner.activeImage.FileDirectory.ToString();
+            d.SelectedPath = path;
+
+             //d.ShowDialog();
+            DialogResult ret = STAShowFDialog(d);
+
+            if (ret == DialogResult.OK)
+            {
+                LoadPatches(d.SelectedPath);
+            }
+        }
+
+        private void treeView1_DoubleClick_1(object sender, EventArgs e)
+        {
+            if ((treeView1.SelectedNode != null) && (treeView1.SelectedNode.Tag != null) && (treeView1.SelectedNode.Tag.ToString().Contains(".patch")))
+            {
+                buttonPatchRom.Enabled = true;
+                //buttonTestPatch.Enabled = true;
+                selectedModIndex = SharpTuner.activeImage.ModList.FindIndex(m => m.FilePath == treeView1.SelectedNode.Tag.ToString());
+                selectedModTextBox.Text = SharpTuner.activeImage.ModList[selectedModIndex].FileName;
+            }
+            else
+            {
+                buttonPatchRom.Enabled = false;
+                //buttonTestPatch.Enabled = false;
+            }
+        }
+    }
 }

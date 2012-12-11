@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NateW.Ssm;
+//using NateW.Ssm;
 using System.IO.Ports;
 using System.IO;
 
@@ -37,7 +37,7 @@ namespace SharpTune
 
         public static SerialPort Port { get; set; }
 
-        public static SsmInterface ssmInterface { get; set; }
+        //public static SsmInterface ssmInterface { get; set; }
 
         public static List<ModInfo> modList = new List<ModInfo>();
 
@@ -50,10 +50,10 @@ namespace SharpTune
             availableDevices = new AvailableDevices(definitionPath.ToString());
         }
 
-        public static void setSsmInterface(SsmInterface s)
-        {
-            ssmInterface = s;
-        }
+        //public static void setSsmInterface(SsmInterface s)
+        //{
+        //    ssmInterface = s;
+        //}
 
         public static void AddImage(DeviceImage d)
         {

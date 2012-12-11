@@ -65,10 +65,6 @@
       <Project>{94337F88-E655-4BDC-85B6-B8DE45F50D79}</Project>
       <Name>Merp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SsmProtocol\SsmProtocol.csproj">
-      <Project>{6FB3CE75-779B-4289-8B80-BDC1313197FB}</Project>
-      <Name>SsmProtocol</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />

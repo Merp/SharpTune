@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using Merp;
 
 
 namespace SharpTune
@@ -104,6 +105,52 @@ namespace SharpTune
             return null;
         }
 
+        public static List<string> directorySearchRecursiveDir(string directory, string[] terms)
+        {
+            List<string> dirlist = new List<string>();
+            try
+            {
+                bool found = true;
+                foreach (string t in terms)
+                    {
+                        if (!directory.ContainsCI(t))
+                        {
+                            found = false;
+                        }
+                    }
+                if (found)
+                {
+                    dirlist.Add(directory);
+                    return dirlist;
+                }
+
+                string[] dirs = Directory.GetDirectories(directory);
+                if (dirs.Length < 1)
+                {
+                    return dirlist;
+                }
+                else
+                {
+                    foreach (string d in dirs)
+                    {
+                        foreach (string st in directorySearchRecursiveDir(d, terms))
+                        {
+                            dirlist.Add(st);
+                        }
+                    }
+                }
+            }
+            catch (System.UnauthorizedAccessException excpt)
+            {
+                //do nothing
+                //Console.WriteLine(excpt.Message);
+            }
+            catch (System.Exception excpt)
+            {
+                Console.WriteLine(excpt.Message);
+            }
+            return dirlist;
+        }
 
         /// <summary>
         /// Returns a List of file paths

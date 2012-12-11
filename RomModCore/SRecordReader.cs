@@ -27,6 +27,7 @@ namespace RomModCore
         private StreamReader reader;
         private int lineNumber;
         private int recordCount;
+        private bool isResource;
 
         /// <summary>
         /// Constructor.
@@ -34,6 +35,13 @@ namespace RomModCore
         public SRecordReader(string path)
         {
             this.path = path;
+        }
+
+        public SRecordReader(Stream stream, string path)
+        {
+            this.path = path;
+            this.reader = new StreamReader(stream, Encoding.ASCII);
+            isResource = true;
         }
 
         /// <summary>
@@ -53,7 +61,8 @@ namespace RomModCore
         /// </summary>
         public void Open()
         {
-            this.reader = new StreamReader(path, Encoding.ASCII);
+            if(!isResource)
+                this.reader = new StreamReader(path, Encoding.ASCII);
         }
 
         /// <summary>

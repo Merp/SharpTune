@@ -87,7 +87,10 @@ namespace SharpTune
 
             try
             {
-                if (!GetDevices(xmldir))
+                string[] t = new string[] {"SubaruDefs\\ECUFlash\\subaru standard"};
+                string userdir = System.Environment.GetEnvironmentVariable("USERPROFILE").ToString();
+                List<string> ts = ResourceUtil.directorySearchRecursiveDir(userdir,t);
+                if(!GetDevices(ts[0]))
                 {
                     Console.WriteLine("XML initialize failed");
                 }

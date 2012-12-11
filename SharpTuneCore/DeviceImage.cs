@@ -48,9 +48,9 @@ namespace SharpTune
 
         public Definition Definition { get; private set; }
 
-        public List<Table> tableList { get; set; }
+        //public List<Table> tableList { get; set; }
 
-        public TableTree imageTree { get; set; }
+        public TreeNode imageTree { get; set; }
 
         public Stream imageStream;
 
@@ -92,13 +92,14 @@ namespace SharpTune
                         this.Definition = new Definition(device.Key.ToString());
 
 
-                        this.tableList = new List<Table>();
+                        //this.tableList = new List<Table>();
 
-                        foreach (XElement table in this.Definition.xRomTableList.Values)
-                        {
-                            this.tableList.Add(TableFactory.CreateTable(table, this));
-                        }
-                        this.imageTree = new TableTree(this);
+                        //foreach (XElement table in this.Definition.xRomTableList.Values)
+                        //{
+                        //    this.tableList.Add(TableFactory.CreateTable(table, this));
+                        //}
+                       //this.imageTree = new TableTree(this);
+                        this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
                     }
                 }
 

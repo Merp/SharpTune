@@ -15,25 +15,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Reflection;
 
 namespace SharpTune
 {
     public class ModInfo
     {
         public long FileSize { get; private set; }
-
         public string FileName { get; private set; }
-
         public string FilePath { get; private set; }
-
         public string CalId { get; private set; }
-
         public int CalIdOffset { get; private set; }
-
         public bool isApplied { get; set; }
-
-        public string direction { get; set; }
-
+        public bool isResource { get; private set; }
+        public Stream stream { get; private set; }
+        public string direction
+        {
+            get
+            {
+                if (isApplied)
+                    return "Remove";
+                else
+                    return "Apply";
+            }
+            private set { }
+        }
 
         public ModInfo(string modpath, bool isapplied)
         {
@@ -41,12 +47,14 @@ namespace SharpTune
             this.FileSize = f.Length;
             this.FileName = f.Name;
             this.FilePath = modpath;
-
             this.isApplied = isapplied;
+        }
 
-            if (isapplied) this.direction = "REMOVE";
-            else this.direction = "APPLY";
-
+        public ModInfo(Stream s, string modpath, bool isapplied)
+            : this(modpath, isapplied)
+        {
+            isResource = true;
+            stream = s;
         }
     }
 }

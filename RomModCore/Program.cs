@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 namespace RomModCore
 {
@@ -178,13 +179,30 @@ namespace RomModCore
                     break;
             }
         }
+        
+
+        
 
         /// <summary>
         /// Determine whether a patch is suitable for a ROM, and optionally apply the patch if so.
         /// </summary>
+        public static bool TryApply(Stream stream, string patchPath, string romPath, bool apply, bool commit)
+        {
+            return TryApplyWorker(stream, patchPath, romPath, apply, commit);
+        }
         public static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
         {
-            SRecordReader reader = new SRecordReader(patchPath);
+            return TryApplyWorker(null, patchPath, romPath, apply, commit);
+        }
+
+        public static bool TryApplyWorker(Stream stream, string patchPath, string romPath, bool apply, bool commit)
+        {
+            SRecordReader reader;
+            if (stream != null)
+                reader = new SRecordReader(stream, patchPath);
+            else
+                reader = new SRecordReader(patchPath);
+
             Stream romStream;
             string workingPath = romPath + ".temp";
             if (commit)
@@ -386,11 +404,11 @@ namespace RomModCore
         }
 
 
-        public static bool ModCompCheck(string patchPath, string romPath, out bool isApplied)
+        public static bool ModCompCheck(Stream stream, string patchPath, string romPath, out bool isApplied)
         {
             isApplied = false;
 
-            if (TryApply(patchPath, romPath, true, false))
+            if (TryApply(stream, patchPath, romPath, true, false))
             {
                 //Can be applied!
                 isApplied = false;
@@ -398,7 +416,7 @@ namespace RomModCore
 
             }
             
-            if (TryApply(patchPath, romPath, false, false))
+            if (TryApply(stream, patchPath, romPath, false, false))
             {
                 //Can be removed!
                 isApplied = true;
@@ -408,9 +426,9 @@ namespace RomModCore
             return false;
         }
 
-        public static bool ModTest(string patchPath, string romPath, bool isApplied)
+        public static bool ModTest(Stream stream, string patchPath, string romPath, bool isApplied)
         {
-            if (TryApply(patchPath, romPath, !isApplied, false))
+            if (TryApply(stream, patchPath, romPath, !isApplied, false))
             {
                 //ITS A GO!
                 return true;

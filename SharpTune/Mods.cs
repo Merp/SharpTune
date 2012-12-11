@@ -14,6 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
+using Merp;
+using System.IO;
 
 namespace SharpTune
 {
@@ -47,7 +50,7 @@ namespace SharpTune
                 //run RomMod validate/test on each patch for image rom!
                 bool isapplied;
                 
-                if (!RomModCore.Program.ModCompCheck(modpath,image.FilePath.ToString(), out isapplied))
+                if (!RomModCore.Program.ModCompCheck(null, modpath, image.FilePath.ToString(), out isapplied))
                 {
                     Console.WriteLine("Patch at {0} is incompatible", modpath);
                 }
@@ -60,6 +63,29 @@ namespace SharpTune
 
             return true;
             
+        }
+
+        public static void getValidMods(this DeviceImage image, Assembly assembly)
+        {
+            image.ModList.Clear();
+            string calid = image.CalId.ToString();
+            string[] mods = assembly.GetManifestResourceNames();
+            foreach (string modpath in mods)
+            {
+                if (modpath.ContainsCI(image.CalId.ToString()))
+                {
+                    Stream stream = assembly.GetManifestResourceStream(modpath);
+                    bool isapplied;
+                    if (!RomModCore.Program.ModCompCheck(stream, modpath, image.FilePath.ToString(), out isapplied))
+                    {
+                        Console.WriteLine("Patch at {0} is incompatible", modpath);
+                    }
+                    else
+                    {
+                        image.ModList.Add(new ModInfo(stream, modpath, isapplied));
+                    }
+                }
+            }
         }
     }
 }

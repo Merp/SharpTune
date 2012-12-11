@@ -100,12 +100,6 @@
     </Compile>
     <Compile Include="Mods.cs" />
     <Compile Include="RAMDump.cs" />
-    <Compile Include="GUI\ModUtility.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\ModUtility.Designer.cs">
-      <DependentUpon>ModUtility.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\TableView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -136,9 +130,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\ModUtility.resx">
-      <DependentUpon>ModUtility.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SSMTestApp.resx">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
@@ -191,10 +182,6 @@
     <ProjectReference Include="..\SharpTuneCore\SharpTuneCore.csproj">
       <Project>{12F6E248-3773-43DF-ADBA-4AEE397AE363}</Project>
       <Name>SharpTuneCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SsmProtocol\SsmProtocol.csproj">
-      <Project>{6FB3CE75-779B-4289-8B80-BDC1313197FB}</Project>
-      <Name>SsmProtocol</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
