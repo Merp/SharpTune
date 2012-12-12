@@ -435,6 +435,7 @@ namespace SharpTune
                 int index = SharpTuner.imageList.FindIndex(i => i.FileName == im[0]);
                 SharpTuner.activeImage = SharpTuner.imageList[index];
                 RefreshModTree();
+                RefreshModInfo();
             }
             //ImageTreeRefresh();
         }
@@ -671,11 +672,12 @@ namespace SharpTune
 
         private void LoadPatches(Assembly assembly)
         {
-            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
-            {
+            int i = SharpTuner.activeImage.ModList.Count;
+            //if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
+            //{
                 SharpTuner.activeImage.getValidMods(assembly);
-            }
-            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
+            //}
+            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == i)
             {
                 Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
             }
@@ -684,15 +686,47 @@ namespace SharpTune
 
         private void LoadPatches(string path)
         {
-            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
-            {
+            int i = SharpTuner.activeImage.ModList.Count;
+            //if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
+            //{
                SharpTuner.activeImage.getValidMods(path);
-            }
-            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
+            //}
+            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == i)
             {
                 Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
             }
             RefreshModTree();
+        }
+
+        private void RefreshModInfo()
+        {
+            try
+            {
+                selectedModTextBox.Text = "FileName: " +
+                    SharpTuner.activeImage.ModList[selectedModIndex].FileName +
+                    Environment.NewLine;
+                selectedModTextBox.AppendText(
+                    "Mod Name: " +
+                    SharpTuner.activeImage.ModList[selectedModIndex].ModName +
+                    Environment.NewLine);
+                selectedModTextBox.AppendText(
+                    "Version: " +
+                    SharpTuner.activeImage.ModList[selectedModIndex].ModVersion +
+                    Environment.NewLine);
+                selectedModTextBox.AppendText(
+                    "Author: " +
+                    SharpTuner.activeImage.ModList[selectedModIndex].ModAuthor +
+                    Environment.NewLine);
+                string t = Regex.Replace(SharpTuner.activeImage.ModList[selectedModIndex].ModInfo, @"""""""""", @"""""");
+                t = Regex.Replace(t, @"""""", Environment.NewLine);
+                t = Regex.Replace(t, @"""", "");
+                selectedModTextBox.AppendText(
+                    "Description: " + t );
+            }
+            catch (System.Exception excpt)
+            {
+                selectedModTextBox.Clear();
+            }
         }
 
         private void RefreshModTree()
@@ -834,7 +868,7 @@ namespace SharpTune
                 buttonPatchRom.Enabled = true;
                 //buttonTestPatch.Enabled = true;
                 selectedModIndex = SharpTuner.activeImage.ModList.FindIndex(m => m.FilePath == treeView1.SelectedNode.Tag.ToString());
-                selectedModTextBox.Text = SharpTuner.activeImage.ModList[selectedModIndex].FileName;
+                RefreshModInfo();
             }
             else
             {

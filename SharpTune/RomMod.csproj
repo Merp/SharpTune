@@ -8,8 +8,8 @@
     <ProjectGuid>{49D56AC9-4956-4C5A-A17D-E64C32CCE693}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SharpTune</RootNamespace>
-    <AssemblyName>SharpTune</AssemblyName>
+    <RootNamespace>RomMod</RootNamespace>
+    <AssemblyName>RomMod</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -222,6 +222,12 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>Copy ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>Copy RomMod.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\RomMod.exe"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

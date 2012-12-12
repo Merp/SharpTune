@@ -75,11 +75,11 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.txtConsole.BackColor = System.Drawing.Color.Black;
             this.txtConsole.ForeColor = System.Drawing.Color.LawnGreen;
-            this.txtConsole.Location = new System.Drawing.Point(7, 270);
+            this.txtConsole.Location = new System.Drawing.Point(7, 258);
             this.txtConsole.Multiline = true;
             this.txtConsole.Name = "txtConsole";
             this.txtConsole.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtConsole.Size = new System.Drawing.Size(572, 245);
+            this.txtConsole.Size = new System.Drawing.Size(567, 257);
             this.txtConsole.TabIndex = 0;
             // 
             // toolStripStatusLabel1
@@ -91,7 +91,7 @@
             // StatusLabel
             // 
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(691, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(948, 17);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Idle";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -322,7 +322,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(4, 254);
+            this.label4.Location = new System.Drawing.Point(4, 242);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(25, 13);
             this.label4.TabIndex = 3;
@@ -333,9 +333,9 @@
             this.buttonPatchRom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonPatchRom.Enabled = false;
-            this.buttonPatchRom.Location = new System.Drawing.Point(0, 203);
+            this.buttonPatchRom.Location = new System.Drawing.Point(7, 203);
             this.buttonPatchRom.Name = "buttonPatchRom";
-            this.buttonPatchRom.Size = new System.Drawing.Size(579, 60);
+            this.buttonPatchRom.Size = new System.Drawing.Size(569, 36);
             this.buttonPatchRom.TabIndex = 40;
             this.buttonPatchRom.Text = "Patch Rom";
             this.buttonPatchRom.UseVisualStyleBackColor = true;
@@ -346,10 +346,10 @@
             this.selectedModTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.selectedModTextBox.Location = new System.Drawing.Point(0, 16);
+            this.selectedModTextBox.Location = new System.Drawing.Point(7, 16);
             this.selectedModTextBox.Multiline = true;
             this.selectedModTextBox.Name = "selectedModTextBox";
-            this.selectedModTextBox.Size = new System.Drawing.Size(576, 181);
+            this.selectedModTextBox.Size = new System.Drawing.Size(569, 181);
             this.selectedModTextBox.TabIndex = 42;
             // 
             // label2

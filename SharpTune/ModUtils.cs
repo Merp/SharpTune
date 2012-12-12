@@ -27,7 +27,7 @@ namespace SharpTune
         public static bool getValidMods(this DeviceImage image, string path)
         {
 
-            image.ModList.Clear();
+            //image.ModList.Clear();
 
             //Get patches stored in binary
             //List<string> tempModPaths = ResourceUtil.GetPatchPaths();
@@ -52,7 +52,7 @@ namespace SharpTune
                 Mod tempMod = new Mod(modpath);
                 if(tempMod.CompatibilityCheck(image.FilePath.ToString()))
                 {
-                    image.ModList.Add(new Mod(modpath));
+                    image.ModList.Add(tempMod);
                 }
             }
             return true;

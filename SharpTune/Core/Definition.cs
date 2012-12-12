@@ -74,9 +74,9 @@ namespace SharpTuneCore
         public Definition(string filepath)
         {
             this.internalId = null;
-            //this.xRomTableList = new Dictionary<string, XElement>();
-            //this.xRamTableList = new Dictionary<string, XElement>();
-            //this.scalingList = new List<Scaling>();
+            this.xRomTableList = new Dictionary<string, XElement>();
+            this.xRamTableList = new Dictionary<string, XElement>();
+            this.scalingList = new List<Scaling>();
             this.defPath = filepath;
         }
 
