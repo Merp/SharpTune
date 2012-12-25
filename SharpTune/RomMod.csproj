@@ -226,7 +226,8 @@
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>Copy RomMod.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\RomMod.exe"</PostBuildEvent>
+    <PostBuildEvent>Copy RomMod.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\RomMod.exe"
+Copy Merp.dll "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\Merp.dll"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -355,7 +355,7 @@ namespace RomModCore
         /// </summary>
         public bool TryValidatePatches(Stream romStream)
         {
-            Console.WriteLine("Validating patches...");
+            Console.WriteLine("Attempting to validate patches...");
             bool allPatchesValid = true;
             foreach (Patch patch in this.patchList)
             {
@@ -393,7 +393,7 @@ namespace RomModCore
         /// </summary>
         public bool TryValidateUnPatches(Stream romStream)
         {
-            Console.WriteLine("Validating patch removal...");
+            Console.WriteLine("Attempting to validate patch removal...");
             bool allPatchesValid = true;
             foreach (Patch patch in this.unPatchList)
             {
