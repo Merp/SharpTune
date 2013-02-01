@@ -32,6 +32,11 @@ namespace Merp
             return source.IndexOf(toCheck, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        public static bool EqualsCI(this string source, string toCheck)
+        {
+            return source.Equals(toCheck, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static byte[] ReverseBytes(this byte[] inArray)
         {
             byte temp;
@@ -54,7 +59,7 @@ namespace Merp
             {
                 throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexString));
             }
-            
+
 
             byte[] HexAsBytes = new byte[hexString.Length / 2];
             for (int index = 0; index < HexAsBytes.Length; index++)

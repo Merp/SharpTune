@@ -8,8 +8,8 @@
     <ProjectGuid>{49D56AC9-4956-4C5A-A17D-E64C32CCE693}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RomMod</RootNamespace>
-    <AssemblyName>RomMod</AssemblyName>
+    <RootNamespace>SharpTune</RootNamespace>
+    <AssemblyName>SharpTune</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -49,6 +49,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>SharpTune.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.VisualBasic.PowerPacks.Vs, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -65,6 +68,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AvailableDevices.cs" />
+    <Compile Include="ConversionTools\ConvTools.cs" />
+    <Compile Include="ConversionTools\Define.cs" />
+    <Compile Include="ConversionTools\IdaDef.cs" />
+    <Compile Include="ConversionTools\IdaName.cs" />
+    <Compile Include="ConversionTools\XMLtoIDC.cs" />
     <Compile Include="Core\Definition.cs" />
     <Compile Include="Core\DeviceImage.cs" />
     <Compile Include="Core\ResourceUtil.cs" />
@@ -77,6 +85,7 @@
     <Compile Include="Core\Table\Table2D.cs" />
     <Compile Include="Core\Table\Table3D.cs" />
     <Compile Include="ExpressionEvaluator.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GUI\AboutWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -105,17 +114,13 @@
       <DependentUpon>License.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\SimplePrompt.cs" />
-    <Compile Include="GUI\SSMTestApp.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="GUI\SSMTestApp.cs" />
     <Compile Include="GUI\SSMTestApp.Designer.cs">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
     </Compile>
     <Compile Include="ModUtils.cs" />
     <Compile Include="RAMDump.cs" />
-    <Compile Include="GUI\TableView.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="GUI\TableView.cs" />
     <Compile Include="GUI\TableView.Designer.cs">
       <DependentUpon>TableView.cs</DependentUpon>
     </Compile>
@@ -124,7 +129,7 @@
     <Compile Include="RomMod\Define.cs" />
     <Compile Include="RomMod\Mod.cs" />
     <Compile Include="RomMod\Patch.cs" />
-    <Compile Include="RomMod\Program.cs" />
+    <Compile Include="RomMod\RomMod.cs" />
     <Compile Include="RomMod\SRecord.cs" />
     <Compile Include="RomMod\SRecordReader.cs" />
     <Compile Include="RomMod\SRecordWriter.cs" />
@@ -191,12 +196,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Merp\Merp.csproj">
-      <Project>{94337F88-E655-4BDC-85B6-B8DE45F50D79}</Project>
-      <Name>Merp</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
@@ -226,8 +225,7 @@
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>Copy RomMod.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\RomMod.exe"
-Copy Merp.dll "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\Merp.dll"</PostBuildEvent>
+    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\SharpTune.exe"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -557,9 +557,9 @@ namespace RomModCore
                 return false;
             }
 
-            if (tempUInt32 != Program.Version)
+            if (tempUInt32 != RomMod.Version)
             {
-                Console.WriteLine("This is RomPatch.exe version {0}.", Program.Version);
+                Console.WriteLine("This is RomPatch.exe version {0}.", RomMod.Version);
                 Console.WriteLine("This patch file requires version {0}.", tempUInt32);
                 return false;
             }
