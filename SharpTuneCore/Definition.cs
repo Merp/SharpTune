@@ -384,7 +384,7 @@ namespace SharpTuneCore
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
-        public static void ConvertXML(string fetchPath, ref List<String> blobtables, 
+        public static void ConvertXML(string fetchPath, ref List<String> blobscalings,
             ref Dictionary<String, List<String>> t3d, 
             ref Dictionary<String, List<String>> t2d, 
             ref Dictionary<String, List<String>> t1d, 
@@ -394,7 +394,6 @@ namespace SharpTuneCore
 
             if (fetchPath == null) return;
             XDocument xmlDoc = XDocument.Load(fetchPath);
-            List<String> newtables = new List<String>();
             String rombase;
 
             Dictionary<String, List<String>> includes = new Dictionary<String, List<String>>();
@@ -403,11 +402,14 @@ namespace SharpTuneCore
             if (!isbase)
             {
                 rombase = imap[fetchPath];
+                if (rombase == null)
+                    return;
             }
             else
             {
                 var xi = xmlDoc.XPathSelectElement("/rom/romid/xmlid");
                 rombase = xi.Value.ToString();
+                
             }
 
             // ROM table fetches here!
@@ -418,23 +420,18 @@ namespace SharpTuneCore
             {
                 //skip tables with no name
                 if (table.Attribute("name") == null) continue;
-				foreach(String bt in blobtables){
-					if((table.Attribute ("scaling") != null && table.Attribute("scaling").Value == bt) || (table.Attribute("name") != null && table.Attribute("name").Value == bt)){
+				foreach(String bt in blobscalings){
+					if((table.Attribute("scaling") != null && table.Attribute("scaling").Value == bt) || (table.Attribute("name") != null && table.Attribute("name").Value == bt)){
 						table.Name = "tableblob";
 
                         if(isbase)
-                            newtables.Add(table.Attribute("name").Value);
+                            blobscalings.Add(table.Attribute("name").Value);
 
                         if(table.Attribute("type") != null)
                             table.Attribute("type").Remove();
 						break;
 					}
 				}
-                if (isbase)
-                {
-                    blobtables.AddRange(newtables);
-                    newtables.Clear();
-                }
 
 				if(table.Name == "tableblob"){
 					continue;
@@ -487,7 +484,7 @@ namespace SharpTuneCore
                     }
                 }
 
-                if (!isbase)
+                if (!isbase && table.Name != "tableblob")
                 {
                     if (t3d[rombase].Contains(table.Attribute("name").Value.ToString()))
                     {

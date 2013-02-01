@@ -133,7 +133,14 @@ namespace SharpTuneCore
             if (inc != null && inc.Value.ToString().Contains("BASE"))
                     return inc.Value.ToString();
             else
-                return findInherit(inc.Value.ToString());
+                try
+                {
+                    return findInherit(inc.Value.ToString());
+                }catch(System.Exception e){
+                    Console.WriteLine(e.Message);
+                    return null;
+                }
+            return null;
         }  
 
 

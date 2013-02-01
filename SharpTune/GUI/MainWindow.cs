@@ -475,6 +475,10 @@ namespace SharpTune
 			}
 			Definition.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
 			Definition.pullScalings("rommetadata\\bases\\16BITBASE.xml", ref xblobscalings, ref xscalings);
+            foreach (String deffile in SharpTuner.availableDevices.IdentifierMap.Keys)
+            {
+                Definition.pullScalings(deffile, ref xblobscalings, ref xscalings);
+            }
 
             foreach (XElement xbs in xblobscalings)
             {
@@ -488,9 +492,11 @@ namespace SharpTune
 				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
 			}
 			
-            string filename = "rommetadata\\scaling.xml";
-
-            using (XmlTextWriter xmlWriter = new XmlTextWriter(filename, new UTF8Encoding(false)))
+            string filename = "rommetadata\\Scalings\\";//scalings.xml";
+            Directory.CreateDirectory(filename);
+            filename = filename + "scalings.xml";
+            
+	    using (XmlTextWriter xmlWriter = new XmlTextWriter(filename, new UTF8Encoding(false)))
             {
                 xmlWriter.Formatting = Formatting.Indented;
                 xmlWriter.Indentation = 4;
