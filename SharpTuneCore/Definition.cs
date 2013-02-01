@@ -249,15 +249,48 @@ namespace SharpTune
             
         }
 
+		/// <summary>
+		/// Pulls the scaling xelement from the definition at fetchPath
+		/// </summary>
+		/// <returns>
+		/// The scalings.
+		/// </returns>
+		/// <param name='fetchPath'>
+		/// Fetch path.
+		/// </param>
+		public static void pullScalings (String fetchPath, ref List<XElement> xbs, ref List<XElement> xs)
+		{
+			if (fetchPath == null) return;
+            List<XElement> xlist = new List<XElement>();
+			XDocument xmlDoc = XDocument.Load(fetchPath);
+             var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
+                               //where table.Ancestors("table").First().IsEmpty
+                               select sc;
+             foreach (XElement scaling in scalingQuery)
+             {
+                 if (scaling.Attribute("storagetype") != null && scaling.Attribute("storagetype").Value == "bloblist")
+                 {
+                     scaling.Attribute("storagetype").Remove();
+                     xbs.Add(scaling);
+                 }
+                 else
+                 {
+                     xs.Add(scaling);
+                 }
+             }
+             scalingQuery.ToList().ForEach(x => x.Remove());
+             xmlDoc.Save(fetchPath);          
+
+		}
+
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
-        public static void ConvertXML(string fetchPath)
+        public static void ConvertXML(string fetchPath, ref List<String> blobtables, bool isbase)
         {
             if (fetchPath == null) return;
             XDocument xmlDoc = XDocument.Load(fetchPath);
-            XElement xmlEle = XElement.Load(fetchPath);
-
+            List<String> newtables = new List<String>();
             
 
             // ROM table fetches here!
@@ -268,11 +301,32 @@ namespace SharpTune
             {
                 //skip tables with no name
                 if (table.Attribute("name") == null) continue;
+				foreach(String bt in blobtables){
+					if((table.Attribute ("scaling") != null && table.Attribute("scaling").Value == bt) || (table.Attribute("name") != null && table.Attribute("name").Value == bt)){
+						table.Name = "tableblob";
+
+                        if(isbase)
+                            newtables.Add(table.Attribute("name").Value);
+
+                        if(table.Attribute("type") != null)
+                            table.Attribute("type").Remove();
+						break;
+					}
+				}
+                if (isbase)
+                {
+                    blobtables.AddRange(newtables);
+                    newtables.Clear();
+                }
+
+				if(table.Name == "tableblob"){
+					continue;
+				}
+
                 bool xaxis = false;
                 bool yaxis = false;
                 foreach (XElement xel in table.Descendants())
                 {
-
                     if (xel.Name == "table")
                     {
                         if (xel.Attribute("name") != null && xel.Attribute("name").Value == "X")

@@ -30,6 +30,8 @@ using System.Threading;
 using System.Diagnostics;
 using SharpTune.Tables;
 using SharpTune.GUI;
+using System.Xml.Linq;
+using System.Xml;
 
 
 
@@ -580,14 +582,55 @@ namespace SharpTune
 
         }
 
-        private void convertEFXMLRRv2ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-             foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys)
-                        {
-                            Definition.ConvertXML(deffile);
-                            Definition.ConvertXML("rommetadata\\bases\\32BITBASE.xml");
-                            Definition.ConvertXML("rommetadata\\bases\\16BITBASE.xml");
-                        }
+        private void convertEFXMLRRv2ToolStripMenuItem_Click (object sender, EventArgs e)
+		{
+
+			List<XElement> xscalings = new List<XElement> ();
+            List<XElement> xblobscalings = new List<XElement>();
+			List<String> blobscalings = new List<string>();
+			foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys) {
+				Definition.pullScalings (deffile, ref xblobscalings, ref xscalings);
+			}
+			Definition.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
+			Definition.pullScalings("rommetadata\\bases\\16BITBASE.xml", ref xblobscalings, ref xscalings);
+
+            foreach (XElement xbs in xblobscalings)
+            {
+                blobscalings.Add(xbs.Attribute("name").Value);
+            }
+
+            Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, true);
+			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, true);
+			
+            foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys) {
+				Definition.ConvertXML (deffile, ref blobscalings, false);
+			}
+			
+	
+            string filename = "rommetadata\\scaling.xml";
+
+            using (FileStream fileStream = new FileStream(filename, FileMode.Create))
+            using (StreamWriter sw = new StreamWriter(fileStream))
+            using (XmlTextWriter xmlWriter = new XmlTextWriter(sw))
+            {
+                xmlWriter.Formatting = Formatting.Indented;
+                xmlWriter.Indentation = 4;
+
+                xmlWriter.WriteStartDocument();
+                xmlWriter.WriteStartElement("scalings");
+                foreach (XElement xel in xscalings)
+                {
+                    xel.WriteTo(xmlWriter);
+                }
+                xmlWriter.WriteStartElement("blob");
+                foreach (XElement xel in xblobscalings)
+                {
+                    xel.WriteTo(xmlWriter);
+                }
+                xmlWriter.WriteEndElement();
+                xmlWriter.WriteEndElement();
+                xmlWriter.WriteEndDocument();
+            }
         } 
       
     }
