@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{12F6E248-3773-43DF-ADBA-4AEE397AE363}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharpTuneCore</RootNamespace>
+    <AssemblyName>SharpTuneCore</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AvailableDevices.cs" />
+    <Compile Include="Definition.cs" />
+    <Compile Include="DeviceImage.cs" />
+    <Compile Include="ModInfo.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourceUtil.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SharpTuner.cs" />
+    <Compile Include="TableTree.cs" />
+    <Compile Include="Table\Axis.cs" />
+    <Compile Include="Table\Range.cs" />
+    <Compile Include="Table\Scaling.cs" />
+    <Compile Include="Table\Table.cs" />
+    <Compile Include="Table\Table1D.cs" />
+    <Compile Include="Table\Table2D.cs" />
+    <Compile Include="Table\Table3D.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Merp\Merp.csproj">
+      <Project>{94337F88-E655-4BDC-85B6-B8DE45F50D79}</Project>
+      <Name>Merp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SsmProtocol\SsmProtocol.csproj">
+      <Project>{6FB3CE75-779B-4289-8B80-BDC1313197FB}</Project>
+      <Name>SsmProtocol</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>Copy SharpTuneCore.dll ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\SharpTuneCore.dll</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

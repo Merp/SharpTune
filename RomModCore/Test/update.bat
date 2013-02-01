@@ -1,0 +1,1 @@
+copy  ..\..\..\..\..\Tuning\Hacking\hew\EcuHacks2\Debug\EcuHacks2.mot EcuHacks.mot

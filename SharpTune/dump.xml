@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ranges>
+  <range name="LOW ROM" startaddress="FF0000" endaddress="FF02FF"/>
+  <range name="RamHole1" startaddress="FF7950" endaddress="FF7FFF"/>
+  <range name="RamHole2" startaddress="FF97A0" endaddress="FFAFFF"/>
+</ranges>

@@ -1,0 +1,1185 @@
+﻿/*
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+*/
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using Merp;
+
+namespace RomModCore
+{
+    /// <summary>
+    /// Defines and Applies a Mod (series of patches) to a ROM.
+    /// </summary>
+    public class Mod
+    {
+        public const uint BaselineOffset = 0xFF000000;
+
+        private const uint metadataAddress = 0x80001000;
+        private const uint requiredVersionPrefix = 0x12340000;
+        private const uint calibrationIdPrefix = 0x12340001;
+        private const uint patchPrefix = 0x12340002;
+        private const uint copyPatchPrefix = 0x12340012;
+        private const uint newPatchPrefix = 0x12340004;
+        private const uint copyNewPatchPrefix = 0x12340014;
+        private const uint replace4BytesPrefix = 0x12340003;
+        private const uint modNamePrefix = 0x12340007;
+        private const uint modVersionPrefix = 0x12340009;
+        private const uint modAuthorPrefix = 0x12340008;
+        public const uint endoffile = 0x00090009;
+        private const uint jsrhookPrefix = 0x1234000A;
+        private const uint ecuIdPrefix = 0x1234000B;
+        private const uint newEcuIdPrefix = 0x1234000C;
+
+
+        public string ModVersion { get; private set; }
+
+        public string ModAuthor { get; private set; }
+
+        public string ModName { get; private set; }
+
+        public BlobList blobList { get; set; }
+
+        /// <summary>
+        /// List of compatible Calibration IDs that the given patch file was intended for.
+        /// </summary>
+        public List<string> CompatibleCalibrationIds { get; private set; }
+            
+        public string InitialCalibrationId { get; private set; }
+
+        /// <summary>
+        /// Calibration ID that will be stamped onto the ROM.
+        /// </summary>
+        public string FinalCalibrationId { get; private set; }
+
+        private readonly SRecordReader reader;
+        private readonly Stream romStream;
+
+        public uint EcuIdAddress { get; private set; }
+        public uint EcuIdLength { get; private set; }
+        public string InitialEcuId { get; private set; }
+        public string FinalEcuId { get; private set; }
+
+
+        //use list internally
+        private List<Patch> patchList;
+        private List<Patch> unPatchList;
+
+        //only expose interface list, do not allow set outside class
+        public IList<Patch> PatchList { get { return this.patchList; } }
+        public IList<Patch> UnPatchList { get { return this.unPatchList; } }
+
+        private Define definition { get; set; }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public Mod(SRecordReader reader, Stream romStream)
+        {
+            this.reader = reader;
+            this.romStream = romStream;
+            this.patchList = new List<Patch>();
+            this.ModVersion = "1.1";
+            this.ModAuthor = "Unknown Author";
+            this.ModName = "Unknown Mod";
+            this.ModVersion = "Unknown Version";
+        }
+
+        public bool TryDefinition()
+        {
+            this.definition = new Define(this);
+            if (!definition.TryReadDefs()) return false;
+            if (!definition.TryPrintDef(this.FinalCalibrationId.ToString())) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Create the patch start/end metadata from the patch file.
+        /// </summary>
+        public bool TryReadPatches()
+        {
+            List<Blob> blobs = new List<Blob>();
+
+            BlobList bloblist;
+            if (!this.TryReadBlobs(out bloblist))
+            {
+                return false;
+            }
+            blobs = bloblist.Blobs;
+            this.blobList = bloblist;
+            Blob metadataBlob;
+            if (!this.TryGetMetaBlob(metadataAddress, 10, out metadataBlob, blobs))
+            {
+                Console.WriteLine("This patch file does not contain metadata.");
+                return false;
+            }
+
+            if (!this.TryReadMetadata(metadataBlob, blobs))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Print patch descriptions to the console.
+        /// </summary>
+        public void PrintPatches()
+        {
+            foreach (Patch patch in this.patchList)
+            {
+                if (patch.StartAddress > BaselineOffset)
+                {
+                    continue;
+                }
+
+                Console.WriteLine(patch.ToString());
+            }
+        }
+
+
+
+        /// <summary>
+        /// Reverses the "direction" of the patch by start address manipulation
+        /// </summary>
+        /// <returns></returns>
+        /// 
+        public bool TryReversePatches()
+        {
+            List<Blob> newBlobs = new List<Blob>();
+
+            //clone patches!
+            this.unPatchList = this.patchList;
+
+            foreach (Patch patch in this.unPatchList)
+            {
+
+
+                //Swap contents
+                Blob tempblob = patch.Baseline.CloneWithNewStartAddress(patch.Baseline.StartAddress - BaselineOffset);
+                patch.Baseline = patch.Payload.CloneWithNewStartAddress(patch.Payload.StartAddress + BaselineOffset);
+
+                if (patch.IsNewPatch)
+                {
+                    //set all bytes in baseline blob to 0xFF
+                    for (int i = 0; i < patch.Payload.Content.Count; i++)
+                    {
+                        patch.Payload.Content[i] = 0xFF;       
+                    }
+
+                }
+                else
+                {
+                    patch.Payload.Content.Clear();
+                    patch.Payload = tempblob;
+                }
+
+
+                //OLD CODE
+                //new payload
+                //baselineBlob = baselineBlob.CloneWithNewStartAddress(baselineBlob.StartAddress - BaselineOffset);
+
+                //new baseline
+                //modifiedBlob = modifiedBlob.CloneWithNewStartAddress(modifiedBlob.StartAddress + BaselineOffset);
+
+                //first blob in list is the patch payload, second is baseline
+                //newBlobs.Add(baselineBlob);
+                //newBlobs.Add(modifiedBlob);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determine whether the data that the patch was designed to overwrite match what's actually in the ROM.
+        /// </summary>
+        public bool TryValidatePatches()
+        {
+            Console.WriteLine("Validating patches...");
+            bool allPatchesValid = true;
+            foreach (Patch patch in this.patchList)
+            {
+                Console.Write(patch.ToString() + " - ");
+
+                if (patch.GetType() == typeof(PullJSRHookPatch))
+                {
+                    if (!this.ValidateJSRHookBytes((PullJSRHookPatch)patch))
+                    {
+                        // Pass/fail message is printed by ValidateBytes().
+                        allPatchesValid = false;
+                    }
+                }
+                else
+                {
+
+                    if (!this.ValidateBytes(patch))
+                    {
+                        // Pass/fail message is printed by ValidateBytes().
+                        allPatchesValid = false;
+                    }
+                }
+            }
+
+            if (!allPatchesValid)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determine whether the data that the patch was designed to overwrite match what's actually in the ROM.
+        /// </summary>
+        public bool TryValidateUnPatches()
+        {
+            Console.WriteLine("Validating patch removal...");
+            bool allPatchesValid = true;
+            foreach (Patch patch in this.patchList)
+            {
+                Console.Write(patch.ToString() + " - ");
+
+                if (patch.IsNewPatch)
+                {
+                    Console.WriteLine("DATA SECTION WILL BE OVERWRITTEN");
+                    continue;
+                }
+
+                if (!this.ValidateBytes(patch))
+                {
+                    // Pass/fail message is printed by ValidateBytes().
+                    allPatchesValid = false;
+                }
+            }
+
+            if (!allPatchesValid)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to apply the patches to the ROM.
+        /// </summary>
+        public bool TryApplyMod()
+        {
+            foreach (Patch patch in this.patchList)
+            {
+                if (!TryApplyPatch(patch))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to remove patches from a ROM
+        /// </summary>
+        /// <returns></returns>
+        public bool TryRemoveMod()
+        {
+            foreach (Patch patch in this.unPatchList)
+            {
+                if (!this.TryApplyPatch(patch))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Extract actual ROM data, for appending to a patch file.
+        /// </summary>
+        public bool TryPrintBaselines(string patchPath)
+        {
+
+            File.Copy(patchPath, this.InitialCalibrationId + "_" + this.FinalCalibrationId + "_" + this.ModAuthor + "_" + this.ModName + "_" + this.ModVersion + ".patch", true);
+
+            bool result = true;
+            foreach (Patch patch in this.patchList)
+            {
+                if (!this.TryCheckPrintBaseline(patch))
+                {
+                    result = false;
+                    Console.WriteLine("ERROR OCCURRED DURING BASELINE PRINT, POSSIBLE MISMATCH BETWEEN METADATA AND ROM!");
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Try to read blobs from the patch file.
+        /// </summary>
+        private bool TryReadBlobs(out BlobList blist)
+        {
+            BlobList list = new BlobList();
+            this.reader.Open();
+            SRecord record;
+            while (this.reader.TryReadNextRecord(out record))
+            {
+                if (!record.IsValid)
+                {
+                    Console.WriteLine("The patch file contains garbage - was it corrupted somehow?");
+                    Console.WriteLine("Line {0}: {1}", record.LineNumber, record.RawData);
+                    blist = null;
+                    return false;
+                }
+
+                list.ProcessRecord(record);
+                
+            }
+
+            blist = list;
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read the patch file metadata (start and end addresses of each patch, etc).
+        /// </summary>
+        private bool TryReadMetadata(Blob blob, List<Blob> blobs)
+        {
+            int offset = 0;
+            
+            if (!TryConfirmPatchVersion(blob, ref offset))
+            {
+                return false;
+            }
+
+            if (!TryReadCalibrationChange(blob, ref offset))
+            {
+                return false;
+            }
+
+            if (!this.TryReadPatches(blob, ref offset, blobs))
+            {
+                return false;
+            }
+
+            if (this.patchList.Count == 0)
+            {
+                Console.WriteLine("This patch file contains no patches.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read the 'required version' metadata.
+        /// </summary>
+        private bool TryConfirmPatchVersion(Blob blob, ref int offset)
+        {
+            uint tempUInt32 = 0;
+
+            if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
+            {
+                Console.WriteLine("This patch file's metadata is way too short (no version metadata).");
+                return false;
+            }
+
+            if (tempUInt32 != requiredVersionPrefix)
+            {
+                Console.WriteLine("This patch file's metadata starts with {0}, it should start with {1}", tempUInt32, requiredVersionPrefix);
+                return false;
+            }
+
+            if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
+            {
+                Console.WriteLine("This patch file's metadata is way too short (no version).");
+                return false;
+            }
+
+            if (tempUInt32 != Program.Version)
+            {
+                Console.WriteLine("This is RomPatch.exe version {0}.", Program.Version);
+                Console.WriteLine("This patch file requires version {0}.", tempUInt32);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read the initial and final calibration IDs
+        /// </summary>
+        private bool TryReadCalibrationChange(Blob blob, ref int offset)
+        {
+            uint tempUInt32 = 0;
+
+            if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
+            {
+                Console.WriteLine("This patch file's metadata is way too short (no calibration metadata).");
+                return false;
+            }
+
+            if (tempUInt32 != calibrationIdPrefix)
+            {
+                Console.WriteLine("Expected calibration id prefix {0:X8}, found {1:X8}", calibrationIdPrefix, tempUInt32);
+                return false;
+            }
+
+            if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
+            {
+                Console.WriteLine("This patch file's metadata is way too short (no calibration address).");
+                return false;
+            }
+
+            uint calibrationAddress = tempUInt32;
+
+            if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
+            {
+                Console.WriteLine("This patch file's metadata is way too short (no calibration length).");
+                return false;
+            }
+
+            uint calibrationLength = tempUInt32;
+
+            string initialCalibrationId;
+            if (!this.TryReadCalibrationId(blob, ref offset, out initialCalibrationId))
+            {
+                return false;
+            }
+
+            this.InitialCalibrationId = initialCalibrationId;
+
+            string finalCalibrationId;
+            if (!this.TryReadCalibrationId(blob, ref offset, out finalCalibrationId))
+            {
+                return false;
+            }
+
+            this.FinalCalibrationId = finalCalibrationId;
+
+            // Synthesize calibration-change patch and blobs.
+            Patch patch = new Patch(
+                calibrationAddress, 
+                calibrationAddress + (calibrationLength - 1));
+
+            patch.IsMetaChecked = true;
+
+            patch.Baseline = new Blob(
+                calibrationAddress + Mod.BaselineOffset,
+                Encoding.ASCII.GetBytes(initialCalibrationId));
+                
+            patch.Payload = new Blob(
+                calibrationAddress, 
+                Encoding.ASCII.GetBytes(finalCalibrationId));
+            
+            this.patchList.Add(patch);
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read the calibration ID from the patch metadata.
+        /// </summary>
+        private bool TryReadCalibrationId(Blob blob, ref int offset, out string calibrationId)
+        {
+            calibrationId = string.Empty;
+            List<byte> calibrationIdBytes = new List<byte>();
+
+            byte tempByte = 0;
+            for (int index = 0; index < 16; index++)
+            {
+                if (!blob.TryGetByte(ref tempByte, ref offset))
+                {
+                    Console.WriteLine("This patch file's metadata ran out before the complete calibration ID could be found.");
+                    return false;
+                }
+
+                if (calibrationId == string.Empty)
+                {
+                    if (tempByte != 0)
+                    {
+                        calibrationIdBytes.Add(tempByte);
+                    }
+                    else
+                    {
+                        calibrationId = System.Text.Encoding.ASCII.GetString(calibrationIdBytes.ToArray());
+                    }
+                }
+                else
+                {
+                    if (tempByte != 0)
+                    {
+                        Console.WriteLine("This patch file's metadata contains garbage after the calibration ID.");
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read the Patch metadata from the file.
+        /// </summary>
+        private bool TryReadPatches(Blob metadata, ref int offset, List<Blob> blobs)
+        {
+            UInt32 cookie = 0;
+            while ((metadata.Content.Count > offset + 8) &&
+                metadata.TryGetUInt32(ref cookie, ref offset))
+            {
+                Patch patch = null;
+                bool isInfo = false;
+
+                if (cookie == ecuIdPrefix)
+                {
+                    uint tempInt = 0;
+                    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        this.EcuIdAddress = tempInt;
+                    }
+                    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        this.EcuIdLength = tempInt;
+                    }
+                    string metaString = null;
+                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                    {
+                        // found modName, output to string!
+                        this.InitialEcuId = metaString;
+                        isInfo = true;
+                    }
+                }
+                if (cookie == newEcuIdPrefix)
+                {
+                    string metaString = null;
+                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                    {
+                        // found modName, output to string!
+                        this.FinalEcuId = metaString;
+                    }
+                    if (this.InitialEcuId.Length == this.FinalEcuId.Length)
+                    {
+                        // Synthesize calibration-change patch and blobs.
+                        patch = new Patch(
+                            EcuIdAddress,
+                            EcuIdAddress + ((EcuIdLength / 2)-1));
+
+                        patch.IsMetaChecked = true;
+
+                        patch.Baseline = new Blob(
+                            EcuIdAddress + Mod.BaselineOffset,
+                            InitialEcuId.ToByteArray());
+
+
+                        patch.Payload = new Blob(
+                            EcuIdAddress,
+                            FinalEcuId.ToByteArray());
+                    }
+                }
+
+                if (cookie == modNamePrefix)
+                {
+                    string metaString = null;
+                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                    {
+                        // found modName, output to string!
+                        this.ModName = metaString;
+                        isInfo = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+
+                if (cookie == modAuthorPrefix)
+                {
+                    string metaString = null;
+                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                    {
+                        // found modName, output to string!
+                        this.ModAuthor = metaString;
+                        isInfo = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+                if (cookie == modVersionPrefix)
+                {
+                    string metaString = null;
+                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                    {
+                        // found modName, output to string!
+                        this.ModVersion = metaString;
+                        isInfo = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+
+
+                if (cookie == patchPrefix)
+                {
+                    if (!this.TryReadPatch(metadata, out patch, ref offset, blobs))
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+                else if (cookie == copyPatchPrefix)
+                {
+                    if (!this.TryReadCopyPatch(metadata, out patch, ref offset, blobs))
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+                else if (cookie == replace4BytesPrefix)
+                {
+                    if (!this.TrySynthesize4BytePatch(metadata, out patch, ref offset))
+                    {
+                        Console.WriteLine("Invalid 4-byte patch found." + patch.ToString());
+                        return false;
+                    }
+
+                }
+                else if (cookie == newPatchPrefix)
+                {
+                    if (!this.TryReadPatch(metadata, out patch, ref offset, blobs))
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+
+                    patch.IsNewPatch = true;
+                }
+                else if (cookie == copyNewPatchPrefix)
+                {
+                    if (!this.TryReadCopyPatch(metadata, out patch, ref offset, blobs))
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+
+                    patch.IsNewPatch = true;
+                }
+                else if (cookie == jsrhookPrefix)
+                {
+                    if (!this.TrySynthesizePullJsrHookPatch(metadata, out patch, ref offset, blobs))
+                    {
+                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+                else if (cookie == endoffile)
+                {
+                    break;
+                }
+
+                if (patch == null && !isInfo)
+                {
+                    throw new Exception("Internal error in TryReadPatches: Patch is null. cookie: " + cookie.ToString()
+                        + "offset: " + offset.ToString());
+                }
+                else if (!isInfo)
+                {
+                    this.patchList.Add(patch);
+                }
+            }
+
+            if (this.patchList.Count == 0)
+            {
+                Console.WriteLine("This patch file's metadata contains no patches.");
+                return false;
+            }
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Read a single string from the metadata blob.
+        /// </summary>
+        /// <remarks>
+        /// Consider returning false, printing error message.  But, need to 
+        /// be certain to abort the whole process at that point...
+        /// </remarks>
+        public bool TryReadMetaString(Blob metadata, out string metaString, ref int offset)
+        {
+            metaString = null;
+            UInt32 cookie = 0;
+            List<byte> tempbytelist = new List<byte>();
+
+             while ((metadata.Content.Count > offset + 8) &&
+                 metadata.TryGetUInt32(ref cookie, ref offset))
+             {
+                 if (cookie < 0x12340010 && cookie > 12340000)
+                 {
+                     offset -= 4;
+
+                     char[] splitter = { '\0' };
+                     string tempstring = System.Text.Encoding.ASCII.GetString(tempbytelist.ToArray());
+                     metaString = tempstring.Split(splitter)[0];
+                     return true;
+                 }
+
+                 byte tempbyte = new byte();
+                  offset -= 4;
+                 for (int i = 0; i < 4; i++)
+                 {
+                     if (!metadata.TryGetByte(ref tempbyte,ref offset))
+                     {
+                         return false;
+                     }
+                     tempbytelist.Add(tempbyte);
+                     
+                 }
+
+             }
+
+            tempbytelist.ToString();
+            return false;
+        }
+
+
+        /// <summary>
+        /// Read a single Patch from the metadata blob.
+        /// </summary>
+        /// <remarks>
+        /// Consider returning false, printing error message.  But, need to 
+        /// be certain to abort the whole process at that point...
+        /// </remarks>
+        private bool TryReadPatch(Blob metadata, out Patch patch, ref int offset, List<Blob> blobs )
+        {
+            uint start = 0;
+            uint end = 0;
+                        
+            if (!metadata.TryGetUInt32(ref start, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no start address).");
+            }
+                        
+            if (!metadata.TryGetUInt32(ref end, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no end address).");
+            }
+
+             
+            patch = new Patch(start, end);
+
+            Blob baselineBlob;
+
+            
+
+            if (!this.TryGetPatchBlob(patch.StartAddress + BaselineOffset, patch.Length, out baselineBlob, blobs))
+            {
+                if (baselineBlob != null)  return false;
+            }
+
+                patch.Baseline = baselineBlob;
+            
+
+            Blob payloadBlob;
+            if (!this.TryGetPatchBlob(patch.StartAddress, patch.Length, out payloadBlob, blobs))
+            {
+                return false;
+            }
+
+            patch.Payload = payloadBlob;
+            return true;
+        }
+
+        /// <summary>
+        /// Read a single Offset Patch from the metadata blob.
+        /// Offset patch reads from Srecord "copystart"
+        /// Writes to rom at "start"
+        /// </summary>
+        /// <remarks>
+        /// Consider returning false, printing error message.  But, need to 
+        /// be certain to abort the whole process at that point...
+        /// </remarks>
+        private bool TryReadCopyPatch(Blob metadata, out Patch patch, ref int offset, List<Blob> blobs)
+        {
+            uint copystart = 0;
+            uint start = 0;
+            uint end = 0;
+
+            if (!metadata.TryGetUInt32(ref copystart, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no copystart address).");
+            }
+
+            if (!metadata.TryGetUInt32(ref start, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no start address).");
+            }
+
+            if (!metadata.TryGetUInt32(ref end, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no end address).");
+            }
+
+
+            patch = new Patch(start, end);
+
+            patch.CopyStartAddress = copystart;
+
+            Blob baselineBlob;
+
+
+
+            if (!this.TryGetPatchBlob(patch.StartAddress + BaselineOffset, patch.Length, out baselineBlob, blobs))
+            {
+                if (baselineBlob != null) return false;
+            }
+
+            patch.Baseline = baselineBlob;
+
+
+            Blob payloadBlob;
+
+            //Read from the copystartaddress (HEW address space)
+            if (!this.TryGetPatchBlob(patch.CopyStartAddress, patch.Length, out payloadBlob, blobs))
+            {
+                return false;
+            }
+
+            patch.Payload = payloadBlob;
+            return true;
+        }
+
+        /// <summary>
+        /// Construct a Pull JSR HOOK patch from the metadata blob.
+        /// </summary>
+        private bool TrySynthesizePullJsrHookPatch(Blob metadata, out Patch patch, ref int offset, List<Blob> blobs)
+        {
+            uint address = 0;
+
+            if (!metadata.TryGetUInt32(ref address, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete 4-byte patch record (no address).");
+            }
+
+            byte[] jsrbytes = new byte[] {0xF0,0x48,0x00,0x09};
+
+
+
+            patch = new PullJSRHookPatch(address, address + 3);
+
+            patch.IsMetaChecked = true;//remove thsi
+
+            patch.Payload = new Blob(patch.StartAddress, jsrbytes);
+
+            //this.blobs.Add(new Blob(address, BitConverter.GetBytes(newValue).Reverse()));
+            //this.blobs.Add(new Blob(address + BaselineOffset, BitConverter.GetBytes(oldValue).Reverse()));
+            return true;
+        }
+
+        /// <summary>
+        /// Construct a 4-byte patch from the metadata blob.
+        /// </summary>
+        private bool TrySynthesize4BytePatch(Blob metadata, out Patch patch, ref int offset)
+        {
+            uint address = 0;
+            uint oldValue = 0;
+            uint newValue = 0;
+
+            if (!metadata.TryGetUInt32(ref address, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete 4-byte patch record (no address).");
+            }
+
+            if (!metadata.TryGetUInt32(ref oldValue, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete 4-byte patch record (no baseline value).");
+            }
+
+            if (!metadata.TryGetUInt32(ref newValue, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete 4-byte patch record (no patch value).");
+            }
+
+            patch = new Patch(address, address + 3);
+            patch.IsMetaChecked = true;
+            patch.Baseline = new Blob(address + BaselineOffset, BitConverter.GetBytes(oldValue).Reverse());
+            patch.Payload = new Blob(address, BitConverter.GetBytes(newValue).Reverse());
+            
+            //this.blobs.Add(new Blob(address, BitConverter.GetBytes(newValue).Reverse()));
+            //this.blobs.Add(new Blob(address + BaselineOffset, BitConverter.GetBytes(oldValue).Reverse()));
+            return true;
+        }
+
+        /// <summary>
+        /// Print the current contents of the ROM in the address range for the given patch.
+        /// Contains a check against metadata when IsMetaChecked = true
+        /// </summary>
+        private bool TryCheckPrintBaseline(Patch patch)
+        {
+            uint patchLength = patch.Length;
+            byte[] buffer = new byte[patchLength];
+
+            //read baseline ROM data blob into buffer
+            if (!this.TryReadBuffer(this.romStream, patch.StartAddress, buffer))
+            {
+                return false;
+            }
+
+           if (patch.IsMetaChecked)
+            {
+                patch.MetaCheck((IEnumerable<byte>)buffer);
+            }
+
+            using ( StreamWriter textWriter = File.AppendText(this.InitialCalibrationId + "_" + this.FinalCalibrationId + "_" + this.ModAuthor + "_" + this.ModName + "_" + this.ModVersion + ".patch"))
+            {
+                //TextWriter textWriter = new StreamWriter(consoleOutputStream);
+                
+
+                //OUTPUT DIRECT TO FILE, ADD VERSIONING SYSTEM
+               
+                SRecordWriter writer = new SRecordWriter(textWriter);
+
+                // The "baselineOffset" delta is how we distinguish baseline data from patch data.
+                
+                writer.Write(patch.StartAddress + BaselineOffset, buffer);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read an arbitrary byte range from the ROM.
+        /// </summary>
+        private bool TryReadBuffer(Stream stream, uint startAddress, byte[] buffer)
+        {
+            stream.Seek(startAddress, SeekOrigin.Begin);
+            long totalBytesRead = 0;
+            long totalBytesToRead = buffer.Length;
+
+            while (totalBytesRead < totalBytesToRead)
+            {
+                long bytesToRead = totalBytesToRead - totalBytesRead;
+                int bytesRead = this.romStream.Read(
+                    buffer,
+                    (int) totalBytesRead,
+                    (int) bytesToRead);
+
+                if (bytesRead == 0)
+                {
+                    Console.WriteLine(
+                        "Unable to read {0} bytes starting at position {1:X8}",
+                        bytesToRead,
+                        startAddress + totalBytesRead);
+                    return false;
+                }
+
+                totalBytesRead += bytesRead;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determine whether the bytes from a Patch's expected data match the contents of the ROM.
+        /// </summary>
+        private bool ValidateBytes(Patch patch)
+        {
+            uint patchLength = patch.Length;
+            byte[] buffer = new byte[patchLength];
+            if (!this.TryReadBuffer(this.romStream, patch.StartAddress, buffer))
+            {
+                Console.Write("tryreadbuffer failed in validatebytes");
+                return false;
+            }
+
+            //            DumpBuffer("Actual  ", buffer, buffer.Length);
+            //            DumpBuffer("Expected", expectedData.Content, buffer.Length);
+
+            int mismatches = 0;
+
+            for (int index = 0; index < patchLength; index++)
+            {
+                byte actual = buffer[index];
+
+                if (index >= patch.Baseline.Content.Count)
+                {
+                    Console.WriteLine("Expected data is smaller than patch size.");
+                    return false;
+                }
+
+                byte expected = patch.Baseline.Content[index];
+
+                if (actual != expected)
+                {
+                    mismatches++;
+                }
+            }
+
+            if (mismatches == 0)
+            {
+                Console.WriteLine("Valid.");
+                return true;
+            }
+
+            Console.WriteLine("Invalid.");
+            Console.WriteLine("{0} bytes (of {1}) do not meet expectations.", mismatches, patchLength);
+            return false;
+        }
+
+        /// <summary>
+        /// Determine whether the bytes from a Patch's expected data match the contents of the ROM.
+        /// </summary>
+        private bool ValidateJSRHookBytes(PullJSRHookPatch patch)
+        {
+            uint patchLength = patch.Length;
+            byte[] buffer = new byte[patchLength];
+            if (!this.TryReadBuffer(this.romStream, patch.StartAddress, buffer))
+            {
+                Console.Write("tryreadbuffer failed in validatebytes");
+                return false;
+            }
+
+            //            DumpBuffer("Actual  ", buffer, buffer.Length);
+            //            DumpBuffer("Expected", expectedData.Content, buffer.Length);
+
+            //int mismatches = 0;
+
+            for (int index = 0; index < patchLength; index++)
+            {
+                byte actual = buffer[index];
+
+                if (!patch.MetaCheck((IEnumerable<byte>)buffer))
+                {
+                    Console.WriteLine("JSR HOOK FAILED");
+                    return false;
+                }
+            }
+            Console.WriteLine("Valid.");
+            return true;
+        }
+
+
+        /// <summary>
+        /// Try to find a blob in the patch that starts at the given address.
+        /// </summary>
+        public bool TryGetMetaBlob(uint startAddress, uint length, out Blob match, List<Blob> blobs)
+        {
+            foreach (Blob blob in blobs)
+            {
+                bool startsInsideBlob = blob.StartAddress <= startAddress;
+                if (!startsInsideBlob)
+                {
+                    continue;
+                }
+
+                uint blobEndAddress = (uint)(blob.StartAddress + blob.Content.Count);
+                bool endsInsideBlob = startAddress + length <= blobEndAddress;
+                if (!endsInsideBlob)
+                {
+                    continue;
+                }
+
+                match = blob;
+                return true;
+            }
+
+            match = null;
+            return false;
+        }
+
+
+        /// <summary>
+        /// Try to find a blob that starts at the given address.
+        /// </summary>
+        private bool TryGetPatchBlob(uint startAddress, uint length, out Blob match, List<Blob> blobs)
+        {
+            foreach (Blob blob in blobs)
+            {
+                
+
+                uint blobEndAddress = (uint)(blob.StartAddress + blob.Content.Count);
+
+                //Is start address we are searching for AFTER this blobs starting address?
+                bool startsAfterBlobStart = startAddress >= blob.StartAddress;
+
+               
+
+
+                //This code has issues with signed/unsigned ints!
+                //START
+                //
+                //if (startOffset < 0)
+                //{
+                //    continue;
+                //}
+                //END
+
+                 //AND Is the end address we are searching for BEFORE the blobs end address?
+                bool endsInsideBlob = startAddress + length <= blobEndAddress;
+                
+                if (!startsAfterBlobStart || !endsInsideBlob)
+                {
+                    continue;
+                }
+                uint startOffset = startAddress - blob.StartAddress;
+
+                byte[] temp = new byte[length];
+
+                blob.Content.CopyTo((int)startOffset, temp, 0, (int)length);
+
+                match = new Blob(startAddress, temp);
+                
+                return true;
+            }
+
+            match = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Given a patch, look up the content Blob and write it into the ROM.
+        /// </summary>
+        private bool TryApplyPatch(Patch patch)
+        {
+            this.romStream.Seek(patch.StartAddress, SeekOrigin.Begin);
+       
+            if (patch.Payload == null)
+            {
+                Console.WriteLine("No blob found for patch starting at {0:X8}", patch.StartAddress);
+                return false;
+            }
+
+            if (patch.StartAddress + patch.Payload.Content.Count != patch.EndAddress + 1)
+                
+            {
+                Console.WriteLine("Payload blob for patch starting at {0:X8} does not contain the entire patch.", patch.StartAddress);
+                Console.WriteLine("Patch start {0:X8}, end {1:X8}, length {2:X8}", patch.StartAddress, patch.EndAddress, patch.Length);
+                Console.WriteLine("Payload blob length {2:X8}", patch.Payload.Content.Count);
+                return false;
+            }
+
+            this.romStream.Write(patch.Payload.Content.ToArray(), 0, (int) patch.Payload.Content.Count);
+            return true;
+        }
+
+    }
+}
