@@ -65,6 +65,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.convertEFXMLRRv2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -274,7 +275,8 @@
             // 
             this.xMLToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.definitionEditorToolStripMenuItem,
-            this.exportCurrentXMLToolStripMenuItem});
+            this.exportCurrentXMLToolStripMenuItem,
+            this.convertEFXMLRRv2ToolStripMenuItem});
             this.xMLToolStripMenuItem.Name = "xMLToolStripMenuItem";
             this.xMLToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.xMLToolStripMenuItem.Text = "XML";
@@ -282,13 +284,13 @@
             // definitionEditorToolStripMenuItem
             // 
             this.definitionEditorToolStripMenuItem.Name = "definitionEditorToolStripMenuItem";
-            this.definitionEditorToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.definitionEditorToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.definitionEditorToolStripMenuItem.Text = "Definition Editor";
             // 
             // exportCurrentXMLToolStripMenuItem
             // 
             this.exportCurrentXMLToolStripMenuItem.Name = "exportCurrentXMLToolStripMenuItem";
-            this.exportCurrentXMLToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.exportCurrentXMLToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.exportCurrentXMLToolStripMenuItem.Text = "Export Current XML";
             // 
             // helpToolStripMenuItem
@@ -425,6 +427,13 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Log Window";
             // 
+            // convertEFXMLRRv2ToolStripMenuItem
+            // 
+            this.convertEFXMLRRv2ToolStripMenuItem.Name = "convertEFXMLRRv2ToolStripMenuItem";
+            this.convertEFXMLRRv2ToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.convertEFXMLRRv2ToolStripMenuItem.Text = "Convert EF XML -> RRv2";
+            this.convertEFXMLRRv2ToolStripMenuItem.Click += new System.EventHandler(this.convertEFXMLRRv2ToolStripMenuItem_Click);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -500,6 +509,7 @@
         private System.Windows.Forms.ToolStripMenuItem definitionEditorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportCurrentXMLToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sSMTestAppToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem convertEFXMLRRv2ToolStripMenuItem;
     }
 }
 

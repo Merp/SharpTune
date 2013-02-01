@@ -281,16 +281,28 @@ namespace SharpTune
                             xel.Attribute("name").Remove();
                             xaxis = true;
                         }
+                        else if (xel.Attribute("type") != null && xel.Attribute("type").Value.ContainsCI("static x axis"))
+                        {
+                            xel.Name = "staticxaxis";
+                            xel.Attribute("type").Remove();
+                            xaxis = true;
+                        }
                         else if (xel.Attribute("type") != null && xel.Attribute("type").Value.ContainsCI("x axis"))
                         {
                             xel.Name = "xaxis";
                             xel.Attribute("type").Remove();
                             xaxis = true;
-                        }
+                        }    
                         else if (xel.Attribute("name") != null && xel.Attribute("name").Value == "Y")
                         {
                             xel.Name = "yaxis";
                             xel.Attribute("name").Remove();
+                            yaxis = true;
+                        }
+                        else if (xel.Attribute("type") != null && xel.Attribute("type").Value.ContainsCI("static y axis"))
+                        {
+                            xel.Name = "staticyaxis";
+                            xel.Attribute("type").Remove();
                             yaxis = true;
                         }
                         else if (xel.Attribute("type") != null && xel.Attribute("type").Value.ContainsCI("y axis"))
@@ -299,6 +311,7 @@ namespace SharpTune
                             xel.Attribute("type").Remove();
                             yaxis = true;
                         }
+                        
                     }
                 }
 

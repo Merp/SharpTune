@@ -64,13 +64,6 @@ namespace SharpTune
             bw.DoWork += (senderr, ee) => {
             this.sharpTuner.availableDevices = new AvailableDevices("rommetadata");
 
-            foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys)
-            {
-                Definition.ConvertXML(deffile);
-                Definition.ConvertXML("rommetadata\\bases\\32BITBASE.xml");
-                Definition.ConvertXML("rommetadata\\bases\\16BITBASE.xml");
-            }
-
             //backgroundWorker1.ReportProgress(prog);
 
             };
@@ -347,7 +340,6 @@ namespace SharpTune
         // Boolean flag used to stop the
         //private bool stopProcess = false;
 
-        [STAThread]
         private void modUtilityToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ModUtility modUtil = new ModUtility(this.sharpTuner.activeImage, this);
@@ -585,8 +577,18 @@ namespace SharpTune
             //Spawn new window here
             SSMTestApp testapp = new SSMTestApp(this);
             testapp.ShowDialog();
-            
+
         }
+
+        private void convertEFXMLRRv2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+             foreach (String deffile in sharpTuner.availableDevices.IdentifierMap.Keys)
+                        {
+                            Definition.ConvertXML(deffile);
+                            Definition.ConvertXML("rommetadata\\bases\\32BITBASE.xml");
+                            Definition.ConvertXML("rommetadata\\bases\\16BITBASE.xml");
+                        }
+        } 
       
     }
 
