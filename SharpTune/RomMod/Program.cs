@@ -17,6 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using SharpTune;
+using SharpTuneCore;
 
 namespace RomModCore
 {
@@ -27,14 +29,13 @@ namespace RomModCore
         /// <summary>
         /// Entry point.  Runs the utility with or without exception handling, depending on whether a debugger is attached.
         /// </summary>
+        [STAThread]
         public static int Main(string[] args)
         {
             bool result = true;
-
             if (Debugger.IsAttached)
             {
                 result = Program.Run(args);
-
                 // This gives you time to examine the output before the console window closes.
                 Debugger.Break();
             }
@@ -50,7 +51,6 @@ namespace RomModCore
                     Console.WriteLine(exception);
                 }
             }
-
             // For parity with "fc /b" return 0 on success, 1 on failure.
             return result ? 0 : 1;
         }
@@ -60,47 +60,41 @@ namespace RomModCore
         /// </summary>
         private static bool Run(string[] args)
         {
-            if (args.Length == 2 && args[0] == "help")
+            if (args.Length < 1)
+            {
+                SharpTune.Program.RomModGui();
+            }
+            else if (args.Length == 2 && args[0] == "help")
             {
                 Program.PrintHelp(args[1]);
                 return true;
             }
-
-            if (args.Length == 2 && args[0] == "dump")
+            else if (args.Length == 2 && args[0] == "dump")
             {
                 return Program.TryDumpSRecordFile(args[1]);
             }
-
-            if (args.Length == 3 && args[0] == "test")
+            else if (args.Length == 3 && args[0] == "test")
             {
                 return Program.TryApply(args[1], args[2], true, false);
             }
-
-            if (args.Length == 3 && args[0] == "apply")
+            else if (args.Length == 3 && args[0] == "apply")
             {
                 return Program.TryApply(args[1], args[2], true, true);
             }
-
-            if (args.Length == 3 && args[0] == "applied")
+            else if (args.Length == 3 && args[0] == "applied")
             {
                 return Program.TryApply(args[1], args[2], false, false);
             }
-
-            if (args.Length == 3 && args[0] == "remove")
+            else if (args.Length == 3 && args[0] == "remove")
             {
                 return Program.TryApply(args[1], args[2], false, true);
             }
-
-            if (args.Length == 3 && args[0] == "baseline")
+            else if (args.Length == 3 && args[0] == "baseline")
             {
                 return Program.TryGenerateBaseline(args[1], args[2]);
             }
-
-            if (args.Length == 3 && args[0] == "baselinedefine")
+            else if (args[0] == "baselinedefine")
             {
-<<<<<<< HEAD
-                return Program.TryBaselineAndDefine(args[1], args[2]);
-=======
                 string path = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
                 if (Environment.OSVersion.Version.Major >= 6)
                 {
@@ -108,9 +102,7 @@ namespace RomModCore
                 }
                 
                 return Program.TryBaselineAndDefine(args[1], args[2], path + @"\\Dev\\SubaruDefs\\ECUFlash\\subaru standard\");
->>>>>>> 4dfa93c... Changed HEW integration paths to user folder instead of C drive root. Fixed missing pre build copy events for sharptunecore.dll and merp.dll.
             }
-
             Program.PrintHelp();
             return false;
         }
@@ -386,7 +378,7 @@ namespace RomModCore
         }
 
 
-        private static bool TryBaselineAndDefine(string patchPath, string romPath)
+        private static bool TryBaselineAndDefine(string patchPath, string romPath, string defPath)
         {
 
             SRecordReader reader = new SRecordReader(patchPath);
@@ -394,7 +386,7 @@ namespace RomModCore
             Mod patcher = new Mod(reader, romStream);
 
             if (!patcher.TryReadPatches()) return false;
-            if (!patcher.TryDefinition()) return false;
+            if (!patcher.TryDefinition(defPath)) return false;
 
             // Handy for manual work, but with this suppressed, you can append-pipe the output to the patch file.
             // Console.WriteLine("Generating baseline SRecords for:");

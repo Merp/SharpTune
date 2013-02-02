@@ -20,7 +20,7 @@ using System.IO;
 using System.Data;
 using System.Windows.Forms;
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
 
     public class AxisFactory

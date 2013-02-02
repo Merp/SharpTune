@@ -140,10 +140,10 @@ namespace RomModCore
             modStream = s;
         }
         
-        public bool TryDefinition(string defPath)        
+        public bool TryDefinition(string defPath)
         {
             this.definition = new Define(this);
-            if (!definition.TryReadDefs()) return false;
+            if (!definition.TryReadDefs(defPath)) return false;
             if (!definition.TryPrintDef(this.FinalCalibrationId.ToString())) return false;
             return true;
         }

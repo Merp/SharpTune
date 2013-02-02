@@ -17,6 +17,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Data;
 using System.IO;
+using SharpTune;
 using SharpTuneCore;
 using Merp;
 

@@ -28,11 +28,12 @@ using System.Security.AccessControl;
 using System.Security.Permissions;
 using System.Threading;
 using System.Diagnostics;
-using SharpTune.Tables;
+using SharpTuneCore;
 using SharpTune.GUI;
 using System.Xml.Linq;
 using System.Xml;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 
 
@@ -66,15 +67,15 @@ namespace SharpTune
 
         public void loadDevices()
         {
-            BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += (senderr, ee) =>
-            {
+            //BackgroundWorker bw = new BackgroundWorker();
+           // bw.DoWork += (senderr, ee) =>
+            //{
                 SharpTuner.populateAvailableDevices();
 
                 //backgroundWorker1.ReportProgress(prog);
 
-            };
-            bw.RunWorkerAsync();
+           // };
+           // bw.RunWorkerAsync();
 
             SharpTuner.imageList = new List<DeviceImage>();
             //refreshPorts();
@@ -141,7 +142,7 @@ namespace SharpTune
                 SharpTuner.AddImage(newImage);
 
                 SharpTuner.activeImage = newImage;
-                this.openDeviceListBox.Items.Add("("+SharpTuner.activeImage.CalId+") "+SharpTuner.activeImage.FileName);
+                this.openDeviceListBox.Items.Add(SharpTuner.activeImage.FileName + " CALID: "+SharpTuner.activeImage.CalId);
                 
                 // this is useful: SharpTuner.imageList.FindIndex(f => f.FileName == newImage.FileName);
 
@@ -428,8 +429,12 @@ namespace SharpTune
         {
             if (this.openDeviceListBox.SelectedItem != null)
             {
-                int index = SharpTuner.imageList.FindIndex(i => i.FileName == this.openDeviceListBox.SelectedItem.ToString().Split(')')[1]);
+                string s = @" CALID: ";
+                string sim = this.openDeviceListBox.SelectedItem.ToString();
+                string[] im = Regex.Split(sim, s);
+                int index = SharpTuner.imageList.FindIndex(i => i.FileName == im[0]);
                 SharpTuner.activeImage = SharpTuner.imageList[index];
+                RefreshModTree();
             }
             //ImageTreeRefresh();
         }
@@ -666,43 +671,37 @@ namespace SharpTune
 
         private void LoadPatches(Assembly assembly)
         {
-            treeView1.Nodes.Clear();
-            SharpTuner.activeImage.getValidMods(assembly);
-            if (SharpTuner.activeImage.ModList.Count == 0 || SharpTuner.activeImage.ModList == null)
+            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
+            {
+                SharpTuner.activeImage.getValidMods(assembly);
+            }
+            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
             {
                 Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
-                return;
             }
-            else
-            {
-                treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.activeImage.FileName);
-                foreach (ModInfo mod in SharpTuner.activeImage.ModList)
-                {
-                    Console.WriteLine("Loaded Patch: " + mod.FileName);
-                    TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
-                    patchTree.Tag = mod.FilePath;
-
-                    treeView1.Nodes.Add(patchTree);
-                }
-            }
+            RefreshModTree();
         }
 
         private void LoadPatches(string path)
         {
-            treeView1.Nodes.Clear();
-
-            if (!SharpTuner.activeImage.getValidMods(path))
+            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
+            {
+               SharpTuner.activeImage.getValidMods(path);
+            }
+            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == 0)
             {
                 Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
-                return;
             }
+            RefreshModTree();
+        }
 
-            treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.activeImage.FileName);
-
-            // update treenode
-            if (SharpTuner.activeImage.ModList != null)
+        private void RefreshModTree()
+        {
+            treeView1.Nodes.Clear();
+            if (SharpTuner.activeImage.ModList.Count > 0)
             {
-                foreach (ModInfo mod in SharpTuner.activeImage.ModList)
+                treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.activeImage.FileName);
+                foreach (Mod mod in SharpTuner.activeImage.ModList)
                 {
                     Console.WriteLine("Loaded Patch: " + mod.FileName);
                     TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
@@ -711,39 +710,56 @@ namespace SharpTune
                     treeView1.Nodes.Add(patchTree);
                 }
             }
-
+            else
+                treeView1.Nodes.Add("No Mods Found for "+SharpTuner.activeImage.CalId.ToString());
         }
 
-        private void buttonTestPatch_Click(object sender, EventArgs e)
+        //private void buttonTestPatch_Click(object sender, EventArgs e)
+        //{
+
+        //    /// string[] command = new string[] { "test", SharpTuner.activeImage.ModList[comboBoxPatches.selectedModIndex].FilePath , SharpTuner.activeImage.FilePath };
+
+        //    // Thread t = new Thread( () => RomPatchThread (command) );
+
+        //    // t.Start();
+        //    // need to fix console output to work with threads!
+        //    //
+
+        //    //if (RomModCore.Program.Main(command) == 1)
+
+        //    if (!RomModCore.Program.ModTest(null, SharpTuner.activeImage.ModList[selectedModIndex].FilePath, SharpTuner.activeImage.FilePath, SharpTuner.activeImage.ModList[selectedModIndex].isApplied))
+        //    {
+        //        MessageBox.Show("INVALID Patch File!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        buttonPatchRom.Enabled = false;
+
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("MOD TEST SUCCESS", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //        buttonPatchRom.Enabled = true;
+
+        //    }
+        //}
+
+        private bool authenticateMod()
         {
 
-            /// string[] command = new string[] { "test", SharpTuner.activeImage.ModList[comboBoxPatches.selectedModIndex].FilePath , SharpTuner.activeImage.FilePath };
-
-            // Thread t = new Thread( () => RomPatchThread (command) );
-
-            // t.Start();
-            // need to fix console output to work with threads!
-            //
-
-            //if (RomModCore.Program.Main(command) == 1)
-
-            if (!RomModCore.Program.ModTest(null, SharpTuner.activeImage.ModList[selectedModIndex].FilePath, SharpTuner.activeImage.FilePath, SharpTuner.activeImage.ModList[selectedModIndex].isApplied))
-            {
-                MessageBox.Show("INVALID Patch File!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                buttonPatchRom.Enabled = false;
-
-            }
-            else
-            {
-                MessageBox.Show("MOD TEST SUCCESS", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                buttonPatchRom.Enabled = true;
-
-            }
+            return false;
         }
 
         private void buttonPatchRom_Click(object sender, EventArgs e)
         {
-            ModInfo currentmod = SharpTuner.activeImage.ModList[selectedModIndex];
+            //First check for Authentication!
+            if (SharpTuner.activeImage.ModList[selectedModIndex].isAuthd)
+            {
+                //requires authentication! Authenticate
+                if (!authenticateMod())//authenticate!!
+                {
+                    MessageBox.Show("Authentication Failed!! Please Contact Support");
+                    return;
+                }
+            }
+            Mod currentmod = SharpTuner.activeImage.ModList[selectedModIndex];
             SaveFileDialog d = new SaveFileDialog();
             d.InitialDirectory = SharpTuner.activeImage.FilePath;
             d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
@@ -790,7 +806,6 @@ namespace SharpTune
                 SharpTuner.fileQueued = true;
                 SharpTuner.QueuedFilePath = d.FileName;
             }
-            this.Close();
         }
 
         private void manuallySelectPatchToolStripMenuItem_Click(object sender, EventArgs e)
@@ -812,7 +827,7 @@ namespace SharpTune
             }
         }
 
-        private void treeView1_DoubleClick_1(object sender, EventArgs e)
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if ((treeView1.SelectedNode != null) && (treeView1.SelectedNode.Tag != null) && (treeView1.SelectedNode.Tag.ToString().Contains(".patch")))
             {

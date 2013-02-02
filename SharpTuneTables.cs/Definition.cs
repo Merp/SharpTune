@@ -22,7 +22,7 @@ using System.Xml.Linq;
 using System.Linq;
 using Merp;
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
     /// <summary>
     /// Represents an individual device definition
@@ -120,7 +120,7 @@ namespace SharpTuneCore
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
-        public bool ReadXML(string fetchPath, bool recurse)
+        public bool ReadXML(string fetchPath, bool recurse, bool isbase)
         {
             if (fetchPath == null) return false;
             XDocument xmlDoc = XDocument.Load(fetchPath);
@@ -137,7 +137,11 @@ namespace SharpTuneCore
                 {
                     tempinfo.Add(element.Name.ToString(), element.Value.ToString());
                 }
-                tempcalid = tempinfo["internalidstring"];
+                if (tempinfo.ContainsKey("internalidstring"))
+                {
+                    tempcalid = tempinfo["internalidstring"];
+                }
+                else tempcalid = tempinfo["xmlid"];
 
                 if (internalId == null)
                 {
@@ -147,94 +151,6 @@ namespace SharpTuneCore
             }
             
 
-<<<<<<< HEAD
-            // ROM table fetches here!
-            var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
-                             //where table.Ancestors("table").First().IsEmpty
-                             select t;
-            foreach (XElement table in tableQuery)
-            {
-                //skip tables with no name
-                if (table.Attribute("name") == null) continue;
-
-                string tablename = table.Attribute("name").Value.ToString();
-
-                    if (this.xRomTableList.ContainsKey(tablename)) 
-                    {
-                        //table already exists
-                        //add data to existing table
-                        this.xRomTableList[tablename].Merge(table);
-                        //Console.WriteLine("table " + tablename + " already exists, merging tables");
-                    }
-
-                    else if (!tempcalid.ContainsCI("base"))
-                    {
-                        //table does not exist
-                        //call constructor
-                        this.xRomTableList.Add(tablename, table);
-                        //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
-                    }
-            }
-
-            // RAM table feteches here!
-            var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
-                             //where table.Ancestors("table").First().IsEmpty
-                             select t;
-            foreach (XElement table in ramtableQuery)
-            {
-                //skip tables with no name
-                if (table.Attribute("name") == null) continue;
-
-                string tablename = table.Attribute("name").Value.ToString();
-
-                if (this.xRomTableList.ContainsKey(tablename))
-                {
-                    //table already exists
-                    //add data to existing table
-                    this.xRamTableList[tablename].Merge(table);
-                    //Console.WriteLine("table " + tablename + " already exists, merging tables");
-                }
-
-                else if (!tempcalid.ContainsCI("base"))
-                {
-                    //table does not exist
-                    //call constructor
-                    this.xRamTableList.Add(tablename, table);
-                    //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
-                }
-            }
-
-            //Read Scalings
-            this.xScalingList = new Dictionary<string, XElement>();
-
-            var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
-                               //where table.Ancestors("table").First().IsEmpty
-                               select sc;
-            foreach (XElement scaling in scalingQuery)
-            {
-                //skip scalings with no name
-                if (scaling.Attribute("name") == null) continue;
-                string scalingname = scaling.Attribute("name").Value.ToString();
-                this.xScalingList.Add(scalingname, scaling);
-
-                if (this.scalingList.Exists(sc => sc.name == scalingname)) //   this.fullTableList.Exists(o => o.name == tablename))
-                {
-                    //scaling already exists
-                    //add data to existing table
-                    int index = this.scalingList.FindIndex(o => o.name == scalingname);
-                    Scaling newscaling = this.scalingList.ElementAt(index);
-                    this.scalingList[index] = this.scalingList.ElementAt(index).AddBase(ScalingFactory.CreateScaling(scaling));
-                    //Console.WriteLine("scaling " + scalingname + " already exists, merging scalings");
-                }
-                else
-                {
-                    //scaling does not exist
-                    //call constructor
-                    this.scalingList.Add(ScalingFactory.CreateScaling(scaling));
-                    //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
-                }
-            }
-=======
             //// ROM table fetches here!
             //var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
             //                 //where table.Ancestors("table").First().IsEmpty
@@ -324,7 +240,6 @@ namespace SharpTuneCore
             //        //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
             //    }
             //}
->>>>>>> 49d24eb... Initial changes to make SharpTune into Mod-only application (no editor or comms).
 
             //Recurse if not working in the BASE
             if (!tempcalid.Contains("BASE") && recurse)
@@ -333,7 +248,7 @@ namespace SharpTuneCore
                 //Down the rabbit hole
                 //Continue Inheritance
                 //Recursively until you hit the BASE
-                ReadXML(DirectorySearch("rommetadata", include),true);
+                ReadXML(DirectorySearch("rommetadata", include),true, false);
             }
 
             return false;

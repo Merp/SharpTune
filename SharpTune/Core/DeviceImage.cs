@@ -19,6 +19,8 @@ using System.Text;
 using System.IO;
 using System.Xml.Linq;
 using System.Windows.Forms;
+using RomModCore;
+using SharpTune;
 
 
 namespace SharpTuneCore

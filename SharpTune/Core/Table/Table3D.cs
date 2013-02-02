@@ -17,19 +17,25 @@ using System.Text;
 using System.Xml.Linq;
 using System.Data;
 using System.IO;
-using SharpTuneCore;
 using Merp;
+using System.Windows.Forms;
+using System.Drawing;
+using SharpTune;
 
 namespace SharpTuneCore
 {
-    public class Table2D : Table
+    public class Table3D : Table
     {
+        private Scaling xAxisScaling { get; set; }
 
-        public Table2D(XElement xel, DeviceImage image)
+        public Table3D(XElement xel, DeviceImage image)
             : base(xel, image)
         {
 
         }
+
+
+
 
         public override Table MergeTables(Table basetable)
         {
@@ -45,17 +51,14 @@ namespace SharpTuneCore
             return this;
         }
 
-
-
-
-
-
-
-
+        /// <summary>
+        /// Read table bytes from ROM
+        /// And convert to display values
+        /// </summary>
         public override void Read()
         {
             DeviceImage image = this.parentImage;
-            this.elements = this.yAxis.elements;    // * this.yAxis.elements;
+            this.elements = this.xAxis.elements * this.yAxis.elements;
             this.defaultScaling = image.Definition.scalingList.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
@@ -81,13 +84,18 @@ namespace SharpTuneCore
             }
         }
 
+        /// <summary>
+        /// Write the table bytes to ROM
+        /// </summary>
         public override void Write()
         {
             DeviceImage image = this.parentImage;
+
             lock (image.imageStream)
             {
                 //2D only has Y axis
                 this.yAxis.Write();
+                this.xAxis.Write();
                 image.imageStream.Seek(this.address, SeekOrigin.Begin);
 
                 //write this.bytevalues!
@@ -102,13 +110,12 @@ namespace SharpTuneCore
             }
 
         }
-
     }
 
-    public class RamTable2D : Table2D
+    public class RamTable3D : Table3D
     {
 
-        public RamTable2D(XElement xel, DeviceImage image)
+        public RamTable3D(XElement xel, DeviceImage image)
             : base(xel, image)
         {
 
@@ -116,3 +123,4 @@ namespace SharpTuneCore
 
     }
 }
+

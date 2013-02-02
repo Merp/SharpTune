@@ -21,6 +21,7 @@ using System.Data;
 using Merp;
 using System.Windows.Forms;
 using System.Drawing;
+using SharpTune;
 
 
 namespace SharpTuneCore

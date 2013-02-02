@@ -21,7 +21,7 @@
 
 using System;
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
     public struct Range : IEquatable<Range>
     {

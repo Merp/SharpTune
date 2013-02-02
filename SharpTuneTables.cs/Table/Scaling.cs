@@ -21,7 +21,7 @@ using System.Globalization;
 using Merp;
 using System.Windows.Forms;
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
     public class ScalingFactory
     {

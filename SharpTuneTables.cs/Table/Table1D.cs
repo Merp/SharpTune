@@ -21,7 +21,7 @@ using Merp;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
     public class Table1D : Table
     {

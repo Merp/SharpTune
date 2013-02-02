@@ -23,7 +23,7 @@ using System.Windows.Forms;
 using System.Drawing;
 
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
 
     public class TableFactory

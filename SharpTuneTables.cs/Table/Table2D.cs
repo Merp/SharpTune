@@ -17,10 +17,9 @@ using System.Text;
 using System.Xml.Linq;
 using System.Data;
 using System.IO;
-using SharpTuneCore;
 using Merp;
 
-namespace SharpTuneCore
+namespace SharpTuneDef
 {
     public class Table2D : Table
     {

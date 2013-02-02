@@ -17,10 +17,12 @@ using System.Text;
 using System.Reflection;
 using Merp;
 using System.IO;
+using RomModCore;
+using SharpTuneCore;
 
 namespace SharpTune
 {
-    public static class Mods
+    public static class ModUtils
     {
         public static bool getValidMods(this DeviceImage image, string path)
         {
@@ -34,7 +36,7 @@ namespace SharpTune
             //Get patches stored in working directory
 
             string calid = image.CalId.ToString();
-            string[] terms = {image.CalId.ToString(), ".patch"};
+            string[] terms = {".patch"};
 
             List<string> searchresults =  ResourceUtil.directorySearch(path, terms);
 
@@ -47,22 +49,13 @@ namespace SharpTune
 
             foreach (string modpath in tempModPaths)
             {
-                //run RomMod validate/test on each patch for image rom!
-                bool isapplied;
-                
-                if (!RomModCore.Program.ModCompCheck(null, modpath, image.FilePath.ToString(), out isapplied))
+                Mod tempMod = new Mod(modpath);
+                if(tempMod.CompatibilityCheck(image.FilePath.ToString()))
                 {
-                    Console.WriteLine("Patch at {0} is incompatible", modpath);
+                    image.ModList.Add(new Mod(modpath));
                 }
-                else
-                {
-                    image.ModList.Add(new ModInfo(modpath, isapplied));
-                }
-
             }
-
             return true;
-            
         }
 
         public static void getValidMods(this DeviceImage image, Assembly assembly)
@@ -75,14 +68,10 @@ namespace SharpTune
                 if (modpath.ContainsCI(image.CalId.ToString()))
                 {
                     Stream stream = assembly.GetManifestResourceStream(modpath);
-                    bool isapplied;
-                    if (!RomModCore.Program.ModCompCheck(stream, modpath, image.FilePath.ToString(), out isapplied))
+                     Mod tempMod = new Mod(stream,modpath);
+                    if(tempMod.CompatibilityCheck(image.FilePath.ToString()))
                     {
-                        Console.WriteLine("Patch at {0} is incompatible", modpath);
-                    }
-                    else
-                    {
-                        image.ModList.Add(new ModInfo(stream, modpath, isapplied));
+                        image.ModList.Add(new Mod(modpath));
                     }
                 }
             }

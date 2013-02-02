@@ -20,6 +20,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections;
+using RomModCore;
+using SharpTuneCore;
 
 namespace SharpTune
 {

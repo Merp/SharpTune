@@ -20,6 +20,7 @@ using System.IO;
 using Merp;
 using System.Windows.Forms;
 using System.Drawing;
+using SharpTune;
 
 namespace SharpTuneCore
 {
@@ -129,33 +130,33 @@ namespace SharpTuneCore
             this.defaultScaling = image.Definition.scalingList.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
-            //Check SSM interface ID vs the device ID
-            if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)
-            {
-                throw new System.Exception("Device Image does not match connected device!");
-            }
+            ////Check SSM interface ID vs the device ID
+            //if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)
+            //{
+            //    throw new System.Exception("Device Image does not match connected device!");
+            //}
 
-            SsmInterface ssmInterface = SharpTuner.ssmInterface;
+            //SsmInterface ssmInterface = SharpTuner.ssmInterface;
 
             //May have an issue with this while logging???
             //Is it necessary??
             //TODO: Find out
-            lock (ssmInterface)
-            {
-                this.byteValues = new List<byte[]>();
-                this.displayValues = new List<string>();
+            //lock (ssmInterface)
+            //{
+            //    this.byteValues = new List<byte[]>();
+            //    this.displayValues = new List<string>();
 
-                byte[] b = new byte[this.scaling.storageSize];
-                IAsyncResult result = ssmInterface.BeginBlockRead(this.address, this.scaling.storageSize, null, null);
-                result.AsyncWaitHandle.WaitOne();
-                b = ssmInterface.EndBlockRead(result);
-                if (this.scaling.endian == "big")
-                {
-                    b.ReverseBytes();
-                }
-                this.byteValues.Add(b);
-                this.displayValues.Add(this.scaling.toDisplay(b));
-            }
+            //    byte[] b = new byte[this.scaling.storageSize];
+            //    IAsyncResult result = ssmInterface.BeginBlockRead(this.address, this.scaling.storageSize, null, null);
+            //    result.AsyncWaitHandle.WaitOne();
+            //    b = ssmInterface.EndBlockRead(result);
+            //    if (this.scaling.endian == "big")
+            //    {
+            //        b.ReverseBytes();
+            //    }
+            //    this.byteValues.Add(b);
+            //    this.displayValues.Add(this.scaling.toDisplay(b));
+            //}
         }
     }
 }

@@ -22,7 +22,7 @@ using System.Xml.XPath;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SharpTune
+namespace SharpTuneCore
 {
     public sealed class Pair<TFirst, TSecond>
     : IEquatable<Pair<TFirst, TSecond>>
@@ -88,7 +88,7 @@ namespace SharpTune
             try
             {
                 string[] t = new string[] {"SubaruDefs\\ECUFlash\\subaru standard"};
-                string userdir = System.Environment.GetEnvironmentVariable("USERPROFILE").ToString();
+                string userdir = System.Environment.GetEnvironmentVariable("USERPROFILE").ToString() + "\\Dev";
                 List<string> ts = ResourceUtil.directorySearchRecursiveDir(userdir,t);
                 if(!GetDevices(ts[0]))
                 {

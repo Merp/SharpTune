@@ -27,8 +27,8 @@ namespace RomModCore
         private const uint OpStaticY = 0x43210007;
         private const uint OpRAM = 0x43210008;
 
-        private List<KeyValuePair<string,XElement>> xRomTableList {get; set;}
-        private List<KeyValuePair<string,XElement>> xRamTableList { get; set; }
+        private Dictionary<string,XElement> xRomTableList {get; set;}
+        private Dictionary<string,XElement> xRamTableList { get; set; }
 
         private Mod parentMod { get; set; }
         private Blob defBlob { get; set; }
@@ -42,16 +42,22 @@ namespace RomModCore
 
         private Definition definition { get; set; }
         private Definition inheritedDefinition {get; set;}
+        private Definition baseDefinition { get; set; }
         public Define(Mod parent)
         {
             this.parentMod = parent;
         }
 
-        public bool TryReadDefs()
+        /// <summary>
+        /// Cycles through the template definition and replaces "0" addresses with addresses from the patch file.
+        /// TODO: Replace template with inheritance from 32BITBASE Tables and a patch parameter that specifies the child template to use.
+        /// </summary>
+        /// <returns></returns>
+        public bool TryReadDefs(String defPath)
         {
-            outputPath = "test.xml";
-            xRomTableList = new List<KeyValuePair<string,XElement>>();
-            xRamTableList = new List<KeyValuePair<string, XElement>>();
+            
+            xRomTableList = new Dictionary<string,XElement>();
+            xRamTableList = new Dictionary<string, XElement>();
             
             List<Blob> blobs = parentMod.blobList.Blobs;
             Blob metadataBlob;
@@ -63,13 +69,20 @@ namespace RomModCore
             this.defBlob = metadataBlob;
             int offs = 0;
 
-            this.definition = new Definition(filepath);
-            this.definition.ReadXML(filepath, false);
+            this.baseDefinition = new Definition((Definition.DirectorySearch(defPath, "32BITBASE")));
+            this.baseDefinition.ReadXML((Definition.DirectorySearch(defPath, "32BITBASE")), false, true);
 
-            if (!TryParseDefs(this.defBlob, ref offs)) return false;
+            this.definition = new Definition("temp.xml");
+
+            if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
             if (!TryCleanDef()) return false;
 
+            outputPath = defPath + identifier + ".xml";
+            this.definition.defPath = outputPath;
+            
+            definition.xRomTableList = xRomTableList;
+            definition.xRamTableList = xRamTableList;
             this.definition.carInfo = this.inheritedDefinition.carInfo;
             this.definition.carInfo["internalidaddress"] = this.identifierAddress.ToString("X");
             this.definition.carInfo["internalidstring"] = this.identifier.ToString();
@@ -186,7 +199,7 @@ namespace RomModCore
         /// <summary>
         /// Try to read the Patch metadata from the file.
         /// </summary>
-        private bool TryParseDefs(Blob metadata, ref int offset)
+        private bool TryParseDefs(Blob metadata, ref int offset, String defPath)
         {
             UInt32 cookie = 0;
             while ((metadata.Content.Count > offset + 8) &&
@@ -204,16 +217,6 @@ namespace RomModCore
                     {
                         if (this.TryReadDefData(metadata, out metaString1, out metaOffset1, ref offset))
                         {
-<<<<<<< HEAD
-                            // found modName, output to string!
-                            this.identifier = metaString;
-                            this.identifierAddress = (int)metaOffset;
-                            this.inheritedIdentifier = metaString1;
-
-                            //READ INHERITED DEFINITION
-                            inheritedDefinition = new Definition((Definition.DirectorySearch("rommetadata", this.inheritedIdentifier)));
-                            inheritedDefinition.ReadXML(inheritedDefinition.defPath, false);
-=======
                             if (this.TryReadDefData(metadata, out metaString2, out metaOffset2, ref offset))
                             {
                                 // found modName, output to string!
@@ -231,26 +234,11 @@ namespace RomModCore
                         {
                             Console.WriteLine("Invalid definition found.");
                             return false;
->>>>>>> 087ab17... Switched RAM parameter creation to old style RomRaider definition format to facilitate earlier testing schedule.
                         }
                     }
                 }
                     else if (cookie == OpTable1d || cookie == OpTable2d || cookie == OpTable3d)
                     {
-<<<<<<< HEAD
-                        // found modName, output to string!
-<<<<<<< HEAD
-                        this.xRomTableList.Add(CreateTable(metaString, (int)metaOffset));
-=======
-                       KeyValuePair<String,XElement> tempTable = CreateTable(metaString, (int)metaOffset, false);
-                       if(tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
->>>>>>> 9e648e3... Fixed bug in creation of RAM parameters from base definition.
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid definition found.");
-                        return false;
-=======
                         string metaString = null;
                         uint metaOffset = 0;
                         if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
@@ -264,19 +252,9 @@ namespace RomModCore
                             Console.WriteLine("Invalid definition found.");
                             return false;
                         }
->>>>>>> 087ab17... Switched RAM parameter creation to old style RomRaider definition format to facilitate earlier testing schedule.
                     }
                     else if (cookie == OpRAM)
                     {
-<<<<<<< HEAD
-                        // found modName, output to string!
-<<<<<<< HEAD
-                        this.xRamTableList.Add(CreateTable(metaString, (int)metaOffset));
-=======
-                        KeyValuePair<String, XElement> tempTable = CreateTable(metaString, (int)metaOffset, true);
-                        if(tempTable.Key != null) this.xRamTableList.Add(tempTable.Key, tempTable.Value);
->>>>>>> 9e648e3... Fixed bug in creation of RAM parameters from base definition.
-=======
                         string paramName = null;
                         string paramId = null;
                         uint paramOffset = 0;
@@ -295,7 +273,6 @@ namespace RomModCore
                             Console.WriteLine("Invalid definition found.");
                             return false;
                         }
->>>>>>> 087ab17... Switched RAM parameter creation to old style RomRaider definition format to facilitate earlier testing schedule.
                     }
                     else if (cookie == Mod.endoffile)
                     {
@@ -432,47 +409,90 @@ namespace RomModCore
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-<<<<<<< HEAD
-<<<<<<< HEAD
         private KeyValuePair<string,XElement> CreateTable(string name, int offset)
-        {
-            foreach (KeyValuePair<string,XElement> table in this.definition.xRomTableList)
-=======
-        private KeyValuePair<string,XElement> CreateTable(string name, int offset, bool isRam)
-=======
-        private KeyValuePair<string,XElement> CreateTable(string name, int offset)
->>>>>>> 087ab17... Switched RAM parameter creation to old style RomRaider definition format to facilitate earlier testing schedule.
         { 
             Dictionary<string,XElement> list = this.baseDefinition.xRomTableList;
 
             foreach (KeyValuePair<string,XElement> table in this.baseDefinition.xRomTableList)
->>>>>>> 9e648e3... Fixed bug in creation of RAM parameters from base definition.
             {
                 if (table.Key == name)
                 {
+                    KeyValuePair<string, XElement> temptable = table;
                     //TABLE WAS FOUND!
-                    if (table.Value.Attribute("address") != null)
+                    if (temptable.Value.Attribute("offset") != null)
                     {
-                        table.Value.Attribute("address").SetValue((System.Int32.Parse(table.Value.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                        temptable.Value.SetAttributeValue("address",(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
                     }
-                    foreach(XElement ele in table.Value.Elements())
+                    IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
+                    List<String> remattr = new List<String>();
+                    foreach (XAttribute attr in tempattr)
                     {
-                        if (ele.Attribute("address") != null)
+                        if (attr.Name != "address" && attr.Name != "name")
                         {
-                            ele.Attribute("address").SetValue((System.Int32.Parse(ele.Attribute("address").Value, System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                            remattr.Add(attr.Name.ToString());
                         }
                     }
-                    return table;
+                    foreach (String rem in remattr)
+                    {
+                        temptable.Value.Attribute(rem).Remove();
+                    }
+
+                    List<String> eleremlist = new List<String>();
+                    
+                    foreach (XElement ele in temptable.Value.Elements())
+                    {
+                        IEnumerable<XAttribute> childtempattr = ele.Attributes();
+                        List<String> childremattr = new List<String>();
+                        
+                        if (ele.Name.ToString() != "table")
+                        {
+                            eleremlist.Add(ele.Name.ToString());
+                            continue;
+                        }
+                        if (ele.Attribute("offset") != null)
+                        {
+                            ele.SetAttributeValue("address",(System.Int32.Parse(ele.Attribute("offset").Value, System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                        }
+                        if (ele.Attribute("type").Value.ContainsCI("static"))
+                        {
+                            eleremlist.Add(ele.Name.ToString());
+                        }
+                        else if (ele.Attribute("type").Value.ContainsCI("x axis"))
+                        {
+                            ele.Attribute("name").Value = "X";
+                        }
+                        else if (ele.Attribute("type").Value.ContainsCI("y axis"))
+                        {
+                            ele.Attribute("name").Value = "Y";
+                        }
+                        foreach (XAttribute attr in childtempattr)
+                        {
+                            if (attr.Name != "address" && attr.Name != "name")
+                            {
+                                childremattr.Add(attr.Name.ToString());
+                            }
+                        }
+                        foreach (String rem in childremattr)
+                        {
+                            ele.Attribute(rem).Remove();
+                        }
+                    }
+                    foreach (String rem in eleremlist)
+                    {
+                        temptable.Value.Element(rem).Remove();
+                    }
+                    return temptable;
                 }
             }
             if (this.definition.xRamTableList != null)
             {
-                foreach (KeyValuePair<string, XElement> table in this.definition.xRamTableList)
+                foreach (KeyValuePair<string, XElement> table in this.baseDefinition.xRamTableList)
                 {
                     if (table.Key == name)
                     {
+                        KeyValuePair<string, XElement> temptable = table;
                         //TABLE WAS FOUND!
-                        return table;
+                        return temptable;
                     }
                 }
             }

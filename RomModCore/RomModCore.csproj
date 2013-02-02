@@ -100,10 +100,6 @@
       <Project>{94337F88-E655-4BDC-85B6-B8DE45F50D79}</Project>
       <Name>Merp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SharpTuneCore\SharpTuneCore.csproj">
-      <Project>{12F6E248-3773-43DF-ADBA-4AEE397AE363}</Project>
-      <Name>SharpTuneCore</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

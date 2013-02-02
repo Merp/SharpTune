@@ -64,6 +64,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AvailableDevices.cs" />
+    <Compile Include="Core\Definition.cs" />
+    <Compile Include="Core\DeviceImage.cs" />
+    <Compile Include="Core\ResourceUtil.cs" />
+    <Compile Include="Core\TableTree.cs" />
+    <Compile Include="Core\Table\Axis.cs" />
+    <Compile Include="Core\Table\Range.cs" />
+    <Compile Include="Core\Table\Scaling.cs" />
+    <Compile Include="Core\Table\Table.cs" />
+    <Compile Include="Core\Table\Table1D.cs" />
+    <Compile Include="Core\Table\Table2D.cs" />
+    <Compile Include="Core\Table\Table3D.cs" />
+    <Compile Include="ExpressionEvaluator.cs" />
     <Compile Include="GUI\AboutWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,7 +111,7 @@
     <Compile Include="GUI\SSMTestApp.Designer.cs">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
     </Compile>
-    <Compile Include="Mods.cs" />
+    <Compile Include="ModUtils.cs" />
     <Compile Include="RAMDump.cs" />
     <Compile Include="GUI\TableView.cs">
       <SubType>Form</SubType>
@@ -106,6 +119,17 @@
     <Compile Include="GUI\TableView.Designer.cs">
       <DependentUpon>TableView.cs</DependentUpon>
     </Compile>
+    <Compile Include="RomMod\Blob.cs" />
+    <Compile Include="RomMod\BlobList.cs" />
+    <Compile Include="RomMod\Define.cs" />
+    <Compile Include="RomMod\Mod.cs" />
+    <Compile Include="RomMod\Patch.cs" />
+    <Compile Include="RomMod\Program.cs" />
+    <Compile Include="RomMod\SRecord.cs" />
+    <Compile Include="RomMod\SRecordReader.cs" />
+    <Compile Include="RomMod\SRecordWriter.cs" />
+    <Compile Include="RomMod\Verifier.cs" />
+    <Compile Include="SharpTuner.cs" />
     <Compile Include="TextBoxStreamWriter.cs" />
     <Compile Include="DumpXML.cs" />
     <Compile Include="GUI\MainWindow.cs">
@@ -167,21 +191,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\J2534\J2534.csproj">
-      <Project>{E524FB04-7F42-4830-BA00-F09CDAB7C1CE}</Project>
-      <Name>J2534</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Merp\Merp.csproj">
       <Project>{94337F88-E655-4BDC-85B6-B8DE45F50D79}</Project>
       <Name>Merp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RomModCore\RomModCore.csproj">
-      <Project>{562236C6-515E-4426-8C6B-B4CEFB151A82}</Project>
-      <Name>RomModCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SharpTuneCore\SharpTuneCore.csproj">
-      <Project>{12F6E248-3773-43DF-ADBA-4AEE397AE363}</Project>
-      <Name>SharpTuneCore</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +217,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
