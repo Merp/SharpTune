@@ -142,6 +142,7 @@ namespace SharpTuneCore
             }
             catch (System.UnauthorizedAccessException excpt)
             {
+                string derp = excpt.Message;
                 //do nothing
                 //Console.WriteLine(excpt.Message);
             }

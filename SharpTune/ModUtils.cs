@@ -26,34 +26,15 @@ namespace SharpTune
     {
         public static bool getValidMods(this DeviceImage image, string path)
         {
-
-            //image.ModList.Clear();
-
-            //Get patches stored in binary
-            //List<string> tempModPaths = ResourceUtil.GetPatchPaths();
-
-            List<string> tempModPaths = new List<string>();
-            //Get patches stored in working directory
-
             string calid = image.CalId.ToString();
             string[] terms = {".patch"};
-
             List<string> searchresults =  ResourceUtil.directorySearch(path, terms);
-
             if (searchresults == null) return false;
-
-            foreach (string filepath in searchresults)
-            {
-                tempModPaths.Add(filepath);
-            }
-
-            foreach (string modpath in tempModPaths)
+            foreach (string modpath in searchresults)
             {
                 Mod tempMod = new Mod(modpath);
-                if(tempMod.CompatibilityCheck(image.FilePath.ToString()))
-                {
+                if(tempMod.TryApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp",false))
                     image.ModList.Add(tempMod);
-                }
             }
             return true;
         }
@@ -69,10 +50,8 @@ namespace SharpTune
                 {
                     Stream stream = assembly.GetManifestResourceStream(modpath);
                      Mod tempMod = new Mod(stream,modpath);
-                    if(tempMod.CompatibilityCheck(image.FilePath.ToString()))
-                    {
-                        image.ModList.Add(new Mod(modpath));
-                    }
+                     if (tempMod.TryApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", false))
+                         image.ModList.Add(tempMod);
                 }
             }
         }

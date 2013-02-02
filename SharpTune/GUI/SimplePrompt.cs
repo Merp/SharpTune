@@ -24,7 +24,7 @@ namespace SharpTune
         {
             Form prompt = new Form();
             prompt.Width = 500;
-            prompt.Height = 100;
+            prompt.Height = 250;
             prompt.Text = caption;
             Label textLabel = new Label() { Left = 50, Top = 20, Text = text };
             TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 400 };

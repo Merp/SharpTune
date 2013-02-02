@@ -128,7 +128,6 @@ namespace SharpTuneCore
                     break;
                 }
             }
-            String rombase;
             XDocument xmlDoc = XDocument.Load(fetchpath);
             XElement inc = xmlDoc.XPathSelectElement("/rom/include");
             if (inc != null && inc.Value.ToString().Contains("BASE"))

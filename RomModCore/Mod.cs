@@ -148,6 +148,8 @@ namespace RomModCore
             return true;
         }
 
+        
+
         public bool CompatibilityCheck(string romPath)
         {
             string workingPath = romPath + ".temp";

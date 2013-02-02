@@ -177,6 +177,7 @@ namespace RomModCore
 
         /// <summary>
         /// Determine whether a patch is suitable for a ROM, and optionally apply the patch if so.
+        /// MOVED To MOD class
         /// </summary>
         public static bool TryApply(Stream stream, string patchPath, string romPath, bool apply, bool commit)
         {
@@ -253,7 +254,7 @@ namespace RomModCore
                     Console.WriteLine("Verifying patch removal.");
                     using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
                     {
-                        if (!verifier.TryVerify(patcher.PatchList))
+                        if (!verifier.TryVerify(patcher.patchList))
                         {
                             Console.WriteLine("Verification failed, ROM file not modified.");
                             return false;
@@ -302,7 +303,7 @@ namespace RomModCore
                 Console.WriteLine("Verifying mod.");
                 using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
                 {
-                    if (!verifier.TryVerify(patcher.PatchList))
+                    if (!verifier.TryVerify(patcher.patchList))
                     {
                         Console.WriteLine("Verification failed, ROM file not modified.");
                         return false;

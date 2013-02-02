@@ -16,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Merp;
+using System.Windows.Forms;
+using SharpTune;
 
 namespace RomModCore
 {
@@ -49,9 +51,12 @@ namespace RomModCore
         public string CalId { get; private set; }
         public int CalIdOffset { get; private set; }
         public bool isApplied { get; set; }
+            //IDEA: set this based on calid match to activeimage
         public bool isResource { get; private set; }
+        public bool isCompat { get; private set; }
         public string info { get; private set; }
         public Stream modStream { get; private set; }
+        public Stream romStream { get; private set; }
         public string direction
         {
             get
@@ -69,40 +74,31 @@ namespace RomModCore
         public string ModInfo { get; private set; }
 
         public BlobList blobList { get; set; }
-
         public string InitialCalibrationId { get; private set; }
-
-        /// <summary>
-        /// Calibration ID that will be stamped onto the ROM.
-        /// </summary>
         public string FinalCalibrationId { get; private set; }
         private readonly SRecordReader reader;
-        private Stream romStream;
+        private Stream outStream;
         public uint EcuIdAddress { get; private set; }
         public uint EcuIdLength { get; private set; }
         public string InitialEcuId { get; private set; }
         public string FinalEcuId { get; private set; }
-        //use list internally
-        private List<Patch> patchList;
-        private List<Patch> unPatchList;
-
-        //only expose interface list, do not allow set outside class
-        public IList<Patch> PatchList { get { return this.patchList; } }
-        public IList<Patch> UnPatchList { get { return this.unPatchList; } }
-
+        public List<Patch> patchList;
+        public List<Patch> unPatchList;
         private Define definition { get; set; }
 
         /// <summary>
         /// Constructor for CLI
         /// </summary>
-        public Mod(SRecordReader reader, Stream romStream)
+        public Mod(SRecordReader reader, Stream rStream)
         {
             this.reader = reader;
-            this.romStream = romStream;
+            this.outStream = rStream;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
             this.ModName = "Unknown Mod";
             this.ModVersion = "Unknown Version";
+            TryReadPatches();
+            TryReversePatches();
         }
 
         /// <summary>
@@ -121,6 +117,8 @@ namespace RomModCore
             FileName = f.Name;
             FilePath = modPath;
             isResource = false;
+            TryReadPatches();
+            TryReversePatches();
         }
 
         /// <summary>
@@ -138,6 +136,8 @@ namespace RomModCore
             FileName = modPath;
             isResource = true;
             modStream = s;
+            TryReadPatches();
+            TryReversePatches();
         }
         
         public bool TryDefinition(string defPath)
@@ -148,30 +148,112 @@ namespace RomModCore
             return true;
         }
 
-        public bool CompatibilityCheck(string romPath)
+        public static bool TryApply(Stream stream, string patchPath, string romPath, bool apply, bool commit)
         {
-            string workingPath = romPath + ".temp";
-            romStream = File.OpenRead(romPath);
+            return Program.TryApplyWorker(stream, patchPath, romPath, apply, commit);
+        }
+        public static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
+        {
+            return Program.TryApplyWorker(null, patchPath, romPath, apply, commit);
+        }
 
-            if (!TryReadPatches())
+        public bool TryApplyMod(string romPath, string outPath, bool commit)
+        {
+            string workingPath = outPath + ".temp";
+            File.Copy(romPath, outPath, true);
+            File.Copy(romPath, workingPath, true);
+            using (outStream = File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
             {
-                romStream.Dispose();
-                reader.Dispose();
-                Console.WriteLine(this.FileName + " is not a valid patch");
-                return false;
+                
+                Console.WriteLine("This patch file was intended for: {0}.", this.InitialCalibrationId);
+                Console.WriteLine("This patch file converts ROM to:  {0}.", this.FinalCalibrationId);
+                Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
+                Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
+
+                if (TryValidatePatches())
+                {
+                    isApplied = false;
+                    isCompat = true;
+                    Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
+                }
+                else if (TryValidateUnPatches())
+                {
+                    isApplied = true;
+                    isCompat = true;
+                    Console.WriteLine("This patch file was previously applied to this ROM file.");
+                }
+                else
+                    isCompat = false;
+
+                if (!isCompat)
+                {
+                    outStream.Dispose();
+                    Console.WriteLine(this.FileName + " is mod is NOT compatible with this ROM file.");
+                    return false;
+                }
+                if (!commit)
+                {
+                    outStream.Dispose();
+                    Console.WriteLine(this.FileName + " is compatible with this ROM file.");
+                    return true;
+                }
+                if (isApplied)
+                {
+                    Console.WriteLine("Removing patch.");
+                    if (this.TryRemoveMod())
+                    {
+                        Console.WriteLine("Verifying patch removal.");
+                        using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
+                        {
+                            if (!verifier.TryVerify(this.patchList))
+                            {
+                                outStream.Dispose();
+                                Console.WriteLine("Verification failed, ROM file not modified.");
+                                return false;
+                            }
+                        }
+                        outStream.Dispose();
+                        File.Copy(workingPath, outPath, true);
+                        File.Delete(workingPath);
+                        Console.WriteLine("ROM file modified successfully, Mod has been removed.");
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("The ROM file has not been modified.");
+                        outStream.Dispose();
+                        return false;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Applying mod.");
+                    if (this.TryApplyMod())
+                    {
+                        Console.WriteLine("Verifying mod.");
+                        using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
+                        {
+                            if (!verifier.TryVerify(this.patchList))
+                            {
+                                outStream.Dispose();
+                                Console.WriteLine("Verification failed, ROM file not modified.");
+                                return false;
+                            }
+                        }
+                        outStream.Dispose();
+                        File.Copy(workingPath, outPath, true);
+                        File.Delete(workingPath);
+                        Console.WriteLine("ROM file modified successfully, mod has been applied.");
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("The ROM file has not been modified.");
+                        outStream.Dispose();
+                        return false;
+                    }
+                }
             }
-            if (TryValidatePatches())
-            {
-                isApplied = false;
-                return true;
-            }
-            else if (TryReversePatches() && TryValidateUnPatches())
-            {
-                isApplied = true;
-                return true;
-            }
-            else
-                return false;
         }
 
         /// <summary>
@@ -228,11 +310,15 @@ namespace RomModCore
         /// 
         public bool TryReversePatches()
         {
-            List<Blob> newBlobs = new List<Blob>();
-
-            //clone patches!
-            this.unPatchList = this.patchList;
-
+            using (var stream = new System.IO.MemoryStream())
+            {
+                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                binaryFormatter.Serialize(stream, patchList); //serialize to stream
+                stream.Position = 0;
+                //deserialize from stream.
+                unPatchList = binaryFormatter.Deserialize(stream) as List<Patch>;
+            }
+            //Console.ReadKey();
             foreach (Patch patch in this.unPatchList)
             {
 
@@ -318,7 +404,7 @@ namespace RomModCore
         {
             Console.WriteLine("Validating patch removal...");
             bool allPatchesValid = true;
-            foreach (Patch patch in this.patchList)
+            foreach (Patch patch in this.unPatchList)
             {
                 Console.Write(patch.ToString() + " - ");
 
@@ -707,7 +793,6 @@ namespace RomModCore
                         return false;
                     }
                 }
-
                 if (cookie == modInfoPrefix)
                 {
                     string metaString = null;
@@ -1026,7 +1111,7 @@ namespace RomModCore
             byte[] buffer = new byte[patchLength];
 
             //read baseline ROM data blob into buffer
-            if (!this.TryReadBuffer(this.romStream, patch.StartAddress, buffer))
+            if (!this.TryReadBuffer(this.outStream, patch.StartAddress, buffer))
             {
                 return false;
             }
@@ -1065,7 +1150,7 @@ namespace RomModCore
             while (totalBytesRead < totalBytesToRead)
             {
                 long bytesToRead = totalBytesToRead - totalBytesRead;
-                int bytesRead = this.romStream.Read(
+                int bytesRead = this.outStream.Read(
                     buffer,
                     (int) totalBytesRead,
                     (int) bytesToRead);
@@ -1092,7 +1177,7 @@ namespace RomModCore
         {
             uint patchLength = patch.Length;
             byte[] buffer = new byte[patchLength];
-            if (!this.TryReadBuffer(this.romStream, patch.StartAddress, buffer))
+            if (!this.TryReadBuffer(this.outStream, patch.StartAddress, buffer))
             {
                 Console.Write("tryreadbuffer failed in validatebytes");
                 return false;
@@ -1145,7 +1230,7 @@ namespace RomModCore
         {
             uint patchLength = patch.Length;
             byte[] buffer = new byte[patchLength];
-            if (!this.TryReadBuffer(this.romStream, patch.StartAddress, buffer))
+            if (!this.TryReadBuffer(this.outStream, patch.StartAddress, buffer))
             {
                 Console.Write("tryreadbuffer failed in validatebytes");
                 return false;
@@ -1253,7 +1338,7 @@ namespace RomModCore
         /// </summary>
         private bool TryApplyPatch(Patch patch)
         {
-            this.romStream.Seek(patch.StartAddress, SeekOrigin.Begin);
+            this.outStream.Seek(patch.StartAddress, SeekOrigin.Begin);
        
             if (patch.Payload == null)
             {
@@ -1270,7 +1355,7 @@ namespace RomModCore
                 return false;
             }
 
-            this.romStream.Write(patch.Payload.Content.ToArray(), 0, (int) patch.Payload.Content.Count);
+            this.outStream.Write(patch.Payload.Content.ToArray(), 0, (int) patch.Payload.Content.Count);
             return true;
         }
 

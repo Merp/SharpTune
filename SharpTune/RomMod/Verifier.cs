@@ -25,26 +25,41 @@ namespace RomModCore
         private SRecordReader patchReader;
         private Stream romStream;
         private bool apply;
+        private bool dispose;
 
         public Verifier(string patchPath, string romPath, bool apply)
         {
             this.patchPath = patchPath;
             this.romPath = romPath;
             this.apply = apply;
+            this.patchReader = new SRecordReader(patchPath);
+            this.romStream = File.OpenRead(romPath);
+            this.dispose = true;
+        }
+
+        public Verifier(Stream rs, SRecordReader sr, bool apply)
+        {
+            this.romStream = rs;
+            this.patchReader = sr;
+            this.apply = apply;
+            this.dispose = false;
         }
 
         public void Dispose()
         {
-            if (this.patchReader != null)
+            if (dispose)
             {
-                this.patchReader.Dispose();
-                this.patchReader = null;
-            }
+                if (this.patchReader != null)
+                {
+                    this.patchReader.Dispose();
+                    this.patchReader = null;
+                }
 
-            if (this.romStream != null)
-            {
-                this.romStream.Dispose();
-                this.romStream = null;
+                if (this.romStream != null)
+                {
+                    this.romStream.Dispose();
+                    this.romStream = null;
+                }
             }
         }
 
@@ -63,21 +78,23 @@ namespace RomModCore
 
         private bool TryVerifyPatch(Patch patch)
         {
-            using (this.patchReader = new SRecordReader(patchPath))
-            using (this.romStream = File.OpenRead(romPath))
-            {
-                this.patchReader.Open();
+           // using (this.patchReader)
+            //using (this.romStream)
+            //{
+              //  this.patchReader.Open();
                 SRecord record;
                 while (this.patchReader.TryReadNextRecord(out record))
                 {
                     if (!this.TryProcessRecord(patch, record))
                     {
+                        Dispose();
                         return false;
                     }
                 }
 
+                Dispose();
                 return true;
-            }
+                
         }
 
         private bool TryProcessRecord(Patch patch, SRecord record)

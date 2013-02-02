@@ -25,6 +25,7 @@ namespace RomModCore
     /// <remarks>
     /// Corresponds to the metadata in a patch file.  See sample HEW project for details.
     /// </remarks>
+    [Serializable]
     public class Patch
     {
         /// <summary>

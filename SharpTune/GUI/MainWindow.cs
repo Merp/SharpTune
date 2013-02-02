@@ -725,6 +725,7 @@ namespace SharpTune
             }
             catch (System.Exception excpt)
             {
+                string derp = excpt.Message;
                 selectedModTextBox.Clear();
             }
         }
@@ -775,24 +776,10 @@ namespace SharpTune
         //    }
         //}
 
-        private bool authenticateMod()
-        {
-
-            return false;
-        }
+        
 
         private void buttonPatchRom_Click(object sender, EventArgs e)
         {
-            //First check for Authentication!
-            if (SharpTuner.activeImage.ModList[selectedModIndex].isAuthd)
-            {
-                //requires authentication! Authenticate
-                if (!authenticateMod())//authenticate!!
-                {
-                    MessageBox.Show("Authentication Failed!! Please Contact Support");
-                    return;
-                }
-            }
             Mod currentmod = SharpTuner.activeImage.ModList[selectedModIndex];
             SaveFileDialog d = new SaveFileDialog();
             d.InitialDirectory = SharpTuner.activeImage.FilePath;
@@ -822,21 +809,14 @@ namespace SharpTune
                 MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            //string[] command = new string[] { "apply", SharpTuner.activeImage.ModList[comboBoxPatches.selectedModIndex].FilePath, SharpTuner.activeImage.FilePath };
-            //if (RomModCore.Program.Main(command) == 1)
-            bool trypatch;
-            if (!currentmod.isResource)
-                trypatch = RomModCore.Program.TryApply(currentmod.FilePath, d.FileName, !currentmod.isApplied, true);
-            else
-                trypatch = RomModCore.Program.TryApply(currentmod.FilePath, d.FileName, !currentmod.isApplied, true);
-
-            if (!trypatch)
+            if (!currentmod.TryApplyMod(SharpTuner.activeImage.FilePath, d.FileName, true))
             {
                 MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
                 MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
                 SharpTuner.fileQueued = true;
                 SharpTuner.QueuedFilePath = d.FileName;
             }

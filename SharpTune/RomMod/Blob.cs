@@ -20,6 +20,7 @@ namespace RomModCore
     /// <summary>
     /// Basically a list of bytes plus a start-address.
     /// </summary>
+    [Serializable]
     public class Blob
     {
         /// <summary>

@@ -49,13 +49,11 @@ namespace SharpTuneCore
 
         public Definition Definition { get; private set; }
 
-        //public List<Table> tableList { get; set; }
+        public List<Table> tableList { get; set; }
 
         public TreeNode imageTree { get; set; }
 
         public Stream imageStream;
-
-
 
         /// <summary>
         /// Constructor
