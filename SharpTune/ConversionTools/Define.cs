@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using Merp;
 using System.IO;
 
-namespace ComvTools
+namespace ConvTools
 {
     class Define
     {

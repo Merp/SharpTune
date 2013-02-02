@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using ConsoleRedirection;
 using System.Diagnostics;
 using RomModCore;
+using ConvTools;
 using System.IO;
 
 namespace SharpTune
@@ -61,44 +62,18 @@ namespace SharpTune
             {
                 SharpTune.Program.RomModGui();
             }
-            else if (args.Length == 2 && args[0] == "help")
+            else if (args[0] == "convtools")
+            {
+                ConvTools.ConvTools.Run(args);
+            }
+            else if (args[0] == "rommod")
+            {
+                RomModCore.RomMod.Run(args);
+            }
+            if (args.Length == 2 && args[0] == "help")
             {
                 PrintHelp(args[1]);
                 return true;
-            }
-            else if (args.Length == 2 && args[0] == "dump")
-            {
-                return RomModCore.RomMod.TryDumpSRecordFile(args[1]);
-            }
-            else if (args.Length == 3 && args[0] == "test")
-            {
-                return RomModCore.RomMod.TryApply(args[1], args[2], true, false);
-            }
-            else if (args.Length == 3 && args[0] == "apply")
-            {
-                return RomModCore.RomMod.TryApply(args[1], args[2], true, true);
-            }
-            else if (args.Length == 3 && args[0] == "applied")
-            {
-                return RomModCore.RomMod.TryApply(args[1], args[2], false, false);
-            }
-            else if (args.Length == 3 && args[0] == "remove")
-            {
-                return RomModCore.RomMod.TryApply(args[1], args[2], false, true);
-            }
-            else if (args.Length == 3 && args[0] == "baseline")
-            {
-                return RomModCore.RomMod.TryGenerateBaseline(args[1], args[2]);
-            }
-            else if (args[0] == "baselinedefine")
-            {
-                string path = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
-                if (Environment.OSVersion.Version.Major >= 6)
-                {
-                    path = Directory.GetParent(path).ToString();
-                }
-
-                return RomModCore.RomMod.TryBaselineAndDefine(args[1], args[2], path + @"\\Dev\\SubaruDefs\\ECUFlash\\subaru standard\");
             }
             PrintHelp();
             return false;
@@ -132,35 +107,6 @@ namespace SharpTune
                 case "test":
                     Console.WriteLine("RomPatch test <patchfilename> <romfilename>");
                     Console.WriteLine("Determines whether the given patch file matches the given ROM file.");
-                    break;
-
-                case "apply":
-                    Console.WriteLine("RomPatch apply <patchfilename> <romfilename>");
-                    Console.WriteLine();
-                    Console.WriteLine("Verifies that a patch is suitable for the ROM file, then applies");
-                    Console.WriteLine("the patch to the ROM (or prints an error message).");
-                    break;
-
-                case "applied":
-                    Console.WriteLine("RomPatch applied <patchfilename> <romfilename>");
-                    Console.WriteLine("Determines whether the given patch file was applied to the given ROM file.");
-                    break;
-
-                case "remove":
-                    Console.WriteLine("RomPatch remove <patchfilename> <romfilename>");
-                    Console.WriteLine();
-                    Console.WriteLine("Verifies that a patch was applied to the ROM file, then removes");
-                    Console.WriteLine("the patch from the ROM (or prints an error message).");
-                    break;
-
-                case "dump":
-                    Console.WriteLine("RomPatch dump <filename>");
-                    Console.WriteLine("Dumps the contents of the give patch file.");
-                    break;
-
-                case "baseline":
-                    Console.WriteLine("RomPatch baseline <patchfilename> <romfilename>");
-                    Console.WriteLine("Generates baseline SRecords for the given patch and ROM file.");
                     break;
 
                 case "help":

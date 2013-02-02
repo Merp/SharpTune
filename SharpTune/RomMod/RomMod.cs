@@ -26,7 +26,114 @@ namespace RomModCore
     {
         public const int Version = 7;
 
-        public static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
+        /// <summary>
+        /// Determines which command to run.
+        /// </summary>
+        public static bool Run(string[] args)
+        {
+            if (args.Length == 2 && args[0] == "help")
+            {
+                PrintHelp(args[1]);
+                return true;
+            }
+            else if (args.Length == 2 && args[0] == "dump")
+            {
+                return RomModCore.RomMod.TryDumpSRecordFile(args[1]);
+            }
+            else if (args.Length == 3 && args[0] == "test")
+            {
+                return RomModCore.RomMod.TryApply(args[1], args[2], true, false);
+            }
+            else if (args.Length == 3 && args[0] == "apply")
+            {
+                return RomModCore.RomMod.TryApply(args[1], args[2], true, true);
+            }
+            else if (args.Length == 3 && args[0] == "applied")
+            {
+                return RomModCore.RomMod.TryApply(args[1], args[2], false, false);
+            }
+            else if (args.Length == 3 && args[0] == "remove")
+            {
+                return RomModCore.RomMod.TryApply(args[1], args[2], false, true);
+            }
+            else if (args.Length == 3 && args[0] == "baseline")
+            {
+                return RomModCore.RomMod.TryGenerateBaseline(args[1], args[2]);
+            }
+            else if (args[0] == "baselinedefine")
+            {
+                return RomModCore.RomMod.TryBaselineAndDefine(args[1], args[2], SharpTune.Program.definitionDir);
+            }
+            PrintHelp();
+            return false;
+        }
+
+        /// <summary>
+        /// Print generic usage instructions.
+        /// </summary>
+        private static void PrintHelp()
+        {
+            Console.WriteLine("RomPatch Version {0}.", RomModCore.RomMod.Version);
+            Console.WriteLine("Commands:");
+            Console.WriteLine();
+            Console.WriteLine("test       - determine whether a patch is suitable for a ROM");
+            Console.WriteLine("apply      - apply a patch to a ROM file");
+            Console.WriteLine("applied    - determine whether a patch has been applied to a ROM");
+            Console.WriteLine("remove     - remove a patch from a ROM file");
+            Console.WriteLine("dump       - dump the contents of a patch file");
+            Console.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
+            Console.WriteLine();
+            Console.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
+        }
+
+        /// <summary>
+        /// Print usage instructions for a particular command.
+        /// </summary>
+        private static void PrintHelp(string command)
+        {
+            switch (command)
+            {
+                case "test":
+                    Console.WriteLine("RomPatch test <patchfilename> <romfilename>");
+                    Console.WriteLine("Determines whether the given patch file matches the given ROM file.");
+                    break;
+
+                case "apply":
+                    Console.WriteLine("RomPatch apply <patchfilename> <romfilename>");
+                    Console.WriteLine();
+                    Console.WriteLine("Verifies that a patch is suitable for the ROM file, then applies");
+                    Console.WriteLine("the patch to the ROM (or prints an error message).");
+                    break;
+
+                case "applied":
+                    Console.WriteLine("RomPatch applied <patchfilename> <romfilename>");
+                    Console.WriteLine("Determines whether the given patch file was applied to the given ROM file.");
+                    break;
+
+                case "remove":
+                    Console.WriteLine("RomPatch remove <patchfilename> <romfilename>");
+                    Console.WriteLine();
+                    Console.WriteLine("Verifies that a patch was applied to the ROM file, then removes");
+                    Console.WriteLine("the patch from the ROM (or prints an error message).");
+                    break;
+
+                case "dump":
+                    Console.WriteLine("RomPatch dump <filename>");
+                    Console.WriteLine("Dumps the contents of the give patch file.");
+                    break;
+
+                case "baseline":
+                    Console.WriteLine("RomPatch baseline <patchfilename> <romfilename>");
+                    Console.WriteLine("Generates baseline SRecords for the given patch and ROM file.");
+                    break;
+
+                case "help":
+                    Console.WriteLine("You just had to try that, didn't you?");
+                    break;
+            }
+        }
+
+        private static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
         {
             Mod currentMod = new Mod(patchPath);
             return currentMod.TryCheckApplyMod(romPath, romPath, commit);
@@ -134,7 +241,7 @@ namespace RomModCore
         /// <summary>
         /// Dump the contents of an SRecord file.  Mostly intended for development use.
         /// </summary>
-        public static bool TryDumpSRecordFile(string path)
+        private static bool TryDumpSRecordFile(string path)
         {
             bool result = true;
             SRecord record;
@@ -169,7 +276,7 @@ namespace RomModCore
         /// <summary>
         /// Extract data from an unpatched ROM file, for inclusion in a patch file.
         /// </summary>
-        public static bool TryGenerateBaseline(string patchPath, string romPath)
+        private static bool TryGenerateBaseline(string patchPath, string romPath)
         {
             Stream romStream = File.OpenRead(romPath);
             Mod patcher = new Mod(patchPath);
@@ -184,7 +291,7 @@ namespace RomModCore
         }
 
 
-        public static bool TryBaselineAndDefine(string patchPath, string romPath, string defPath)
+        private static bool TryBaselineAndDefine(string patchPath, string romPath, string defPath)
         {
             Stream romStream = File.OpenRead(romPath);
             Mod patcher = new Mod(patchPath);

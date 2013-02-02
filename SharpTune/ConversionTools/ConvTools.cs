@@ -9,15 +9,15 @@ using System.Xml.XPath;
 using System.Xml;
 using System.Text.RegularExpressions;
 
-namespace ComvTools
+namespace ConvTools
 {
-    class ConvTools
+    public class ConvTools
     {
         public static Dictionary<string, List<Define>> Defines;
         public static Dictionary<string, List<string>> Sections;
         public static List<IdaName> IdaNames;
 
-        static void Run(string[] args)
+        public static void Run(string[] args)
         {
             ConvTools prog = new ConvTools();
             Defines = new Dictionary<string, List<Define>>();

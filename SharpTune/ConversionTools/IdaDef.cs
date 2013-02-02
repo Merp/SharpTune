@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using Merp;
 
-namespace ComvTools
+namespace ConvTools
 {
     class IdaDef
     {
