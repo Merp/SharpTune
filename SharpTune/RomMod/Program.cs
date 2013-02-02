@@ -171,157 +171,110 @@ namespace RomModCore
                     break;
             }
         }
-        
 
-        
-
-        /// <summary>
-        /// Determine whether a patch is suitable for a ROM, and optionally apply the patch if so.
-        /// MOVED To MOD class
-        /// </summary>
-        public static bool TryApply(Stream stream, string patchPath, string romPath, bool apply, bool commit)
-        {
-            return TryApplyWorker(stream, patchPath, romPath, apply, commit);
-        }
         public static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
         {
-            return TryApplyWorker(null, patchPath, romPath, apply, commit);
-        }
+            Mod currentMod = new Mod(patchPath);
+            return currentMod.TryCheckApplyMod(romPath, romPath, commit);
 
-        public static bool TryApplyWorker(Stream stream, string patchPath, string romPath, bool apply, bool commit)
-        {
-            SRecordReader reader;
-            if (stream != null)
-                reader = new SRecordReader(stream, patchPath);
-            else
-                reader = new SRecordReader(patchPath);
+            //Stream romStream;
+            //string workingPath = romPath + ".temp";
+            //if (commit)
+            //{
+            //    File.Copy(romPath, workingPath, true);
+            //    romStream = File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            //}
+            //else
+            //{
+            //    romStream = File.OpenRead(romPath);
+            //}
 
-            Stream romStream;
-            string workingPath = romPath + ".temp";
-            if (commit)
-            {
-                File.Copy(romPath, workingPath, true);
-                romStream = File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            }
-            else
-            {
-                romStream = File.OpenRead(romPath);
-            }
+            //using (romStream)
+            //{
+                
 
-            Mod patcher = new Mod(reader, romStream);
+            //    if (!currentMod.TryReadPatches())
+            //        return false;
 
-            if (!patcher.TryReadPatches())
-            {
-                romStream.Dispose();
-                reader.Dispose();
-                return false;
-            }
+            //    Console.WriteLine("This patch file was intended for: {0}.", currentMod.InitialCalibrationId);
+            //    Console.WriteLine("This patch file converts ROM to:  {0}.", currentMod.FinalCalibrationId);
+            //    Console.WriteLine("This mod was created by: {0}.", currentMod.ModAuthor);
+            //    Console.WriteLine("Mod Information: {0} Version: {1}.", currentMod.ModName, currentMod.ModVersion);
+            //    Console.WriteLine(currentMod.ModInfo);
 
-            Console.WriteLine("This patch file was intended for: {0}.", patcher.InitialCalibrationId);
-            Console.WriteLine("This patch file converts ROM to:  {0}.", patcher.FinalCalibrationId);
-            Console.WriteLine("This mod was created by: {0}.", patcher.ModAuthor);
-            Console.WriteLine("Mod Information: {0} Version: {1}.", patcher.ModName, patcher.ModVersion);
+            //    if (!apply)
+            //    {
+            //        Console.WriteLine("Preparing to remove patch.");
+            //        currentMod.TryReversePatches();
 
-            if (!apply)
-            {
-                Console.WriteLine("Preparing to remove patch.");
-                patcher.TryReversePatches();
+            //        if (!currentMod.TryValidateUnPatches(romStream))
+            //        {
+            //            Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
+            //            return false;
+            //        }
 
-                if (!patcher.TryValidateUnPatches())
-                {
-                    Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
-                    romStream.Dispose();
-                    reader.Dispose();
-                    return false;
-                }
+            //        Console.WriteLine("This patch file was previously applied to this ROM file.");
 
-                Console.WriteLine("This patch file was previously applied to this ROM file.");
+            //        if (!commit)
+            //            return true;
 
-                if (!commit)
-                {
-                    romStream.Dispose();
-                    reader.Dispose();
-                    return true;
-                }
+            //        Console.WriteLine("Removing patch.");
 
-                Console.WriteLine("Removing patch.");
+            //        if (currentMod.TryRemoveMod(romStream))
+            //        {
+            //            Console.WriteLine("Verifying patch removal.");
+            //            using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
+            //            {
+            //                if (!verifier.TryVerify(currentMod.patchList))
+            //                {
+            //                    Console.WriteLine("Verification failed, ROM file not modified.");
+            //                    return false;
+            //                }
+            //            }
+            //            File.Copy(workingPath, romPath, true);
+            //            File.Delete(workingPath);
+            //            Console.WriteLine("ROM file modified successfully, Mod has been removed.");
+            //        }
+            //        else
+            //            Console.WriteLine("The ROM file has not been modified.");
 
-                if (patcher.TryRemoveMod())
-                {
-                    reader.Dispose();
-                    romStream.Dispose();
+            //        return true;
+            //    }
 
-                    Console.WriteLine("Verifying patch removal.");
-                    using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
-                    {
-                        if (!verifier.TryVerify(patcher.patchList))
-                        {
-                            Console.WriteLine("Verification failed, ROM file not modified.");
-                            return false;
-                        }
-                    }
+            //    if (!currentMod.TryValidatePatches(romStream))
+            //    {
+            //        Console.WriteLine("This mod can NOT be applied to this ROM file.");
+            //        return false;
+            //    }
 
-                    File.Copy(workingPath, romPath, true);
-                    File.Delete(workingPath);
-                    Console.WriteLine("ROM file modified successfully, Mod has been removed.");
-                }
-                else
-                {
-                    Console.WriteLine("The ROM file has not been modified.");
-                }
+            //    Console.WriteLine("This mod can be applied to this ROM file.");
 
-                romStream.Dispose();
-                reader.Dispose();
-                return true;
+            //    if (!commit)
+            //        return true;
 
-            }
+            //    Console.WriteLine("Applying mod.");
 
-            if (!patcher.TryValidatePatches())
-            {
-                Console.WriteLine("This mod can NOT be applied to this ROM file.");
-                romStream.Dispose();
-                reader.Dispose();
-                return false;
-            }
-
-            Console.WriteLine("This mod can be applied to this ROM file.");
-
-            if (!commit)
-            {
-                romStream.Dispose();
-                reader.Dispose();
-                return true;
-            }
-
-            Console.WriteLine("Applying mod.");
-
-            if (patcher.TryApplyMod())
-            {
-                reader.Dispose();
-                romStream.Dispose();
-
-                Console.WriteLine("Verifying mod.");
-                using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
-                {
-                    if (!verifier.TryVerify(patcher.patchList))
-                    {
-                        Console.WriteLine("Verification failed, ROM file not modified.");
-                        return false;
-                    }
-                }
-
-                File.Copy(workingPath, romPath, true);
-                File.Delete(workingPath);
-                Console.WriteLine("ROM file modified successfully, mod has been applied.");
-            }
-            else
-            {
-                Console.WriteLine("The ROM file has not been modified.");
-            }
-
-            romStream.Dispose();
-            reader.Dispose();
-            return true;
+            //    if (currentMod.TryApplyMod(romStream))
+            //    {
+            //        Console.WriteLine("Verifying mod.");
+            //        using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
+            //        {
+            //            if (!verifier.TryVerify(currentMod.patchList))
+            //            {
+            //                Console.WriteLine("Verification failed, ROM file not modified.");
+            //                return false;
+            //            }
+            //        }
+            //        File.Copy(workingPath, romPath, true);
+            //        File.Delete(workingPath);
+            //        Console.WriteLine("ROM file modified successfully, mod has been applied.");
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("The ROM file has not been modified.");
+            //    }
+            //    return true;
+            //}
         }
     
         /// <summary>
@@ -364,10 +317,8 @@ namespace RomModCore
         /// </summary>
         private static bool TryGenerateBaseline(string patchPath, string romPath)
         {
-
-            SRecordReader reader = new SRecordReader(patchPath);
             Stream romStream = File.OpenRead(romPath);
-            Mod patcher = new Mod(reader, romStream);
+            Mod patcher = new Mod(patchPath);
 
             if (!patcher.TryReadPatches()) return false;
 
@@ -375,16 +326,14 @@ namespace RomModCore
             // Console.WriteLine("Generating baseline SRecords for:");
             // patcher.PrintPatches();
 
-            return patcher.TryPrintBaselines(patchPath);
+            return patcher.TryPrintBaselines(patchPath,romStream);
         }
 
 
         private static bool TryBaselineAndDefine(string patchPath, string romPath, string defPath)
         {
-
-            SRecordReader reader = new SRecordReader(patchPath);
             Stream romStream = File.OpenRead(romPath);
-            Mod patcher = new Mod(reader, romStream);
+            Mod patcher = new Mod(patchPath);
 
             if (!patcher.TryReadPatches()) return false;
             if (!patcher.TryDefinition(defPath)) return false;
@@ -393,44 +342,8 @@ namespace RomModCore
             // Console.WriteLine("Generating baseline SRecords for:");
             // patcher.PrintPatches();
 
-            return patcher.TryPrintBaselines(patchPath);
+            return patcher.TryPrintBaselines(patchPath,romStream);
         }
-
-
-        public static bool ModCompCheck(Stream stream, string patchPath, string romPath, out bool isApplied)
-        {
-            isApplied = false;
-
-            if (TryApply(stream, patchPath, romPath, true, false))
-            {
-                //Can be applied!
-                isApplied = false;
-                return true;
-
-            }
-            
-            if (TryApply(stream, patchPath, romPath, false, false))
-            {
-                //Can be removed!
-                isApplied = true;
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool ModTest(Stream stream, string patchPath, string romPath, bool isApplied)
-        {
-            if (TryApply(stream, patchPath, romPath, !isApplied, false))
-            {
-                //ITS A GO!
-                return true;
-            }
-
-            return false;
-
-        }
-
     }
 }
 

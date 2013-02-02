@@ -70,7 +70,14 @@ namespace ConsoleRedirection
                     }
                     else
                     {
-                        this._output.AppendText(value.ToString()); // When character data is written, append it to the text box.
+                        try
+                        {
+                            this._output.AppendText(value.ToString()); // When character data is written, append it to the text box.
+                        }
+                        catch
+                        {
+                            //do nothing
+                        }
                     }
 
                 };

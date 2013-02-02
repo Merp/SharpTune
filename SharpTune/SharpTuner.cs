@@ -17,6 +17,7 @@ using System.Text;
 using System.IO.Ports;
 using System.IO;
 using SharpTuneCore;
+using RomModCore;
 
 namespace SharpTune
 {
@@ -25,6 +26,8 @@ namespace SharpTune
     /// </summary>
     public static class SharpTuner
     {
+        public static MainWindow mainWindow { get; set; }
+
         public static DeviceImage activeImage { get; set; }
 
         public static List<DeviceImage> imageList { get; set; }

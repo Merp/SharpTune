@@ -115,6 +115,7 @@ namespace RomModCore
             this.ModAuthor = "Unknown Author";
             this.ModName = "Unknown Mod";
             this.ModVersion = "Unknown Version";
+            MemoryStream modStream = new MemoryStream(
             reader = new SRecordReader(modPath);
             FileInfo f = new FileInfo(modPath);
             FileSize = f.Length;

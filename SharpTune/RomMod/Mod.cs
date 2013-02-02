@@ -56,7 +56,6 @@ namespace RomModCore
         public bool isCompat { get; private set; }
         public string info { get; private set; }
         public Stream modStream { get; private set; }
-        public Stream romStream { get; private set; }
         public string direction
         {
             get
@@ -77,7 +76,6 @@ namespace RomModCore
         public string InitialCalibrationId { get; private set; }
         public string FinalCalibrationId { get; private set; }
         private readonly SRecordReader reader;
-        private Stream outStream;
         public uint EcuIdAddress { get; private set; }
         public uint EcuIdLength { get; private set; }
         public string InitialEcuId { get; private set; }
@@ -87,22 +85,7 @@ namespace RomModCore
         private Define definition { get; set; }
 
         /// <summary>
-        /// Constructor for CLI
-        /// </summary>
-        public Mod(SRecordReader reader, Stream rStream)
-        {
-            this.reader = reader;
-            this.outStream = rStream;
-            this.patchList = new List<Patch>();
-            this.ModAuthor = "Unknown Author";
-            this.ModName = "Unknown Mod";
-            this.ModVersion = "Unknown Version";
-            TryReadPatches();
-            TryReversePatches();
-        }
-
-        /// <summary>
-        /// Constructor for external mods using GUI
+        /// Constructor for external mods
         /// </summary>
         /// <param name="modPath"></param>
         public Mod(string modPath)
@@ -111,18 +94,24 @@ namespace RomModCore
             this.ModAuthor = "Unknown Author";
             this.ModName = "Unknown Mod";
             this.ModVersion = "Unknown Version";
-            reader = new SRecordReader(modPath);
+            //MemoryStream modMemStream = new MemoryStream();
+            //using (FileStream fileStream = File.OpenRead(modPath))
+            //{
+            //    modMemStream.SetLength(fileStream.Length);
+            //    fileStream.Read(modMemStream.GetBuffer(), 0, (int)fileStream.Length);
+            //}
             FileInfo f = new FileInfo(modPath);
             FileSize = f.Length;
             FileName = f.Name;
             FilePath = modPath;
             isResource = false;
+            reader = new SRecordReader(modPath);//modMemStream, modPath);
             TryReadPatches();
             TryReversePatches();
         }
 
         /// <summary>
-        /// Constructor for embedded mods using GUI
+        /// Constructor for embedded mods
         /// </summary>
         /// <param name="s"></param>
         /// <param name="modPath"></param>
@@ -148,97 +137,100 @@ namespace RomModCore
             return true;
         }
 
-        public static bool TryApply(Stream stream, string patchPath, string romPath, bool apply, bool commit)
+        public bool TryCheckApplyMod(string romPath, string outPath, bool commit)
         {
-            return Program.TryApplyWorker(stream, patchPath, romPath, apply, commit);
-        }
-        public static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
-        {
-            return Program.TryApplyWorker(null, patchPath, romPath, apply, commit);
-        }
-
-        public bool TryApplyMod(string romPath, string outPath, bool commit)
-        {
-            string workingPath = outPath + ".temp";
-            File.Copy(romPath, outPath, true);
-            File.Copy(romPath, workingPath, true);
-            using (outStream = File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            ///string workingPath = outPath + ".temp";
+            //File.Copy(romPath, outPath, true);
+            //File.Copy(romPath, workingPath, true);//File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            MemoryStream outStream = new MemoryStream();
+            using (FileStream fileStream = File.OpenRead(romPath))
             {
-                
-                Console.WriteLine("This patch file was intended for: {0}.", this.InitialCalibrationId);
-                Console.WriteLine("This patch file converts ROM to:  {0}.", this.FinalCalibrationId);
-                Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
-                Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
+                outStream.SetLength(fileStream.Length);
+                fileStream.Read(outStream.GetBuffer(), 0, (int)fileStream.Length);
+            }
 
-                if (TryValidatePatches())
-                {
-                    isApplied = false;
-                    isCompat = true;
-                    Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
-                }
-                else if (TryValidateUnPatches())
-                {
-                    isApplied = true;
-                    isCompat = true;
-                    Console.WriteLine("This patch file was previously applied to this ROM file.");
-                }
-                else
-                    isCompat = false;
+            Console.WriteLine("This patch file was intended for: {0}.", this.InitialCalibrationId);
+            Console.WriteLine("This patch file converts ROM to:  {0}.", this.FinalCalibrationId);
+            Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
+            Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
 
-                if (!isCompat)
+            if (TryValidatePatches(outStream))
+            {
+                isApplied = false;
+                isCompat = true;
+                Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
+            }
+            else if (TryValidateUnPatches(outStream))
+            {
+                isApplied = true;
+                isCompat = true;
+                Console.WriteLine("This patch file was previously applied to this ROM file.");
+            }
+            else
+                isCompat = false;
+
+            if (!isCompat)
+            {
+                Console.WriteLine(this.FileName + " is mod is NOT compatible with this ROM file.");
+                return false;
+            }
+            if (!commit)
+            {
+                Console.WriteLine(this.FileName + " is compatible with this ROM file.");
+                return true;
+            }
+            if (isApplied)
+            {
+                Console.WriteLine("Removing patch.");
+                if (this.TryRemoveMod(outStream))
                 {
-                    outStream.Dispose();
-                    Console.WriteLine(this.FileName + " is mod is NOT compatible with this ROM file.");
-                    return false;
-                }
-                if (!commit)
-                {
-                    outStream.Dispose();
-                    Console.WriteLine(this.FileName + " is compatible with this ROM file.");
-                    return true;
-                }
-                if (isApplied)
-                {
-                    Console.WriteLine("Removing patch.");
-                    if (this.TryRemoveMod())
+                    Console.WriteLine("Verifying patch removal.");
+                    using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
                     {
-                        Console.WriteLine("Verifying patch removal.");
-                        using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
+                        if (!verifier.TryVerify(this.patchList))
                         {
-                            if (!verifier.TryVerify(this.patchList))
-                            {
-                                outStream.Dispose();
-                                Console.WriteLine("Verification failed, ROM file not modified.");
-                                return false;
-                            }
+                            Console.WriteLine("Verification failed, ROM file not modified.");
+                            return false;
                         }
-                        outStream.Dispose();
-                        File.Copy(workingPath, outPath, true);
-                        File.Delete(workingPath);
-                        Console.WriteLine("ROM file modified successfully, Mod has been removed.");
-                        return true;
                     }
-                    else
+                    //File.Copy(workingPath, outPath, true);
+                    //File.Delete(workingPath);
+                    try
                     {
-                        Console.WriteLine("The ROM file has not been modified.");
-                        outStream.Dispose();
+                        using (FileStream fileStream = File.OpenWrite(outPath))
+                        {
+                            outStream.Seek(0, SeekOrigin.Begin);
+                            outStream.CopyTo(fileStream);
+                        }
+                        Console.WriteLine("ROM file modified successfully, Mod has been removed. Successfully saved image to {0}", outPath);
+                    }
+                    catch (System.Exception excpt)
+                    {
+                        MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Console.WriteLine("Error accessing file! It is locked!");
+                        Console.WriteLine(excpt.Message);
                         return false;
                     }
+                    return true;
                 }
                 else
                 {
-                    Console.WriteLine("Applying mod.");
-                    if (this.TryApplyMod())
+                    Console.WriteLine("The ROM file has not been modified.");
+                    return false;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Applying mod.");
+                if (this.TryApplyMod(outStream))
+                {
+                    Console.WriteLine("Verifying mod.");
+                    using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
                     {
-                        Console.WriteLine("Verifying mod.");
-                        using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
+                        if (!verifier.TryVerify(this.patchList))
                         {
-                            if (!verifier.TryVerify(this.patchList))
-                            {
-                                outStream.Dispose();
-                                Console.WriteLine("Verification failed, ROM file not modified.");
-                                return false;
-                            }
+                            Console.WriteLine("Verification failed, ROM file not modified.");
+                            return false;
                         }
                         outStream.Dispose();
                         File.Copy(workingPath, outPath, true);
@@ -246,12 +238,11 @@ namespace RomModCore
                         Console.WriteLine("ROM file modified successfully, mod has been applied.");
                         return true;
                     }
-                    else
-                    {
-                        Console.WriteLine("The ROM file has not been modified.");
-                        outStream.Dispose();
-                        return false;
-                    }
+                }
+                else
+                {
+                    Console.WriteLine("The ROM file has not been modified.");
+                    return false;
                 }
             }
         }
@@ -362,7 +353,7 @@ namespace RomModCore
         /// <summary>
         /// Determine whether the data that the patch was designed to overwrite match what's actually in the ROM.
         /// </summary>
-        public bool TryValidatePatches()
+        public bool TryValidatePatches(Stream romStream)
         {
             Console.WriteLine("Validating patches...");
             bool allPatchesValid = true;
@@ -372,7 +363,7 @@ namespace RomModCore
 
                 if (patch.GetType() == typeof(PullJSRHookPatch))
                 {
-                    if (!this.ValidateJSRHookBytes((PullJSRHookPatch)patch))
+                    if (!this.ValidateJSRHookBytes((PullJSRHookPatch)patch, romStream))
                     {
                         // Pass/fail message is printed by ValidateBytes().
                         allPatchesValid = false;
@@ -381,7 +372,7 @@ namespace RomModCore
                 else
                 {
 
-                    if (!this.ValidateBytes(patch))
+                    if (!this.ValidateBytes(patch, romStream))
                     {
                         // Pass/fail message is printed by ValidateBytes().
                         allPatchesValid = false;
@@ -400,7 +391,7 @@ namespace RomModCore
         /// <summary>
         /// Determine whether the data that the patch was designed to overwrite match what's actually in the ROM.
         /// </summary>
-        public bool TryValidateUnPatches()
+        public bool TryValidateUnPatches(Stream romStream)
         {
             Console.WriteLine("Validating patch removal...");
             bool allPatchesValid = true;
@@ -414,7 +405,7 @@ namespace RomModCore
                     continue;
                 }
 
-                if (!this.ValidateBytes(patch))
+                if (!this.ValidateBytes(patch, romStream))
                 {
                     // Pass/fail message is printed by ValidateBytes().
                     allPatchesValid = false;
@@ -432,11 +423,11 @@ namespace RomModCore
         /// <summary>
         /// Try to apply the patches to the ROM.
         /// </summary>
-        public bool TryApplyMod()
+        public bool TryApplyMod(Stream romStream)
         {
             foreach (Patch patch in this.patchList)
             {
-                if (!TryApplyPatch(patch))
+                if (!TryApplyPatch(patch, romStream))
                 {
                     return false;
                 }
@@ -449,11 +440,11 @@ namespace RomModCore
         /// Try to remove patches from a ROM
         /// </summary>
         /// <returns></returns>
-        public bool TryRemoveMod()
+        public bool TryRemoveMod(Stream romStream)
         {
             foreach (Patch patch in this.unPatchList)
             {
-                if (!this.TryApplyPatch(patch))
+                if (!this.TryApplyPatch(patch,romStream))
                 {
                     return false;
                 }
@@ -465,7 +456,7 @@ namespace RomModCore
         /// <summary>
         /// Extract actual ROM data, for appending to a patch file.
         /// </summary>
-        public bool TryPrintBaselines(string patchPath)
+        public bool TryPrintBaselines(string patchPath, Stream romStream)
         {
             string p = this.ModAuthor + "_" + this.InitialCalibrationId + "_" + this.FinalCalibrationId + this.ModName + this.ModVersion + ".patch";
             File.Copy(patchPath, p , true);
@@ -473,7 +464,7 @@ namespace RomModCore
             bool result = true;
             foreach (Patch patch in this.patchList)
             {
-                if (!this.TryCheckPrintBaseline(patch))
+                if (!this.TryCheckPrintBaseline(patch,romStream))
                 {
                     result = false;
                     Console.WriteLine("ERROR OCCURRED DURING BASELINE PRINT, POSSIBLE MISMATCH BETWEEN METADATA AND ROM!");
@@ -1105,13 +1096,13 @@ namespace RomModCore
         /// Print the current contents of the ROM in the address range for the given patch.
         /// Contains a check against metadata when IsMetaChecked = true
         /// </summary>
-        private bool TryCheckPrintBaseline(Patch patch)
+        private bool TryCheckPrintBaseline(Patch patch, Stream outStream)
         {
             uint patchLength = patch.Length;
             byte[] buffer = new byte[patchLength];
 
             //read baseline ROM data blob into buffer
-            if (!this.TryReadBuffer(this.outStream, patch.StartAddress, buffer))
+            if (!this.TryReadBuffer(outStream, patch.StartAddress, buffer))
             {
                 return false;
             }
@@ -1141,16 +1132,16 @@ namespace RomModCore
         /// <summary>
         /// Try to read an arbitrary byte range from the ROM.
         /// </summary>
-        private bool TryReadBuffer(Stream stream, uint startAddress, byte[] buffer)
+        private bool TryReadBuffer(Stream romStream, uint startAddress, byte[] buffer)
         {
-            stream.Seek(startAddress, SeekOrigin.Begin);
+            romStream.Seek(startAddress, SeekOrigin.Begin);
             long totalBytesRead = 0;
             long totalBytesToRead = buffer.Length;
 
             while (totalBytesRead < totalBytesToRead)
             {
                 long bytesToRead = totalBytesToRead - totalBytesRead;
-                int bytesRead = this.outStream.Read(
+                int bytesRead = romStream.Read(
                     buffer,
                     (int) totalBytesRead,
                     (int) bytesToRead);
@@ -1173,11 +1164,11 @@ namespace RomModCore
         /// <summary>
         /// Determine whether the bytes from a Patch's expected data match the contents of the ROM.
         /// </summary>
-        private bool ValidateBytes(Patch patch)
+        private bool ValidateBytes(Patch patch, Stream romStream)
         {
             uint patchLength = patch.Length;
             byte[] buffer = new byte[patchLength];
-            if (!this.TryReadBuffer(this.outStream, patch.StartAddress, buffer))
+            if (!this.TryReadBuffer(romStream, patch.StartAddress, buffer))
             {
                 Console.Write("tryreadbuffer failed in validatebytes");
                 return false;
@@ -1226,11 +1217,11 @@ namespace RomModCore
         /// <summary>
         /// Determine whether the bytes from a Patch's expected data match the contents of the ROM.
         /// </summary>
-        private bool ValidateJSRHookBytes(PullJSRHookPatch patch)
+        private bool ValidateJSRHookBytes(PullJSRHookPatch patch, Stream romStream)
         {
             uint patchLength = patch.Length;
             byte[] buffer = new byte[patchLength];
-            if (!this.TryReadBuffer(this.outStream, patch.StartAddress, buffer))
+            if (!this.TryReadBuffer(romStream, patch.StartAddress, buffer))
             {
                 Console.Write("tryreadbuffer failed in validatebytes");
                 return false;
@@ -1336,9 +1327,9 @@ namespace RomModCore
         /// <summary>
         /// Given a patch, look up the content Blob and write it into the ROM.
         /// </summary>
-        private bool TryApplyPatch(Patch patch)
+        private bool TryApplyPatch(Patch patch, Stream romStream)
         {
-            this.outStream.Seek(patch.StartAddress, SeekOrigin.Begin);
+            romStream.Seek(patch.StartAddress, SeekOrigin.Begin);
        
             if (patch.Payload == null)
             {
@@ -1355,7 +1346,7 @@ namespace RomModCore
                 return false;
             }
 
-            this.outStream.Write(patch.Payload.Content.ToArray(), 0, (int) patch.Payload.Content.Count);
+            romStream.Write(patch.Payload.Content.ToArray(), 0, (int) patch.Payload.Content.Count);
             return true;
         }
 
