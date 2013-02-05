@@ -18,7 +18,7 @@ using System.Xml.Linq;
 using EB.Math;
 using System.Collections;
 using System.Globalization;
-using Merp;
+using SharpTune;
 using System.Windows.Forms;
 
 namespace SharpTuneCore

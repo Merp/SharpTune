@@ -17,11 +17,57 @@ using System.Text;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Windows.Forms;
 
-namespace Merp
+namespace SharpTune
 {
+    public class FDialogState
+    {
+        public DialogResult result;
+        public FolderBrowserDialog dialog;
+        public void ThreadProcShowDialog()
+        {
+            result = dialog.ShowDialog();
+        }
+    } 
+
+    public class SADialogState
+    {
+        public DialogResult result;
+        public SaveFileDialog dialog;
+
+        public void ThreadProcShowDialog()
+        {
+            result = dialog.ShowDialog();
+        }
+    }
+
     public static class Extensions
     {
+        public static DialogResult STAShowFDialog(FolderBrowserDialog dialog)
+        {
+            FDialogState state = new FDialogState();
+            state.dialog = dialog;
+            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            return state.result;
+        }
+
+        
+
+        public static DialogResult STAShowSADialog(SaveFileDialog dialog)
+        {
+            SADialogState state = new SADialogState();
+            state.dialog = dialog;
+            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            return state.result;
+        }
+
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             return source.IndexOf(toCheck, comp) >= 0;

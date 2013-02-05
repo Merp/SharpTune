@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using System.Xml;
 using System.Xml.XPath;
 using System.Data;
-using Merp;
+using SharpTune;
 using SharpTuneCore;
 
 namespace RomModCore

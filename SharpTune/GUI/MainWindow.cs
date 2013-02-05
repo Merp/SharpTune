@@ -34,7 +34,7 @@ using System.Xml.Linq;
 using System.Xml;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Merp;
+using SharpTune;
 
 
 
@@ -529,7 +529,7 @@ namespace SharpTune
                 d.SelectedPath = path;
             }
             //d.ShowDialog();
-            DialogResult ret = STAShowFDialog(d);
+            DialogResult ret = Extensions.STAShowFDialog(d);
 
             if (ret == DialogResult.OK)
             {
@@ -539,47 +539,7 @@ namespace SharpTune
             } 
         }
 
-        public class FDialogState
         {
-            public DialogResult result;
-            public FolderBrowserDialog dialog;
-            public void ThreadProcShowDialog()
-            {
-                result = dialog.ShowDialog();
-            }
-        }
-
-        private DialogResult STAShowFDialog(FolderBrowserDialog dialog)
-        {
-            FDialogState state = new FDialogState();
-            state.dialog = dialog;
-            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
-            t.SetApartmentState(System.Threading.ApartmentState.STA);
-            t.Start();
-            t.Join();
-            return state.result;
-        }
-
-        public class SADialogState
-        {
-            public DialogResult result;
-            public SaveFileDialog dialog;
-
-            public void ThreadProcShowDialog()
-            {
-                result = dialog.ShowDialog();
-            }
-        }
-
-        private DialogResult STAShowSADialog(SaveFileDialog dialog)
-        {
-            SADialogState state = new SADialogState();
-            state.dialog = dialog;
-            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
-            t.SetApartmentState(System.Threading.ApartmentState.STA);
-            t.Start();
-            t.Join();
-            return state.result;
         }
     }
 }

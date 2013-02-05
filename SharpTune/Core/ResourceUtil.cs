@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
-using Merp;
+using SharpTune;
 
 
 namespace SharpTuneCore
