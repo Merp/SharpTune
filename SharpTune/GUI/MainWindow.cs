@@ -539,7 +539,9 @@ namespace SharpTune
             } 
         }
 
+        private void xMLToIDCToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //Spawn XML to IDC window
         }
     }
 }

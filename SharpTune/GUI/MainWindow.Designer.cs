@@ -60,6 +60,8 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -157,7 +159,9 @@
             // 
             this.rOMToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.obfuscateCALIDToolStripMenuItem,
-            this.manuallySelectPatchToolStripMenuItem});
+            this.manuallySelectPatchToolStripMenuItem,
+            this.xMLToIDCToolStripMenuItem,
+            this.iDAToHEWToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
             this.rOMToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.rOMToolStripMenuItem.Text = "Tools";
@@ -195,8 +199,8 @@
             this.xMLToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.definitionLocationToolStripMenuItem});
             this.xMLToolStripMenuItem.Name = "xMLToolStripMenuItem";
-            this.xMLToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
-            this.xMLToolStripMenuItem.Text = "XML";
+            this.xMLToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.xMLToolStripMenuItem.Text = "Settings";
             // 
             // definitionLocationToolStripMenuItem
             // 
@@ -361,6 +365,19 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
             // 
+            // xMLToIDCToolStripMenuItem
+            // 
+            this.xMLToIDCToolStripMenuItem.Name = "xMLToIDCToolStripMenuItem";
+            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.xMLToIDCToolStripMenuItem.Text = "XML to IDC";
+            this.xMLToIDCToolStripMenuItem.Click += new System.EventHandler(this.xMLToIDCToolStripMenuItem_Click);
+            // 
+            // iDAToHEWToolStripMenuItem
+            // 
+            this.iDAToHEWToolStripMenuItem.Name = "iDAToHEWToolStripMenuItem";
+            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -422,6 +439,8 @@
         private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ToolStripMenuItem xMLToIDCToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
     }
 }
 

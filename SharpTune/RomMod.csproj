@@ -118,6 +118,12 @@
     <Compile Include="GUI\SSMTestApp.Designer.cs">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\XMLtoIDC.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\XMLtoIDC.Designer.cs">
+      <DependentUpon>XMLtoIDC.cs</DependentUpon>
+    </Compile>
     <Compile Include="ModUtils.cs" />
     <Compile Include="RAMDump.cs" />
     <Compile Include="GUI\TableView.cs" />
@@ -162,6 +168,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SSMTestApp.resx">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\XMLtoIDC.resx">
+      <DependentUpon>XMLtoIDC.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
