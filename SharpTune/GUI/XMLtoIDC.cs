@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using SharpTune;
+using System.IO;
 
 namespace SharpTune.GUI
 {
@@ -17,7 +18,7 @@ namespace SharpTune.GUI
             InitializeComponent();
         }
 
-        private void checkedChecker()
+        private void checkedChecker(object sender, EventArgs e)
         {
             if (romTablesCheckBox.Checked || ExtParamsCheckBox.Checked || ssmParamsCheckBox.Checked)
             {
@@ -42,16 +43,21 @@ namespace SharpTune.GUI
                 if (romTablesCheckBox.Checked)
                 {
                     string spath = d.SelectedPath.ToString() + @"/" + SharpTuner.activeImage.CalId + @"_romtables.idc";
+                    //comboBoxEcuDef.SelectedItem
                 }
                 if (ExtParamsCheckBox.Checked)
                 {
                     string spath = d.SelectedPath.ToString() + @"/" + SharpTuner.activeImage.CalId + @"_extparams.idc";
+                    //comboBoxLoggerDef.SelectedItem
+                    //comboBoxLoggerDTD.SelectedItem
                 }
                 if (ssmParamsCheckBox.Checked)
                 {
                     if(true)//todo analyze ssm bse address
                     {
                         string spath = d.SelectedPath.ToString() + @"/" + SharpTuner.activeImage.CalId + @"_ssmparams.idc";
+                        //comboBoxLoggerDef.SelectedItem
+                        //comboBoxLoggerDTD.SelectedItem
                     }
                 }
                 d.SelectedPath.ToString();
@@ -62,5 +68,32 @@ namespace SharpTune.GUI
         {
             //TOOD: attempt to autodetect SSM base address, if found, LOCK the text input
         }
+
+        private List<string> loggerdtds = new List<string>();
+        private List<string> loggerdefs = new List<string>();
+        private List<string> ecudefs = new List<string>();
+        private List<string> loggerdtdfiles = new List<string>();
+        private List<string> loggerdeffiles = new List<string>();
+        private List<string> ecudeffiles = new List<string>();
+
+        private void XMLtoIDC_Load(object sender, EventArgs e)
+        {
+            //search through defs for logger.dtd
+            loggerdtds = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger.dtd" });
+            Extensions.getFilePaths(loggerdtds, ref loggerdtdfiles);
+            comboBoxLoggerDTD.DataSource = loggerdtdfiles;
+
+            //search through defs for logger defs
+            loggerdefs = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger" , ".xml" });
+            Extensions.getFilePaths(loggerdefs, ref loggerdeffiles);
+            comboBoxLoggerDef.DataSource = loggerdeffiles;
+
+            //search through defs for ecu defs
+            ecudefs = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
+            Extensions.getFilePaths(ecudefs, ref ecudeffiles);
+            comboBoxEcuDef.DataSource = ecudeffiles;
+           
+        }
+
     }
 }

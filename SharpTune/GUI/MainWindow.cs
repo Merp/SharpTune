@@ -344,7 +344,7 @@ namespace SharpTune
             d.InitialDirectory = SharpTuner.activeImage.FilePath;
             d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
             //d.ShowDialog();
-            DialogResult ret = STAShowSADialog(d);
+            DialogResult ret = Extensions.STAShowSADialog(d);
 
             if (ret == DialogResult.OK && d.FileName != null)
             {
@@ -392,7 +392,7 @@ namespace SharpTune
             d.SelectedPath = path;
 
             //d.ShowDialog();
-            DialogResult ret = STAShowFDialog(d);
+            DialogResult ret = Extensions.STAShowFDialog(d);
 
             if (ret == DialogResult.OK)
             {
@@ -423,7 +423,7 @@ namespace SharpTune
             string path = SharpTuner.activeImage.FileDirectory.ToString();
             d.SelectedPath = path;
             //d.ShowDialog();
-            DialogResult ret = STAShowFDialog(d);
+            DialogResult ret = Extensions.STAShowFDialog(d);
             if (ret == DialogResult.OK)
             {
                 LoadMods(d.SelectedPath);
@@ -541,7 +541,14 @@ namespace SharpTune
 
         private void xMLToIDCToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //Spawn XML to IDC window
+            // Initialise and start worker thread
+            this.workerThread = new Thread(new ThreadStart(this.SpawnXMLToIDC));
+            this.workerThread.Start();
+        }
+
+        private void SpawnXMLToIDC()
+        {
+            Application.Run(new XMLtoIDC());
         }
     }
 }

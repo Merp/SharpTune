@@ -6,6 +6,9 @@
  * notice of where it came from!
  */
 
+//TODO: set up TRACE listeners and write to trace instead
+// add input/output path to args
+
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -14,6 +17,7 @@ using System.Xml.XPath;
 using System.Text;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace NSFW
 {
@@ -21,6 +25,120 @@ namespace NSFW
     {
         private static HashSet<string> names = new HashSet<string>();
         private static IDictionary<string, string> tableList = new Dictionary<string, string>();
+        private static String DefPath = "";
+
+        static void GuiRun(string[] args)
+        {
+
+            Trace.Listeners.Clear();
+
+            TextWriterTraceListener twtl = new TextWriterTraceListener(Path.Combine(Path.GetTempPath(), AppDomain.CurrentDomain.FriendlyName));
+            twtl.Name = "TextLogger";
+            twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+            Trace.Listeners.Add(twtl);
+
+            //No need to add console listener here
+            //ConsoleTraceListener ctl = new ConsoleTraceListener(false);
+            //ctl.TraceOutputOptions = TraceOptions.DateTime;
+            //Trace.Listeners.Add(ctl);
+
+            Trace.AutoFlush = true;
+
+            DefPath = SharpTune.SharpTuner.RRDefRepoPath; //Todo: switch to RR specific path, and automate a search for RR defs whenever the path is changed/loaded.
+
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
+            builder.AppendLine(string.Format("// This file gernerated by XmlToIdc version: {0}",
+                              Assembly.GetExecutingAssembly().GetName().Version));
+            builder.AppendLine(string.Format("// running on mscorlib.dll version: {0}",
+                              typeof(String).Assembly.GetName().Version));
+            Trace.Write(builder.ToString());
+
+            if (args.Length == 0)
+            {
+                Usage();
+                return;
+            }
+
+            if (CategoryIs(args, "tables"))
+            {
+                if (args.Length != 2)
+                {
+                    UsageTables();
+                }
+                else
+                {
+                    string calId = args[1].ToUpper();
+                    string functionName = "Tables_" + calId;
+                    WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
+                    DefineTables(functionName, calId);
+                }
+            }
+            else if (CategoryIs(args, "stdparam"))
+            {
+                if (args.Length != 5)
+                {
+                    UsageStdParam();
+                }
+                else
+                {
+                    string cpu = args[1];
+                    string target = args[2].ToUpper();
+                    string calId = args[3].ToUpper();
+                    string ssmBaseString = args[4].ToUpper();
+                    string functionName = "StdParams_" + calId;
+                    uint ssmBase = ConvertBaseString(ssmBaseString);
+                    WriteHeader1(functionName,
+                                 string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
+                                  cpu, target, calId, ssmBase.ToString("X")));
+                    DefineStandardParameters(functionName, target, calId, ssmBase, cpu);
+                }
+            }
+            else if (CategoryIs(args, "extparam"))
+            {
+                if (args.Length != 4)
+                {
+                    UsageExtParam();
+                    return;
+                }
+                else
+                {
+                    string cpu = args[1];
+                    string target = args[2].ToUpper();
+                    string ecuId = args[3].ToUpper();
+                    string functionName = "ExtParams_" + ecuId;
+                    WriteHeader1(functionName,
+                                 string.Format("Extended parameter definitions for {0} bit {1}: {2}",
+                                  cpu, target, ecuId));
+                    DefineExtendedParameters(functionName, target, ecuId, cpu);
+                }
+            }
+            else if (CategoryIs(args, "makeall"))
+            {
+                if (args.Length != 4)
+                {
+                    UsageMakeAll();
+                    return;
+                }
+                else
+                {
+                    string target = args[1].ToUpper();
+                    string calId = args[2].ToUpper();
+                    string ssmBaseString = args[3].ToUpper();
+                    string functionName1 = "Tables";
+                    string functionName2 = "StdParams";
+                    string functionName3 = "ExtParams";
+                    WriteHeader3(functionName1, functionName2, functionName3,
+                                 string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
+                                  target, calId, ssmBaseString));
+                    string[] results = new string[2];
+                    results = DefineTables(functionName1, calId);
+                    uint ssmBase = ConvertBaseString(ssmBaseString);
+                    DefineStandardParameters(functionName2, target, calId, ssmBase, results[1]);
+                    DefineExtendedParameters(functionName3, target, results[0], results[1]);
+                }
+            }
+        }
 
         static void Run(string[] args)
         {
@@ -30,7 +148,7 @@ namespace NSFW
                               Assembly.GetExecutingAssembly().GetName().Version));
             builder.AppendLine(string.Format("// running on mscorlib.dll version: {0}",
                               typeof(String).Assembly.GetName().Version));
-            Console.Write(builder.ToString());
+            Trace.Write(builder.ToString());
 
             if (args.Length == 0)
             {
@@ -122,7 +240,7 @@ namespace NSFW
 
         private static string[] DefineTables(string functionName, string calId)
         {
-            if (!File.Exists("ecu_defs.xml"))
+            if (!File.Exists(DefPath + @"\\ecu\\ecu_defs.xml"))
             {
                 MessageBox.Show("ecu_defs.xml must be in the current directory.",
                                 "Error - ECU Definitions File Missing",
@@ -140,7 +258,7 @@ namespace NSFW
 
         private static void DefineStandardParameters(string functionName, string target, string calId, uint ssmBase, string cpu)
         {
-            if (!File.Exists("logger.xml"))
+            if (!File.Exists(DefPath + @"\\logger\\logger.xml"))
             {
                 MessageBox.Show("logger.xml must be in the current directory.",
                                 "Error - Logger Definitions File Missing",
@@ -150,7 +268,7 @@ namespace NSFW
                 return;
             }
 
-            if (!File.Exists("logger.dtd"))
+            if (!File.Exists(DefPath + @"\\logger\\logger.dtd"))
             {
                 MessageBox.Show("logger.dtd must be in the current directory.",
                                 "Error - Logger Type Definition File Missing",
@@ -167,7 +285,7 @@ namespace NSFW
 
         private static void DefineExtendedParameters(string functionName, string target, string ecuId, string cpu)
         {
-            if (!File.Exists("logger.xml"))
+            if (!File.Exists(DefPath + @"\\logger\\logger.xml"))
             {
                 MessageBox.Show("logger.xml must be in the current directory.",
                                 "Error - Logger Definitions File Missing",
@@ -177,7 +295,7 @@ namespace NSFW
                 return;
             }
 
-            if (!File.Exists("logger.dtd"))
+            if (!File.Exists(DefPath + @"\\logger\\logger.dtd"))
             {
                 MessageBox.Show("logger.dtd must be in the current directory.",
                                 "Error - Logger Type Definition File Missing",
@@ -196,7 +314,7 @@ namespace NSFW
 
         private static string[] WriteTableNames(string xmlId)
         {
-            Console.WriteLine("auto referenceAddress;");
+            Trace.WriteLine("auto referenceAddress;");
 
             string ecuid = null;
             string memmodel = null;
@@ -223,7 +341,7 @@ namespace NSFW
                     }
                     else if (id.Equals(rombase))
                     {
-                        Console.WriteLine("Warning(\"Marking tables using addresses from inherited base ROM: " +
+                        Trace.WriteLine("Warning(\"Marking tables using addresses from inherited base ROM: " +
                                           id.ToUpper() + "\");");
                     }
                     string path = "/roms/rom/romid[xmlid='" + id + "']";
@@ -247,7 +365,7 @@ namespace NSFW
 
                     if (string.IsNullOrEmpty(ecuid))
                     {
-                        Console.WriteLine("Could not find definition for " + id);
+                        Trace.WriteLine("Could not find definition for " + id);
                         return null;
                     }
                     if (memmodel.Contains("68HC"))
@@ -314,7 +432,7 @@ namespace NSFW
                     }
                     if (tableCount < 1)
                     {
-                        Console.WriteLine("// No tables found specifically for ROM " + id + ", used inherited ROM");
+                        Trace.WriteLine("// No tables found specifically for ROM " + id + ", used inherited ROM");
                     }
                 }
                 WriteIdcTableNames();
@@ -383,7 +501,7 @@ namespace NSFW
                         builder.AppendLine("{");
                         builder.AppendLine("    Message(\"No reference to " + tableName + "\\n\");");
                         builder.AppendLine("}");
-                        Console.WriteLine(builder.ToString());
+                        Trace.WriteLine(builder.ToString());
                     }
                     else
                     {
@@ -403,7 +521,7 @@ namespace NSFW
 
         private static void WriteStandardParameters(string target, string ecuid, uint ssmBase, string cpu)
         {
-            Console.WriteLine("auto addr;");
+            Trace.WriteLine("auto addr;");
 
             if (target == "ecu" | target == "ECU")
             {
@@ -421,9 +539,9 @@ namespace NSFW
             {
                 ptrName = "PtrSsm_";
                 funcName = "Ssm_";
-                Console.WriteLine("auto opAddr, seg;");
-                Console.WriteLine("if (SegByName(\"DATA\") != BADADDR) seg = 1;");
-                Console.WriteLine("");
+                Trace.WriteLine("auto opAddr, seg;");
+                Trace.WriteLine("if (SegByName(\"DATA\") != BADADDR) seg = 1;");
+                Trace.WriteLine("");
             }
 
             using (Stream stream = File.OpenRead("logger.xml"))
@@ -467,12 +585,12 @@ namespace NSFW
                     address = address + ssmBase;
                     addressString = "0x" + address.ToString("X8");
 
-                    Console.WriteLine(string.Format("MakeUnknown({0}, 4, DOUNK_SIMPLE);", addressString));
-                    Console.WriteLine(string.Format("MakeDword({0});", addressString));
+                    Trace.WriteLine(string.Format("MakeUnknown({0}, 4, DOUNK_SIMPLE);", addressString));
+                    Trace.WriteLine(string.Format("MakeDword({0});", addressString));
                     MakeName(addressString, pointerName);
 
                     string getAddress = string.Format("addr = Dword({0});", addressString);
-                    Console.WriteLine(getAddress);
+                    Trace.WriteLine(getAddress);
                     MakeName("addr", functionName);
 
                     if (cpu.Equals("16"))
@@ -499,9 +617,9 @@ namespace NSFW
                         builder.AppendLine("{");
                         builder.AppendLine("    Message(\"No reference to " + name + "\\n\");");
                         builder.AppendLine("}");
-                        Console.Write(builder.ToString());
+                        Trace.Write(builder.ToString());
                     }
-                    Console.WriteLine();
+                    Trace.WriteLine("");
                 }
                 // now let's print the switch references
                 // Name format: Switches_b7_b6_b5_b4_b3_b2_b1_b0
@@ -597,7 +715,7 @@ namespace NSFW
             builder.AppendLine("{");
             builder.AppendLine("    " + functionName + " ();");
             builder.AppendLine("}");
-            Console.WriteLine(builder.ToString());
+            Trace.WriteLine(builder.ToString());
         }
 
         private static void WriteHeader2(string functionName)
@@ -606,7 +724,7 @@ namespace NSFW
             builder.AppendLine("static " + functionName + " ()");
             builder.AppendLine("{");
             builder.AppendLine("Message(\"--- Now marking " + functionName + " ---\\n\");");
-            Console.Write(builder.ToString());
+            Trace.Write(builder.ToString());
         }
 
         private static void WriteHeader3(string functionName1, string functionName2, string functionName3, string description)
@@ -622,18 +740,18 @@ namespace NSFW
             builder.AppendLine("    " + functionName2 + " ();");
             builder.AppendLine("    " + functionName3 + " ();");
             builder.AppendLine("}");
-            Console.WriteLine(builder.ToString());
+            Trace.WriteLine(builder.ToString());
         }
 
         private static void WriteFooter(string functionName)
         {
-            Console.WriteLine("}   // end of " + functionName);
-            Console.WriteLine();
+            Trace.WriteLine("}   // end of " + functionName);
+            Trace.WriteLine("");
         }
 
         private static void PrintSwitches(IDictionary<string, Array> switchList, uint ssmBase, string cpu)
         {
-            Console.WriteLine("// Switch Bit Position Name format: Switches_b7_b6_b5_b4_b3_b2_b1_b0");
+            Trace.WriteLine("// Switch Bit Position Name format: Switches_b7_b6_b5_b4_b3_b2_b1_b0");
 
             string ptrName = "PtrSsmGet_";
             string funcName = "SsmGet_";
@@ -666,18 +784,18 @@ namespace NSFW
                 address = address + ssmBase;
                 string addressString = "0x" + address.ToString("X8");
 
-                Console.WriteLine(string.Format("MakeUnknown({0}, 4, DOUNK_SIMPLE);", addressString));
-                Console.WriteLine(string.Format("MakeDword({0});", addressString));
+                Trace.WriteLine(string.Format("MakeUnknown({0}, 4, DOUNK_SIMPLE);", addressString));
+                Trace.WriteLine(string.Format("MakeDword({0});", addressString));
                 MakeName(addressString, pointerName);
 
                 string getAddress = string.Format("addr = Dword({0});", addressString);
-                Console.WriteLine(getAddress);
+                Trace.WriteLine(getAddress);
                 if (cpu.Equals("16"))
                 {
                     FormatData("addr", "1");
                 }
                 MakeName("addr", functionName);
-                Console.WriteLine();
+                Trace.WriteLine("");
             }
         }
 
@@ -688,7 +806,7 @@ namespace NSFW
                 string command = string.Format("MakeNameEx({0}, \"{1}\", SN_CHECK);",
                                                address,
                                                name);
-                Console.WriteLine(command);
+                Trace.WriteLine(command);
             }
         }
 
@@ -776,11 +894,11 @@ namespace NSFW
             {
                 string unknown = string.Format("MakeUnknown({0}, {1}, DOUNK_SIMPLE);",
                                                address, length);
-                Console.WriteLine(unknown);
+                Trace.WriteLine(unknown);
                 string command = string.Format("{0}({1});",
                                                datatype,
                                                address);
-                Console.WriteLine(command);
+                Trace.WriteLine(command);
             }
         }
 
