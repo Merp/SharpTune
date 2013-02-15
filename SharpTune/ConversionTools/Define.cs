@@ -8,7 +8,7 @@ using System.IO;
 
 namespace ConvTools
 {
-    class Define
+    public class Define
     {
         public string name { get; private set; }
         public string type { get; private set; }

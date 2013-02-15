@@ -7,7 +7,7 @@ using SharpTune;
 
 namespace ConvTools
 {
-    class IdaDef
+    public class IdaDef
     {
         public string name { get; private set; }
         public string type { get; private set; }

@@ -36,6 +36,12 @@ namespace SharpTune
 
         public static string definitionPath = "rommetadata";
 
+        public static string DefRepoPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\SubaruDefs\";
+        public static string EcuFlashDefRepoPath = DefRepoPath + @"\ECUFlash\subaru standard\";
+        public static string RRDefRepoPath = DefRepoPath + @"RomRaider\ecu\";
+        public static string RREcuDefPath = RRDefRepoPath + @"standard\";
+        public static string RRLoggerDefPath = RRDefRepoPath + @"logger\";
+
         public static string activePort { get; set; }
 
         public static SerialPort Port { get; set; }

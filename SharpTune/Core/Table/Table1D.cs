@@ -20,7 +20,6 @@ using System.IO;
 using SharpTune;
 using System.Windows.Forms;
 using System.Drawing;
-using SharpTune;
 
 namespace SharpTuneCore
 {

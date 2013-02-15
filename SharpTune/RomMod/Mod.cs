@@ -17,7 +17,6 @@ using System.Linq;
 using System.Text;
 using SharpTune;
 using System.Windows.Forms;
-using SharpTune;
 
 namespace RomModCore
 {
@@ -233,8 +232,8 @@ namespace RomModCore
                             return false;
                         }
                         outStream.Dispose();
-                        File.Copy(workingPath, outPath, true);
-                        File.Delete(workingPath);
+                        //File.Copy(workingPath, outPath, true);
+                        //File.Delete(workingPath);
                         Console.WriteLine("ROM file modified successfully, mod has been applied.");
                         return true;
                     }

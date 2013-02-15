@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ConvTools
 {
-    class IdaName
+    public class IdaName
     {
         public string name { get; private set; }
         public string rawData { get; private set; }

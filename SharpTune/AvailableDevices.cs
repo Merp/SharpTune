@@ -140,7 +140,6 @@ namespace SharpTuneCore
                     Console.WriteLine(e.Message);
                     return null;
                 }
-            return null;
         }  
 
 

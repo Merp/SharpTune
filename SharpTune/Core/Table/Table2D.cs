@@ -19,7 +19,6 @@ using System.Data;
 using System.IO;
 using SharpTune;
 using SharpTuneCore;
-using SharpTune;
 
 namespace SharpTuneCore
 {

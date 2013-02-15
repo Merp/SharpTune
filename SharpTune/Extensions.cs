@@ -126,7 +126,7 @@ namespace SharpTune
             return r.Match(_hex).Success;
         }
 
-        static public void CopyFolder(string sourceFolder, string destFolder)
+        public static void CopyFolder(string sourceFolder, string destFolder)
         {
             if (!Directory.Exists(destFolder))
                 Directory.CreateDirectory(destFolder);
@@ -145,6 +145,86 @@ namespace SharpTune
                 CopyFolder(folder, dest);
             }
         }
-    }
 
+        public static bool MatchAllCI(string foo, List<string> sTerms)
+        {
+            foreach(string s in sTerms)
+            {
+                if (!foo.ContainsCI(s))
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool ExcludeAllCI(string foo, List<string> sTerms)
+        {
+            foreach (string s in sTerms)
+            {
+                if (foo.ContainsCI(s))
+                    return false;
+            }
+            return true;
+        }
+
+        public static List<string> DirSearchCI(string sDir, List<string> sTerms)
+        {
+	        try	
+	        {
+                List<string> lstFilesFound = new List<string>();
+                foreach (string f in Directory.GetFiles(sDir))
+                {
+                    if (MatchAllCI(Path.GetFileName(f), sTerms))
+                        lstFilesFound.Add(f);
+                }
+                foreach (string d in Directory.GetDirectories(sDir))
+                {
+                    lstFilesFound.AddRange(DirSearchCI(d, sTerms));
+                }
+                return lstFilesFound;
+	        }
+	        catch (System.Exception excpt) 
+	        {
+		        Console.WriteLine(excpt.Message);
+	        }
+            return null;
+        }
+
+        public static List<string> DirSearchCI(string sDir, List<string> search, List<string> excludes)
+        {
+            try
+            {
+                List<string> lstFilesFound = new List<string>();
+                foreach (string f in Directory.GetFiles(sDir))
+                {
+                    if (MatchAllCI(Path.GetFileName(f), search) && ExcludeAllCI(Path.GetFileName(f), excludes))
+                        lstFilesFound.Add(f);
+                }
+                foreach (string d in Directory.GetDirectories(sDir))
+                {
+                    lstFilesFound.AddRange(DirSearchCI(d, search, excludes));
+                }
+                return lstFilesFound;
+            }
+            catch (System.Exception excpt)
+            {
+                Console.WriteLine(excpt.Message);
+            }
+            return null;
+        }
+
+        public static void getFilePaths(List<string> input, ref List<string> output)
+        {
+            output.Clear();
+            foreach (string s in input)
+            {
+                string t = s.ToString();
+                output.Add(Path.GetFileName(t));
+            }
+        }
+
+        public static void deleteFile(this string path)
+        {
+            File.Delete(path);
+        }
+    }
 }

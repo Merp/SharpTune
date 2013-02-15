@@ -21,7 +21,6 @@ using System.Data;
 using SharpTune;
 using System.Windows.Forms;
 using System.Drawing;
-using SharpTune;
 
 
 namespace SharpTuneCore
