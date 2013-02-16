@@ -88,6 +88,7 @@
             // 
             // generateIdcButton
             // 
+            this.generateIdcButton.Enabled = false;
             this.generateIdcButton.Location = new System.Drawing.Point(9, 247);
             this.generateIdcButton.Name = "generateIdcButton";
             this.generateIdcButton.Size = new System.Drawing.Size(360, 32);

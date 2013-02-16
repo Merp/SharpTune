@@ -46,7 +46,7 @@ namespace SharpTune
 
         private int selectedModIndex;
 
-        OpenFileDialog ofd = new OpenFileDialog();
+        public OpenFileDialog ofd = new OpenFileDialog();
 
         private Thread workerThread = null;
 
@@ -541,6 +541,21 @@ namespace SharpTune
 
         private void xMLToIDCToolStripMenuItem_Click(object sender, EventArgs e)
         {
+             if (SharpTuner.activeImage == null)
+            {
+                MessageBox.Show("No ROM selected! Please open and select a ROM first!");
+                ofd.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    openDeviceImage(ofd.FileName);
+                }
+                if (SharpTuner.activeImage == null)
+                {
+                    MessageBox.Show("OPEN A ROM, DUMMY!");
+                    this.Close();
+                    return;
+                }
+            }
             // Initialise and start worker thread
             this.workerThread = new Thread(new ThreadStart(this.SpawnXMLToIDC));
             this.workerThread.Start();

@@ -8,6 +8,9 @@ using System.Text;
 using System.Windows.Forms;
 using SharpTune;
 using System.IO;
+using System.Text.RegularExpressions;
+
+//TODO: Add support for ECUFlash definitions to load ALPHA tables!!
 
 namespace SharpTune.GUI
 {
@@ -33,40 +36,104 @@ namespace SharpTune.GUI
             FolderBrowserDialog d = new FolderBrowserDialog();
             if (SharpTuner.activeImage != null)
             {
-                string path = SharpTuner.activeImage.ToString();
-                d.SelectedPath = path;
+                string t = Path.GetDirectoryName(SharpTuner.activeImage.FilePath);
+                d.SelectedPath = t;
             }
             DialogResult ret = SharpTune.Extensions.STAShowFDialog(d);
             if (ret == DialogResult.OK)
             {
-                //TTODO add calls to XMLTOIDC
+                //TODO ERROR HANDLING, CLEAR OUTPUT FILES FIRST??
                 if (romTablesCheckBox.Checked)
                 {
-                    string spath = d.SelectedPath.ToString() + @"/" + SharpTuner.activeImage.CalId + @"_romtables.idc";
-                    //comboBoxEcuDef.SelectedItem
+                    string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_romtables.idc";
+                    spath.deleteFile();
+                    Console.WriteLine("Writing Rom Table IDC file to " + spath);
+                    NSFW.XMLtoIDC.GuiRun(new string[] { "tables", SharpTuner.activeImage.CalId }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], null, null);
                 }
                 if (ExtParamsCheckBox.Checked)
                 {
-                    string spath = d.SelectedPath.ToString() + @"/" + SharpTuner.activeImage.CalId + @"_extparams.idc";
-                    //comboBoxLoggerDef.SelectedItem
-                    //comboBoxLoggerDTD.SelectedItem
+                    string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_extparams.idc";
+                    spath.deleteFile();
+                    Console.WriteLine("Writing extended RAM param IDC file to " + spath);
+                    NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "Car", SharpTuner.activeImage.CalId }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                 }
                 if (ssmParamsCheckBox.Checked)
                 {
-                    if(true)//todo analyze ssm bse address
+                    if(System.Text.RegularExpressions.Regex.IsMatch(ssmBaseTextBox.Text,  @"\A\b[0-9a-fA-F]+\b\Z")) //@"\A\b(0[xX])?[0-9a-fA-F]+\b\Z"))//todo analyze ssm bse address
                     {
-                        string spath = d.SelectedPath.ToString() + @"/" + SharpTuner.activeImage.CalId + @"_ssmparams.idc";
-                        //comboBoxLoggerDef.SelectedItem
-                        //comboBoxLoggerDTD.SelectedItem
+                        string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_ssmparams.idc";
+                        spath.deleteFile();
+                        Console.WriteLine("Writing SSM param IDC file to " + spath);
+                        NSFW.XMLtoIDC.GuiRun(new string[] { "stdparam", "32", "Car", SharpTuner.activeImage.CalId, ssmBaseTextBox.Text} ,spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid SSM base address! IDC write aborted!");
+                        Console.Write("Invalid SSM base address! IDC write aborted!");
                     }
                 }
-                d.SelectedPath.ToString();
+                MessageBox.Show("Finished Writing IDC Files!");
+                Console.WriteLine("Finished writing IDC Files!");
             } 
         }
 
         private void ssmParamsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            //TOOD: attempt to autodetect SSM base address, if found, LOCK the text input
+            if (ssmParamsCheckBox.Checked)
+            {
+                ssmBaseTextBox.Enabled = true;
+                ssmBaseTextBox.Text = getSSMBase();
+            }
+            else
+            {
+                ssmBaseTextBox.Enabled = false;
+                ssmBaseTextBox.Text = "Enter SSM Base Address";
+            }
+        }
+
+        private string getSSMBase()
+        {
+            byte[] byc = new byte[4];
+            long highlimit = 5000000;
+            if(SharpTuner.activeImage.imageStream.Length < highlimit)
+                highlimit = SharpTuner.activeImage.imageStream.Length;
+            for (long i = 100000; i < highlimit; i += 4)
+            {
+                long start = i;
+                SharpTuner.activeImage.imageStream.Seek(i, SeekOrigin.Begin);
+                if (SSMBaseRecursion(i, 0, 0))
+                    return start.ToString("X");
+                else
+                    continue;
+            }
+            return "Enter SSM Base";
+        }
+
+        private bool SSMBaseRecursion(long currentoffset, int lastaddress, int recursionlevel)
+        {
+            int addinc;
+            if (recursionlevel < 6)
+                addinc = 17;
+            else
+                addinc = 1000;
+            byte[] byc = new byte[4];
+            int bc = 0;
+            SharpTuner.activeImage.imageStream.Read(byc, 0, 4);
+
+            byc.ReverseBytes();
+            bc = BitConverter.ToInt32(byc,0);
+            if(recursionlevel == 0)
+                lastaddress = bc;
+            if(bc > 0 && Math.Abs(currentoffset - bc) < 100000 && lastaddress + addinc > bc)
+            {
+                if (recursionlevel > 40)
+                    return true;
+                recursionlevel++;
+                currentoffset += 4;
+                return SSMBaseRecursion(currentoffset, bc, recursionlevel);
+            }
+            else
+                return false;
         }
 
         private List<string> loggerdtds = new List<string>();
@@ -75,9 +142,26 @@ namespace SharpTune.GUI
         private List<string> loggerdtdfiles = new List<string>();
         private List<string> loggerdeffiles = new List<string>();
         private List<string> ecudeffiles = new List<string>();
+        private string rominfo;
 
         private void XMLtoIDC_Load(object sender, EventArgs e)
         {
+            //Populate rom info section
+           
+                try
+                {
+                    //rominfo = SharpTuner.activeImage.Definition.carInfo.ToString() + System.Environment.NewLine;
+                    rominfo += "FileName: " + SharpTuner.activeImage.FileName + System.Environment.NewLine;
+                    rominfo += "CALID: " + SharpTuner.activeImage.CalId + System.Environment.NewLine;
+                }
+                catch (Exception er)
+                {
+                    Console.Write(er.Message);
+               
+            }
+
+            RomInfoTextBox.Text = rominfo;
+
             //search through defs for logger.dtd
             loggerdtds = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger.dtd" });
             Extensions.getFilePaths(loggerdtds, ref loggerdtdfiles);
@@ -87,12 +171,27 @@ namespace SharpTune.GUI
             loggerdefs = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger" , ".xml" });
             Extensions.getFilePaths(loggerdefs, ref loggerdeffiles);
             comboBoxLoggerDef.DataSource = loggerdeffiles;
+            foreach (string d in loggerdeffiles)
+            {
+                if (d.ContainsCI("en") && d.ContainsCI("std"))
+                    comboBoxLoggerDef.SelectedItem = d;
+            }
 
             //search through defs for ecu defs
             ecudefs = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
             Extensions.getFilePaths(ecudefs, ref ecudeffiles);
             comboBoxEcuDef.DataSource = ecudeffiles;
-           
+            foreach (string d in ecudeffiles)
+            {
+                
+                if(d.ContainsCI("ecu_defs")) ///TODO update RR repo and add search for "STD"
+                    comboBoxEcuDef.SelectedItem = d;
+                else if (d.ContainsCI(SharpTuner.activeImage.CalId))
+                {
+                    comboBoxEcuDef.SelectedItem = d;
+                    break; //gives precedence to def with CALID
+                }
+            }
         }
 
     }

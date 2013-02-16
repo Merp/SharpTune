@@ -21,226 +21,228 @@ using System.Diagnostics;
 
 namespace NSFW
 {
-    class XMLtoIDC
+    public class XMLtoIDC
     {
         private static HashSet<string> names = new HashSet<string>();
         private static IDictionary<string, string> tableList = new Dictionary<string, string>();
         private static String DefPath = "";
 
-        static void GuiRun(string[] args)
+        public static void GuiRun(string[] args, string outpath, string def, string loggerdef, string loggerdtd)
         {
 
             Trace.Listeners.Clear();
 
-            TextWriterTraceListener twtl = new TextWriterTraceListener(Path.Combine(Path.GetTempPath(), AppDomain.CurrentDomain.FriendlyName));
-            twtl.Name = "TextLogger";
-            twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
-            Trace.Listeners.Add(twtl);
-
-            //No need to add console listener here
-            //ConsoleTraceListener ctl = new ConsoleTraceListener(false);
-            //ctl.TraceOutputOptions = TraceOptions.DateTime;
-            //Trace.Listeners.Add(ctl);
-
-            Trace.AutoFlush = true;
-
-            DefPath = SharpTune.SharpTuner.RRDefRepoPath; //Todo: switch to RR specific path, and automate a search for RR defs whenever the path is changed/loaded.
-
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
-            builder.AppendLine(string.Format("// This file gernerated by XmlToIdc version: {0}",
-                              Assembly.GetExecutingAssembly().GetName().Version));
-            builder.AppendLine(string.Format("// running on mscorlib.dll version: {0}",
-                              typeof(String).Assembly.GetName().Version));
-            Trace.Write(builder.ToString());
-
-            if (args.Length == 0)
+            using(TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
-                Usage();
-                return;
-            }
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+                Trace.Listeners.Add(twtl);
 
-            if (CategoryIs(args, "tables"))
-            {
-                if (args.Length != 2)
+                //No need to add console listener here
+                //ConsoleTraceListener ctl = new ConsoleTraceListener(false);
+                //ctl.TraceOutputOptions = TraceOptions.DateTime;
+                //Trace.Listeners.Add(ctl);
+
+                Trace.AutoFlush = true;
+
+                DefPath = SharpTune.SharpTuner.RRDefRepoPath; //Todo: switch to RR specific path, and automate a search for RR defs whenever the path is changed/loaded.
+
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
+                builder.AppendLine(string.Format("// This file gernerated by XmlToIdc version: {0}",
+                                  Assembly.GetExecutingAssembly().GetName().Version));
+                builder.AppendLine(string.Format("// running on mscorlib.dll version: {0}",
+                                  typeof(String).Assembly.GetName().Version));
+                Trace.Write(builder.ToString());
+
+                if (args.Length == 0)
                 {
-                    UsageTables();
-                }
-                else
-                {
-                    string calId = args[1].ToUpper();
-                    string functionName = "Tables_" + calId;
-                    WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
-                    DefineTables(functionName, calId);
-                }
-            }
-            else if (CategoryIs(args, "stdparam"))
-            {
-                if (args.Length != 5)
-                {
-                    UsageStdParam();
-                }
-                else
-                {
-                    string cpu = args[1];
-                    string target = args[2].ToUpper();
-                    string calId = args[3].ToUpper();
-                    string ssmBaseString = args[4].ToUpper();
-                    string functionName = "StdParams_" + calId;
-                    uint ssmBase = ConvertBaseString(ssmBaseString);
-                    WriteHeader1(functionName,
-                                 string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
-                                  cpu, target, calId, ssmBase.ToString("X")));
-                    DefineStandardParameters(functionName, target, calId, ssmBase, cpu);
-                }
-            }
-            else if (CategoryIs(args, "extparam"))
-            {
-                if (args.Length != 4)
-                {
-                    UsageExtParam();
+                    Usage();
                     return;
                 }
-                else
+
+                if (CategoryIs(args, "tables"))
                 {
-                    string cpu = args[1];
-                    string target = args[2].ToUpper();
-                    string ecuId = args[3].ToUpper();
-                    string functionName = "ExtParams_" + ecuId;
-                    WriteHeader1(functionName,
-                                 string.Format("Extended parameter definitions for {0} bit {1}: {2}",
-                                  cpu, target, ecuId));
-                    DefineExtendedParameters(functionName, target, ecuId, cpu);
+                    if (args.Length != 2)
+                    {
+                        UsageTables();
+                    }
+                    else
+                    {
+                        string calId = args[1].ToUpper();
+                        string functionName = "Tables_" + calId;
+                        WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
+                        DefineTables(functionName, calId, def);
+                    }
                 }
-            }
-            else if (CategoryIs(args, "makeall"))
-            {
-                if (args.Length != 4)
+                else if (CategoryIs(args, "stdparam"))
                 {
-                    UsageMakeAll();
-                    return;
+                    if (args.Length != 5)
+                    {
+                        UsageStdParam();
+                    }
+                    else
+                    {
+                        string cpu = args[1];
+                        string target = args[2].ToUpper();
+                        string calId = args[3].ToUpper();
+                        string ssmBaseString = args[4].ToUpper();
+                        string functionName = "StdParams_" + calId;
+                        uint ssmBase = ConvertBaseString(ssmBaseString);
+                        WriteHeader1(functionName,
+                                     string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
+                                      cpu, target, calId, ssmBase.ToString("X")));
+                        DefineStandardParameters(functionName, target, calId, ssmBase, cpu, loggerdef, loggerdtd);
+                    }
                 }
-                else
+                else if (CategoryIs(args, "extparam"))
                 {
-                    string target = args[1].ToUpper();
-                    string calId = args[2].ToUpper();
-                    string ssmBaseString = args[3].ToUpper();
-                    string functionName1 = "Tables";
-                    string functionName2 = "StdParams";
-                    string functionName3 = "ExtParams";
-                    WriteHeader3(functionName1, functionName2, functionName3,
-                                 string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
-                                  target, calId, ssmBaseString));
-                    string[] results = new string[2];
-                    results = DefineTables(functionName1, calId);
-                    uint ssmBase = ConvertBaseString(ssmBaseString);
-                    DefineStandardParameters(functionName2, target, calId, ssmBase, results[1]);
-                    DefineExtendedParameters(functionName3, target, results[0], results[1]);
+                    if (args.Length != 4)
+                    {
+                        UsageExtParam();
+                        return;
+                    }
+                    else
+                    {
+                        string cpu = args[1];
+                        string target = args[2].ToUpper();
+                        string ecuId = args[3].ToUpper();
+                        string functionName = "ExtParams_" + ecuId;
+                        WriteHeader1(functionName,
+                                     string.Format("Extended parameter definitions for {0} bit {1}: {2}",
+                                      cpu, target, ecuId));
+                        DefineExtendedParameters(functionName, target, ecuId, cpu, loggerdef, loggerdtd);
+                    }
+                }
+                else if (CategoryIs(args, "makeall"))
+                {
+                    if (args.Length != 4)
+                    {
+                        UsageMakeAll();
+                        return;
+                    }
+                    else
+                    {
+                        string target = args[1].ToUpper();
+                        string calId = args[2].ToUpper();
+                        string ssmBaseString = args[3].ToUpper();
+                        string functionName1 = "Tables";
+                        string functionName2 = "StdParams";
+                        string functionName3 = "ExtParams";
+                        WriteHeader3(functionName1, functionName2, functionName3,
+                                     string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
+                                      target, calId, ssmBaseString));
+                        string[] results = new string[2];
+                        results = DefineTables(functionName1, calId, def);
+                        uint ssmBase = ConvertBaseString(ssmBaseString);
+                        DefineStandardParameters(functionName2, target, calId, ssmBase, results[1], loggerdef, loggerdtd);
+                        DefineExtendedParameters(functionName3, target, results[0], results[1], loggerdef, loggerdtd);
+                    }
                 }
             }
         }
 
-        static void Run(string[] args)
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
-            builder.AppendLine(string.Format("// This file gernerated by XmlToIdc version: {0}",
-                              Assembly.GetExecutingAssembly().GetName().Version));
-            builder.AppendLine(string.Format("// running on mscorlib.dll version: {0}",
-                              typeof(String).Assembly.GetName().Version));
-            Trace.Write(builder.ToString());
+        //static void Run(string[] args)
+        //{
+        //    StringBuilder builder = new StringBuilder();
+        //    builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
+        //    builder.AppendLine(string.Format("// This file gernerated by XmlToIdc version: {0}",
+        //                      Assembly.GetExecutingAssembly().GetName().Version));
+        //    builder.AppendLine(string.Format("// running on mscorlib.dll version: {0}",
+        //                      typeof(String).Assembly.GetName().Version));
+        //    Trace.Write(builder.ToString());
 
-            if (args.Length == 0)
-            {
-                Usage();
-                return;
-            }
+        //    if (args.Length == 0)
+        //    {
+        //        Usage();
+        //        return;
+        //    }
 
-            if (CategoryIs(args, "tables"))
-            {
-                if (args.Length != 2)
-                {
-                    UsageTables();
-                }
-                else
-                {
-                    string calId = args[1].ToUpper();
-                    string functionName = "Tables_" + calId;
-                    WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
-                    DefineTables(functionName, calId);
-                }
-            }
-            else if (CategoryIs(args, "stdparam"))
-            {
-                if (args.Length != 5)
-                {
-                    UsageStdParam();
-                }
-                else
-                {
-                    string cpu = args[1];
-                    string target = args[2].ToUpper();
-                    string calId = args[3].ToUpper();
-                    string ssmBaseString = args[4].ToUpper();
-                    string functionName = "StdParams_" + calId;
-                    uint ssmBase = ConvertBaseString(ssmBaseString);
-                    WriteHeader1(functionName,
-                                 string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
-                                  cpu, target, calId, ssmBase.ToString("X")));
-                    DefineStandardParameters(functionName, target, calId, ssmBase, cpu);
-                }
-            }
-            else if (CategoryIs(args, "extparam"))
-            {
-                if (args.Length != 4)
-                {
-                    UsageExtParam();
-                    return;
-                }
-                else
-                {
-                    string cpu = args[1];
-                    string target = args[2].ToUpper();
-                    string ecuId = args[3].ToUpper();
-                    string functionName = "ExtParams_" + ecuId;
-                    WriteHeader1(functionName,
-                                 string.Format("Extended parameter definitions for {0} bit {1}: {2}",
-                                  cpu, target, ecuId));
-                    DefineExtendedParameters(functionName, target, ecuId, cpu);
-                }
-            }
-            else if (CategoryIs(args, "makeall"))
-            {
-                if (args.Length != 4)
-                {
-                    UsageMakeAll();
-                    return;
-                }
-                else
-                {
-                    string target = args[1].ToUpper();
-                    string calId = args[2].ToUpper();
-                    string ssmBaseString = args[3].ToUpper();
-                    string functionName1 = "Tables";
-                    string functionName2 = "StdParams";
-                    string functionName3 = "ExtParams";
-                    WriteHeader3(functionName1, functionName2, functionName3,
-                                 string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
-                                  target, calId, ssmBaseString));
-                    string[] results = new string[2];
-                    results = DefineTables(functionName1, calId);
-                    uint ssmBase = ConvertBaseString(ssmBaseString);
-                    DefineStandardParameters(functionName2, target, calId, ssmBase, results[1]);
-                    DefineExtendedParameters(functionName3, target, results[0], results[1]);
-                }
-            }
-        }
+        //    if (CategoryIs(args, "tables"))
+        //    {
+        //        if (args.Length != 2)
+        //        {
+        //            UsageTables();
+        //        }
+        //        else
+        //        {
+        //            string calId = args[1].ToUpper();
+        //            string functionName = "Tables_" + calId;
+        //            WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
+        //            DefineTables(functionName, calId);
+        //        }
+        //    }
+        //    else if (CategoryIs(args, "stdparam"))
+        //    {
+        //        if (args.Length != 5)
+        //        {
+        //            UsageStdParam();
+        //        }
+        //        else
+        //        {
+        //            string cpu = args[1];
+        //            string target = args[2].ToUpper();
+        //            string calId = args[3].ToUpper();
+        //            string ssmBaseString = args[4].ToUpper();
+        //            string functionName = "StdParams_" + calId;
+        //            uint ssmBase = ConvertBaseString(ssmBaseString);
+        //            WriteHeader1(functionName,
+        //                         string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
+        //                          cpu, target, calId, ssmBase.ToString("X")));
+        //            DefineStandardParameters(functionName, target, calId, ssmBase, cpu);
+        //        }
+        //    }
+        //    else if (CategoryIs(args, "extparam"))
+        //    {
+        //        if (args.Length != 4)
+        //        {
+        //            UsageExtParam();
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            string cpu = args[1];
+        //            string target = args[2].ToUpper();
+        //            string ecuId = args[3].ToUpper();
+        //            string functionName = "ExtParams_" + ecuId;
+        //            WriteHeader1(functionName,
+        //                         string.Format("Extended parameter definitions for {0} bit {1}: {2}",
+        //                          cpu, target, ecuId));
+        //            DefineExtendedParameters(functionName, target, ecuId, cpu);
+        //        }
+        //    }
+        //    else if (CategoryIs(args, "makeall"))
+        //    {
+        //        if (args.Length != 4)
+        //        {
+        //            UsageMakeAll();
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            string target = args[1].ToUpper();
+        //            string calId = args[2].ToUpper();
+        //            string ssmBaseString = args[3].ToUpper();
+        //            string functionName1 = "Tables";
+        //            string functionName2 = "StdParams";
+        //            string functionName3 = "ExtParams";
+        //            WriteHeader3(functionName1, functionName2, functionName3,
+        //                         string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
+        //                          target, calId, ssmBaseString));
+        //            string[] results = new string[2];
+        //            results = DefineTables(functionName1, calId);
+        //            uint ssmBase = ConvertBaseString(ssmBaseString);
+        //            DefineStandardParameters(functionName2, target, calId, ssmBase, results[1]);
+        //            DefineExtendedParameters(functionName3, target, results[0], results[1]);
+        //        }
+        //    }
+        //}
 
         #region DefineXxxx functions
 
-        private static string[] DefineTables(string functionName, string calId)
+        private static string[] DefineTables(string functionName, string calId, string def)
         {
-            if (!File.Exists(DefPath + @"\\ecu\\ecu_defs.xml"))
+            if (!File.Exists(def))
             {
                 MessageBox.Show("ecu_defs.xml must be in the current directory.",
                                 "Error - ECU Definitions File Missing",
@@ -251,14 +253,14 @@ namespace NSFW
             }
             string[] results = new string[2];
             WriteHeader2(functionName);
-            results = WriteTableNames(calId);
+            results = WriteTableNames(calId,def);
             WriteFooter(functionName);
             return results;
         }
 
-        private static void DefineStandardParameters(string functionName, string target, string calId, uint ssmBase, string cpu)
+        private static void DefineStandardParameters(string functionName, string target, string calId, uint ssmBase, string cpu, string loggerdef, string loggerdtd)
         {
-            if (!File.Exists(DefPath + @"\\logger\\logger.xml"))
+            if (!File.Exists(loggerdef))
             {
                 MessageBox.Show("logger.xml must be in the current directory.",
                                 "Error - Logger Definitions File Missing",
@@ -268,7 +270,7 @@ namespace NSFW
                 return;
             }
 
-            if (!File.Exists(DefPath + @"\\logger\\logger.dtd"))
+            if (!File.Exists(loggerdtd))
             {
                 MessageBox.Show("logger.dtd must be in the current directory.",
                                 "Error - Logger Type Definition File Missing",
@@ -278,14 +280,17 @@ namespace NSFW
                 return;
             }
 
+            File.Delete("logger.dtd");
+            File.Copy(loggerdtd, "logger.dtd");
+
             WriteHeader2(functionName);
-            WriteStandardParameters(target, calId, ssmBase, cpu);
+            WriteStandardParameters(target, calId, ssmBase, cpu, loggerdef);
             WriteFooter(functionName);
         }
 
-        private static void DefineExtendedParameters(string functionName, string target, string ecuId, string cpu)
+        private static void DefineExtendedParameters(string functionName, string target, string ecuId, string cpu, string loggerdef, string loggerdtd)
         {
-            if (!File.Exists(DefPath + @"\\logger\\logger.xml"))
+            if (!File.Exists(loggerdef))
             {
                 MessageBox.Show("logger.xml must be in the current directory.",
                                 "Error - Logger Definitions File Missing",
@@ -295,7 +300,7 @@ namespace NSFW
                 return;
             }
 
-            if (!File.Exists(DefPath + @"\\logger\\logger.dtd"))
+            if (!File.Exists(loggerdtd))
             {
                 MessageBox.Show("logger.dtd must be in the current directory.",
                                 "Error - Logger Type Definition File Missing",
@@ -306,13 +311,13 @@ namespace NSFW
             }
 
             WriteHeader2(functionName);
-            WriteExtendedParameters(target, ecuId, cpu);
+            WriteExtendedParameters(target, ecuId, cpu, loggerdef);
             WriteFooter(functionName);
         }
 
         #endregion
 
-        private static string[] WriteTableNames(string xmlId)
+        private static string[] WriteTableNames(string xmlId, string def)
         {
             Trace.WriteLine("auto referenceAddress;");
 
@@ -324,10 +329,10 @@ namespace NSFW
             int dtaddr = 0;
             string cpu = "32";
 
-            string rombase = GetRomBase(xmlId);
+            string rombase = GetRomBase(xmlId, def);
             string[] roms = new string[2] { rombase, xmlId };
 
-            using (Stream stream = File.OpenRead("ecu_defs.xml"))
+            using (Stream stream = File.OpenRead(def))
             {
                 XPathDocument doc = new XPathDocument(stream);
                 XPathNavigator nav = doc.CreateNavigator();
@@ -441,10 +446,10 @@ namespace NSFW
             return results;
         }
 
-        private static string GetRomBase(string xmlId)
+        private static string GetRomBase(string xmlId, string def)
         {
             string rombase = "";
-            using (Stream stream = File.OpenRead("ecu_defs.xml"))
+            using (Stream stream = File.OpenRead(def))
             {
                 XPathDocument doc = new XPathDocument(stream);
                 XPathNavigator nav = doc.CreateNavigator();
@@ -519,7 +524,7 @@ namespace NSFW
             }
         }
 
-        private static void WriteStandardParameters(string target, string ecuid, uint ssmBase, string cpu)
+        private static void WriteStandardParameters(string target, string ecuid, uint ssmBase, string cpu, string loggerdef)
         {
             Trace.WriteLine("auto addr;");
 
@@ -544,7 +549,7 @@ namespace NSFW
                 Trace.WriteLine("");
             }
 
-            using (Stream stream = File.OpenRead("logger.xml"))
+            using (Stream stream = File.OpenRead(loggerdef))
             {
                 XPathDocument doc = new XPathDocument(stream);
                 XPathNavigator nav = doc.CreateNavigator();
@@ -656,7 +661,7 @@ namespace NSFW
             }
         }
 
-        private static void WriteExtendedParameters(string target, string ecuid, string cpu)
+        private static void WriteExtendedParameters(string target, string ecuid, string cpu, string loggerdef)
         {
             if (target == "ecu" | target == "ECU")
             {
@@ -667,7 +672,7 @@ namespace NSFW
                 target = "1";
             }
 
-            using (Stream stream = File.OpenRead("logger.xml"))
+            using (Stream stream = File.OpenRead(loggerdef))
             {
                 XPathDocument doc = new XPathDocument(stream);
                 XPathNavigator nav = doc.CreateNavigator();
