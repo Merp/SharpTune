@@ -477,6 +477,8 @@ namespace NSFW
             {
                 string tableName = pair.Key;
                 string tableAddress = pair.Value;
+                if (!tableAddress.Contains("0x"))
+                    tableAddress = "0x" + tableAddress;
                 string refTableName = "Table_" + tableName;
                 string refTableAddress = "";
                 if (tableList.TryGetValue(refTableName, out refTableAddress))
@@ -806,6 +808,8 @@ namespace NSFW
 
         private static void MakeName(string address, string name)
         {
+            if (!address.Contains("0x"))
+                address = "0x" + address;
             if (address.Length > 0 && name.Length > 0)
             {
                 string command = string.Format("MakeNameEx({0}, \"{1}\", SN_CHECK);",
