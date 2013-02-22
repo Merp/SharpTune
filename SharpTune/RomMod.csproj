@@ -107,6 +107,12 @@
     <Compile Include="GUI\DefinitionEditor.Designer.cs">
       <DependentUpon>DefinitionEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\IDAtoHEW.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\IDAtoHEW.Designer.cs">
+      <DependentUpon>IDAtoHEW.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\License.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,6 +139,7 @@
     <Compile Include="RomMod\Blob.cs" />
     <Compile Include="RomMod\BlobList.cs" />
     <Compile Include="RomMod\Define.cs" />
+    <Compile Include="RomMod\Lut.cs" />
     <Compile Include="RomMod\Mod.cs" />
     <Compile Include="RomMod\Patch.cs" />
     <Compile Include="RomMod\RomMod.cs" />
@@ -159,6 +166,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\DefinitionEditor.resx">
       <DependentUpon>DefinitionEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\IDAtoHEW.resx">
+      <DependentUpon>IDAtoHEW.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\License.resx">
       <DependentUpon>License.cs</DependentUpon>
@@ -234,7 +244,8 @@
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\SharpTune.exe"</PostBuildEvent>
+    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\SharpTune.exe"
+Copy SharpTune.exe "..\..\..\..\MerpMod\HEW\MerpMod\TARGETS\SharpTune.exe"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

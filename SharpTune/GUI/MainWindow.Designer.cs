@@ -41,6 +41,8 @@
             this.rOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.obfuscateCALIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manuallySelectPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,8 +62,6 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -180,6 +180,20 @@
             this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
             this.manuallySelectPatchToolStripMenuItem.Text = "Manually Select Patch";
             this.manuallySelectPatchToolStripMenuItem.Click += new System.EventHandler(this.manuallySelectPatchToolStripMenuItem_Click);
+            // 
+            // xMLToIDCToolStripMenuItem
+            // 
+            this.xMLToIDCToolStripMenuItem.Name = "xMLToIDCToolStripMenuItem";
+            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.xMLToIDCToolStripMenuItem.Text = "XML to IDC";
+            this.xMLToIDCToolStripMenuItem.Click += new System.EventHandler(this.xMLToIDCToolStripMenuItem_Click);
+            // 
+            // iDAToHEWToolStripMenuItem
+            // 
+            this.iDAToHEWToolStripMenuItem.Name = "iDAToHEWToolStripMenuItem";
+            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
+            this.iDAToHEWToolStripMenuItem.Click += new System.EventHandler(this.iDAToHEWToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -364,19 +378,6 @@
             this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
-            // 
-            // xMLToIDCToolStripMenuItem
-            // 
-            this.xMLToIDCToolStripMenuItem.Name = "xMLToIDCToolStripMenuItem";
-            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
-            this.xMLToIDCToolStripMenuItem.Text = "XML to IDC";
-            this.xMLToIDCToolStripMenuItem.Click += new System.EventHandler(this.xMLToIDCToolStripMenuItem_Click);
-            // 
-            // iDAToHEWToolStripMenuItem
-            // 
-            this.iDAToHEWToolStripMenuItem.Name = "iDAToHEWToolStripMenuItem";
-            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
-            this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
             // 
             // MainWindow
             // 

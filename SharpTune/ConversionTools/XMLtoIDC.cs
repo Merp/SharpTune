@@ -477,7 +477,7 @@ namespace NSFW
             {
                 string tableName = pair.Key;
                 string tableAddress = pair.Value;
-                if (!tableAddress.Contains("0x"))
+                if (System.Text.RegularExpressions.Regex.IsMatch(tableAddress, @"\A\b(0[xX])?[0-9a-fA-F]+\b\Z") && !tableAddress.Contains("0x"))
                     tableAddress = "0x" + tableAddress;
                 string refTableName = "Table_" + tableName;
                 string refTableAddress = "";
@@ -808,7 +808,7 @@ namespace NSFW
 
         private static void MakeName(string address, string name)
         {
-            if (!address.Contains("0x"))
+            if (System.Text.RegularExpressions.Regex.IsMatch(address, @"\A\b(0[xX])?[0-9a-fA-F]+\b\Z") && !address.Contains("0x"))
                 address = "0x" + address;
             if (address.Length > 0 && name.Length > 0)
             {

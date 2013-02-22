@@ -73,8 +73,8 @@ namespace SharpTune
             Console.SetOut(_writer);
 
             loadDevices();
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            LoadMods(assembly);
+            //Assembly assembly = Assembly.GetExecutingAssembly();
+            //LoadMods(assembly); TODO THIS NEEDS FIXING
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -564,6 +564,17 @@ namespace SharpTune
         private void SpawnXMLToIDC()
         {
             Application.Run(new XMLtoIDC());
+        }
+
+        private void iDAToHEWToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.workerThread = new Thread(new ThreadStart(this.SpawnIDAtoHEW));
+            this.workerThread.Start();
+        }
+
+        private void SpawnIDAtoHEW()
+        {
+            Application.Run(new IDAtoHEW());
         }
     }
 }

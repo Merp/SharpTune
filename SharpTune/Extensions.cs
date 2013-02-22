@@ -29,6 +29,16 @@ namespace SharpTune
         {
             result = dialog.ShowDialog();
         }
+    }
+
+    public class OFDialogState
+    {
+        public DialogResult result;
+        public OpenFileDialog dialog;
+        public void ThreadProcShowDialog()
+        {
+            result = dialog.ShowDialog();
+        }
     } 
 
     public class SADialogState
@@ -47,6 +57,17 @@ namespace SharpTune
         public static DialogResult STAShowFDialog(FolderBrowserDialog dialog)
         {
             FDialogState state = new FDialogState();
+            state.dialog = dialog;
+            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            return state.result;
+        }
+
+        public static DialogResult STAShowOFDialog(OpenFileDialog dialog)
+        {
+            OFDialogState state = new OFDialogState();
             state.dialog = dialog;
             System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
             t.SetApartmentState(System.Threading.ApartmentState.STA);
@@ -225,6 +246,14 @@ namespace SharpTune
         public static void deleteFile(this string path)
         {
             File.Delete(path);
+        }
+
+        public static string[] ShiftLeftTruncate(string[] args)
+        {
+            string[] targs = new string[args.Length - 1];
+            for (int i = 1; i < args.Length; i++)
+                targs[i - 1] = args[i];
+            return targs;
         }
     }
 }

@@ -55,7 +55,7 @@ namespace SharpTune.GUI
                     string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_extparams.idc";
                     spath.deleteFile();
                     Console.WriteLine("Writing extended RAM param IDC file to " + spath);
-                    NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "Car", SharpTuner.activeImage.CalId }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                    NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "Car", SharpTuner.activeImage.Definition.carInfo["ecuid"].ToString() }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                 }
                 if (ssmParamsCheckBox.Checked)
                 {
@@ -151,8 +151,11 @@ namespace SharpTune.GUI
                 try
                 {
                     //rominfo = SharpTuner.activeImage.Definition.carInfo.ToString() + System.Environment.NewLine;
-                    rominfo += "FileName: " + SharpTuner.activeImage.FileName + System.Environment.NewLine;
-                    rominfo += "CALID: " + SharpTuner.activeImage.CalId + System.Environment.NewLine;
+                    rominfo += "FileName:  " + SharpTuner.activeImage.FileName + System.Environment.NewLine;
+                    foreach (var s in SharpTuner.activeImage.Definition.carInfo)
+                    {
+                        rominfo += s.Key.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
+                    }
                 }
                 catch (Exception er)
                 {

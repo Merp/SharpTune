@@ -143,9 +143,12 @@ namespace SharpTuneCore
                 }
                 else tempcalid = tempinfo["xmlid"];
 
-                if (internalId == null)
+                if (carInfo == null)
                 {
                     this.carInfo = tempinfo;
+                }
+                if(internalId == null)
+                {
                     this.internalId = tempcalid;
                 }
             }
@@ -528,7 +531,7 @@ namespace SharpTuneCore
                  bool found = false;
                  foreach(XElement existingchild in table.Elements())
                  {
-                     if ((newchild.Attribute("type") != null) && newchild.Attribute("type").Value.Contains(existingchild.Attribute("name").Value.ToString()))
+                     if ((newchild.Attribute("type") != null) && existingchild.Attribute("name") != null && newchild.Attribute("type").Value.Contains(existingchild.Attribute("name").Value.ToString()))
                      {
                          //found a match, merge them
                          found = true;

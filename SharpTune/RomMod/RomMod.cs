@@ -24,7 +24,7 @@ namespace RomModCore
 {
     public class RomMod
     {
-        public const int Version = 7;
+        public const int Version = 8;
 
         /// <summary>
         /// Determines which command to run.

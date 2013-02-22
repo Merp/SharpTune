@@ -14,14 +14,14 @@ namespace ConvTools
     public class ConvTools
     {
         public static Dictionary<string, List<Define>> Defines;
-        public static Dictionary<string, List<string>> Sections;
+        public static Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
         public static List<IdaName> IdaNames;
 
         public static void Run(string[] args)
         {
             ConvTools prog = new ConvTools();
             Defines = new Dictionary<string, List<Define>>();
-            Sections = new Dictionary<string, List<string>>();
+            Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
             IdaNames = new List<IdaName>();
             if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
             {
@@ -75,11 +75,16 @@ namespace ConvTools
             foreach (XElement xel in xmlDoc.XPathSelectElements("//idatohew/sections").Elements("section"))
             {
                 List<string> ls = new List<string>();
-                foreach (XElement s in xel.Elements())
+                foreach (XElement s in xel.Elements("subsection"))
                 {
                     ls.Add(s.Attribute("name").Value.ToString());
                 }
-                Sections.Add(xel.Attribute("name").Value.ToString(), ls);
+                List<string>als = new List<string>();
+                foreach (XElement s in xel.Elements("alias"))
+                {
+                    als.Add(s.Attribute("name").Value.ToString());
+                }
+                Sections.Add(new KeyValuePair<string,List<string>>(xel.Attribute("name").Value.ToString(),als) , ls);
             }
         }
 
@@ -212,8 +217,10 @@ namespace ConvTools
 
         public void FindAndWriteDefines(string outfilename)
         {
+            //write date tag!
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
+                writer.WriteLine("#define MOD_DATE " + DateTime.Today.Year.ToString().Substring(2) + "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + System.Environment.NewLine);
                 foreach (var category in Defines)
                 {
                     writer.WriteLine("/////////////////////");
@@ -234,22 +241,37 @@ namespace ConvTools
         {
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
+                bool found = false;
                 writer.WriteLine("SECTIONS");
                 writer.WriteLine("{");
-                foreach (KeyValuePair<string, List<string>> sec in Sections)
+                foreach (KeyValuePair<KeyValuePair<string,List<string>>, List<string>> ls in Sections)
                 {
-                    foreach (var idan in IdaNames)
+                    List<string> tl = new List<string>();
+                    tl.Add(ls.Key.Key);
+                    tl.AddRange(ls.Key.Value);
+                    found = false;
+
+                    foreach (string sec in tl)
                     {
-                        if (idan.name.ToString().EqualsCI(sec.Key))
+                        foreach (var idan in IdaNames)
                         {
-                            writer.WriteLine("\t" + idan.name + " 0x" + idan.define + " : AT (0x" + idan.define + ")");
-                            writer.WriteLine("\t{");
-                            foreach (string section in sec.Value)
+                            if (idan.name.ToString().EqualsCI(sec))
                             {
-                                writer.WriteLine("\t\t*(" + section.ToString() + ")");
+                                writer.WriteLine("\t" + ls.Key.Key.ToString() + " 0x" + idan.define + " : AT (0x" + idan.define + ")");
+                                writer.WriteLine("\t{");
+                                foreach (string section in ls.Value)
+                                {
+                                    writer.WriteLine("\t\t*(" + section.ToString() + ")");
+                                }
+                                writer.WriteLine("\t}");
+                                found = true;
+                                break;
                             }
-                            writer.WriteLine("\t}");
+                            if (found)
+                                break;
                         }
+                        if (found)
+                            break;
                     }
                 }
                 writer.WriteLine("}");

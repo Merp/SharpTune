@@ -42,13 +42,17 @@ namespace RomModCore
         private const uint ecuIdPrefix = 0x1234000B;
         private const uint newEcuIdPrefix = 0x1234000C;
         private const uint modInfoPrefix = 0x1234000D;
+        private const uint modIdPrefix = 0x1234000F;
         private const string delim = "\0\0\0\0\0";
 
         public long FileSize { get; private set; }
         public string FileName { get; private set; }
         public string FilePath { get; private set; }
-        public string CalId { get; private set; }
-        public int CalIdOffset { get; private set; }
+
+        public string CalId { get; private set; }//todo get rid of this, only need init/final
+        public uint CalIdAddress { get; private set; }
+        public uint CalIdLength { get; private set; }
+
         public bool isApplied { get; set; }
             //IDEA: set this based on calid match to activeimage
         public bool isResource { get; private set; }
@@ -70,6 +74,9 @@ namespace RomModCore
         public string ModAuthor { get; private set; }
         public string ModName { get; private set; }
         public string ModInfo { get; private set; }
+
+        public uint ModIdentAddress { get; private set; }
+        public string ModIdent { get; private set; }
 
         public BlobList blobList { get; set; }
         public string InitialCalibrationId { get; private set; }
@@ -132,7 +139,7 @@ namespace RomModCore
         {
             this.definition = new Define(this);
             if (!definition.TryReadDefs(defPath)) return false;
-            if (!definition.TryPrintDef(this.FinalCalibrationId.ToString())) return false;
+            if (!definition.TryPrintDef(this.ModIdent.ToString())) return false;
             return true;
         }
 
@@ -231,9 +238,26 @@ namespace RomModCore
                             Console.WriteLine("Verification failed, ROM file not modified.");
                             return false;
                         }
+                        try
+                        {
+                            using (FileStream fileStream = File.OpenWrite(outPath))
+                            {
+                                outStream.Seek(0, SeekOrigin.Begin);
+                                outStream.CopyTo(fileStream);
+                            }
+                            Console.WriteLine("ROM file modified successfully, Mod has been applied. Successfully saved image to {0}", outPath);
+                        }
+                        catch (System.Exception excpt)
+                        {
+                            MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Console.WriteLine("Error accessing file! It is locked!");
+                            Console.WriteLine(excpt.Message);
+                            return false;
+                        }
                         outStream.Dispose();
                         //File.Copy(workingPath, outPath, true);
                         //File.Delete(workingPath);
+                        //TODO CHECK outstream disposal!!!
                         Console.WriteLine("ROM file modified successfully, mod has been applied.");
                         return true;
                     }
@@ -457,7 +481,7 @@ namespace RomModCore
         /// </summary>
         public bool TryPrintBaselines(string patchPath, Stream romStream)
         {
-            string p = this.ModAuthor + "_" + this.InitialCalibrationId + "_" + this.FinalCalibrationId + this.ModName + this.ModVersion + ".patch";
+            string p = this.ModIdent.ToString() + ".patch";
             File.Copy(patchPath, p , true);
 
             bool result = true;
@@ -512,17 +536,19 @@ namespace RomModCore
                 return false;
             }
 
-            if (!TryReadCalibrationChange(blob, ref offset))
+            if (!TryReadMetaHeader8(blob, ref offset))
             {
                 return false;
             }
+
+            offset = 0;
 
             if (!this.TryReadPatches(blob, ref offset, blobs))
             {
                 return false;
             }
 
-            if (this.patchList.Count == 0)
+            if (this.patchList.Count < 3)
             {
                 Console.WriteLine("This patch file contains no patches.");
                 return false;
@@ -678,21 +704,80 @@ namespace RomModCore
             return true;
         }
 
-        /// <summary>
-        /// Try to read the Patch metadata from the file.
-        /// </summary>
-        private bool TryReadPatches(Blob metadata, ref int offset, List<Blob> blobs)
+        private bool TryReadMetaHeader8(Blob metadata, ref int offset)
         {
             UInt32 cookie = 0;
+            uint tempInt = 0;
             while ((metadata.Content.Count > offset + 8) &&
                 metadata.TryGetUInt32(ref cookie, ref offset))
             {
                 Patch patch = null;
-                bool isInfo = false;
-
-                if (cookie == ecuIdPrefix)
+                if (cookie == Mod.calibrationIdPrefix)
                 {
-                    uint tempInt = 0;
+                    if (!metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        Console.WriteLine("This patch file's metadata is way too short (no calibration address).");
+                        return false;
+                    }
+
+                    this.CalIdAddress = tempInt;
+
+                    if (!metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        Console.WriteLine("This patch file's metadata is way too short (no calibration length).");
+                        return false;
+                    }
+
+                    this.CalIdLength = tempInt;
+
+                    string initialCalibrationId;
+                    if (!this.TryReadCalibrationId(metadata, ref offset, out initialCalibrationId))
+                    {
+                        return false;
+                    }
+
+                    this.InitialCalibrationId = initialCalibrationId;
+
+                    string finalCalibrationId;
+                    if (!this.TryReadCalibrationId(metadata, ref offset, out finalCalibrationId))
+                    {
+                        return false;
+                    }
+
+                    this.FinalCalibrationId = finalCalibrationId;
+
+                    // Synthesize calibration-change patch and blobs.
+                    patch = new Patch(
+                        CalIdAddress, 
+                        CalIdAddress + (CalIdLength - 1));
+
+                    patch.IsMetaChecked = true;
+
+                    patch.Baseline = new Blob(
+                        CalIdAddress + Mod.BaselineOffset,
+                        Encoding.ASCII.GetBytes(initialCalibrationId));
+                
+                    patch.Payload = new Blob(
+                        CalIdAddress, 
+                        Encoding.ASCII.GetBytes(finalCalibrationId));
+            
+                    this.patchList.Add(patch);
+                }
+                else if (cookie == modIdPrefix)
+                {
+                    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        this.ModIdentAddress = tempInt;
+                    }
+                    string metaString = null;
+                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                    {
+                        // found modName, output to string!
+                        this.ModIdent = metaString;
+                    }
+                }
+                else if (cookie == ecuIdPrefix)
+                {
                     if (metadata.TryGetUInt32(ref tempInt, ref offset))
                     {
                         this.EcuIdAddress = tempInt;
@@ -706,23 +791,22 @@ namespace RomModCore
                     {
                         // found modName, output to string!
                         this.InitialEcuId = metaString;
-                        isInfo = true;
                     }
-                }
-                if (cookie == newEcuIdPrefix)
-                {
-                    string metaString = null;
+                    metadata.TryGetUInt32(ref tempInt, ref offset);
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
                         // found modName, output to string!
                         this.FinalEcuId = metaString;
                     }
+
+                    
+
                     if (this.InitialEcuId.Length == this.FinalEcuId.Length)
                     {
                         // Synthesize calibration-change patch and blobs.
                         patch = new Patch(
                             EcuIdAddress,
-                            EcuIdAddress + ((EcuIdLength / 2)-1));
+                            EcuIdAddress + ((EcuIdLength / 2) - 1));
 
                         patch.IsMetaChecked = true;
 
@@ -730,21 +814,20 @@ namespace RomModCore
                             EcuIdAddress + Mod.BaselineOffset,
                             InitialEcuId.ToByteArray());
 
-
                         patch.Payload = new Blob(
                             EcuIdAddress,
                             FinalEcuId.ToByteArray());
+
+                        this.patchList.Add(patch);
                     }
                 }
-
-                if (cookie == modNamePrefix)
+                else if (cookie == modNamePrefix)
                 {
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
                         // found modName, output to string!
                         this.ModName = metaString;
-                        isInfo = true;
                     }
                     else
                     {
@@ -752,15 +835,13 @@ namespace RomModCore
                         return false;
                     }
                 }
-
-                if (cookie == modAuthorPrefix)
+                else if (cookie == modAuthorPrefix)
                 {
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
                         // found modName, output to string!
                         this.ModAuthor = metaString;
-                        isInfo = true;
                     }
                     else
                     {
@@ -768,14 +849,13 @@ namespace RomModCore
                         return false;
                     }
                 }
-                if (cookie == modVersionPrefix)
+                else if (cookie == modVersionPrefix)
                 {
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
                         // found modName, output to string!
                         this.ModVersion = metaString;
-                        isInfo = true;
                     }
                     else
                     {
@@ -783,14 +863,13 @@ namespace RomModCore
                         return false;
                     }
                 }
-                if (cookie == modInfoPrefix)
+                else if (cookie == modInfoPrefix)
                 {
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
                         // found modinfo, output to string!
                         this.ModInfo = metaString;
-                        isInfo = true;
                     }
                     else
                     {
@@ -798,6 +877,140 @@ namespace RomModCore
                         return false;
                     }
                 }
+                else if (cookie == endoffile)
+                {
+                    break;
+                }
+            }
+
+            if (this.patchList.Count < 2)
+            {
+                Console.WriteLine("This patch file's metadata contains no CALID or ECUID patch!!.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Try to read the Patch metadata from the file.
+        /// </summary>
+        private bool TryReadPatches(Blob metadata, ref int offset, List<Blob> blobs)
+        {
+            UInt32 cookie = 0;
+            while ((metadata.Content.Count > offset + 8) &&
+                metadata.TryGetUInt32(ref cookie, ref offset))
+            {
+                Patch patch = null;
+                //bool isInfo = false;
+                //if (cookie == ecuIdPrefix)
+                //{
+                //    uint tempInt = 0;
+                //    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                //    {
+                //        this.EcuIdAddress = tempInt;
+                //    }
+                //    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                //    {
+                //        this.EcuIdLength = tempInt;
+                //    }
+                //    string metaString = null;
+                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                //    {
+                //        // found modName, output to string!
+                //        this.InitialEcuId = metaString;
+                //        isInfo = true;
+                //    }
+                //}
+                //if (cookie == newEcuIdPrefix)
+                //{
+                //    string metaString = null;
+                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                //    {
+                //        // found modName, output to string!
+                //        this.FinalEcuId = metaString;
+                //    }
+                //    if (this.InitialEcuId.Length == this.FinalEcuId.Length)
+                //    {
+                //        // Synthesize calibration-change patch and blobs.
+                //        patch = new Patch(
+                //            EcuIdAddress,
+                //            EcuIdAddress + ((EcuIdLength / 2)-1));
+
+                //        patch.IsMetaChecked = true;
+
+                //        patch.Baseline = new Blob(
+                //            EcuIdAddress + Mod.BaselineOffset,
+                //            InitialEcuId.ToByteArray());
+
+
+                //        patch.Payload = new Blob(
+                //            EcuIdAddress,
+                //            FinalEcuId.ToByteArray());
+                //    }
+                //}
+
+                //if (cookie == modNamePrefix)
+                //{
+                //    string metaString = null;
+                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                //    {
+                //        // found modName, output to string!
+                //        this.ModName = metaString;
+                //        isInfo = true;
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Invalid ModName found." + patch.ToString());
+                //        return false;
+                //    }
+                //}
+
+                //if (cookie == modAuthorPrefix)
+                //{
+                //    string metaString = null;
+                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                //    {
+                //        // found modName, output to string!
+                //        this.ModAuthor = metaString;
+                //        isInfo = true;
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Invalid patch found." + patch.ToString());
+                //        return false;
+                //    }
+                //}
+                //if (cookie == modVersionPrefix)
+                //{
+                //    string metaString = null;
+                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                //    {
+                //        // found modName, output to string!
+                //        this.ModVersion = metaString;
+                //        isInfo = true;
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Invalid patch found." + patch.ToString());
+                //        return false;
+                //    }
+                //}
+                //if (cookie == modInfoPrefix)
+                //{
+                //    string metaString = null;
+                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
+                //    {
+                //        // found modinfo, output to string!
+                //        this.ModInfo = metaString;
+                //        isInfo = true;
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Invalid modInfo found." + patch.ToString());
+                //        return false;
+                //    }
+                //}
 
 
                 if (cookie == patchPrefix)
@@ -858,23 +1071,16 @@ namespace RomModCore
                     break;
                 }
 
-                if (patch == null && !isInfo)
-                {
-                    throw new Exception("Internal error in TryReadPatches: Patch is null. cookie: " + cookie.ToString()
-                        + "offset: " + offset.ToString());
-                }
-                else if (!isInfo)
+                //if (patch == null && !isInfo)
+                //{
+                //    throw new Exception("Internal error in TryReadPatches: Patch is null. cookie: " + cookie.ToString()
+                //        + "offset: " + offset.ToString());
+                //}
+                if (patch != null)
                 {
                     this.patchList.Add(patch);
                 }
             }
-
-            if (this.patchList.Count == 0)
-            {
-                Console.WriteLine("This patch file's metadata contains no patches.");
-                return false;
-            }
-
             return true;
         }
 
@@ -1111,7 +1317,7 @@ namespace RomModCore
                 patch.MetaCheck((IEnumerable<byte>)buffer);
             }
 
-            using ( StreamWriter textWriter = File.AppendText(this.ModAuthor + "_" + this.InitialCalibrationId + "_" + this.FinalCalibrationId + this.ModName + this.ModVersion + ".patch"))
+            using ( StreamWriter textWriter = File.AppendText(this.ModIdent + ".patch"))
             {
                 //TextWriter textWriter = new StreamWriter(consoleOutputStream);
                 

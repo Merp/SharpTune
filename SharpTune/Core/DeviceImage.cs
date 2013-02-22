@@ -89,6 +89,7 @@ namespace SharpTuneCore
                     this.CalIdOffset = device.Value.First;
                     this.CalId = device.Value.Second.ToString();
                     this.Definition = new Definition(device.Key.ToString());
+                    Definition.ReadXML(device.Key.ToString(), true, false);
 
 
                     //this.tableList = new List<Table>();
@@ -99,6 +100,7 @@ namespace SharpTuneCore
                     //}
                     //this.imageTree = new TableTree(this);
                     this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
+                    break;
                 }
             }
 

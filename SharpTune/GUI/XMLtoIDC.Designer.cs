@@ -112,6 +112,7 @@
             this.RomInfoTextBox.Location = new System.Drawing.Point(12, 12);
             this.RomInfoTextBox.Multiline = true;
             this.RomInfoTextBox.Name = "RomInfoTextBox";
+            this.RomInfoTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.RomInfoTextBox.Size = new System.Drawing.Size(211, 109);
             this.RomInfoTextBox.TabIndex = 10;
             // 

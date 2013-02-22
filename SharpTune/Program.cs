@@ -64,18 +64,22 @@ namespace SharpTune
             }
             else if (args[0] == "convtools")
             {
-                ConvTools.ConvTools.Run(args);
+                ConvTools.ConvTools.Run(Extensions.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {
-                RomModCore.RomMod.Run(args);
+                RomModCore.RomMod.Run(Extensions.ShiftLeftTruncate(args));
             }
-            if (args.Length == 2 && args[0] == "help")
+            else if (args[0] == "xmltoidc")
+            {
+                //TODO FIX THIS!!
+                //NSFW.XMLtoIDC.Run(args);
+            }
+            else if (args.Length == 2 && args[0] == "help")
             {
                 PrintHelp(args[1]);
                 return true;
             }
-            PrintHelp();
             return false;
         }
 

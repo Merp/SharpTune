@@ -8,6 +8,7 @@ using System.Xml.XPath;
 using System.Data;
 using SharpTune;
 using SharpTuneCore;
+using SharpTune.RomMod;
 
 namespace RomModCore
 {
@@ -32,13 +33,13 @@ namespace RomModCore
 
         private Mod parentMod { get; set; }
         private Blob defBlob { get; set; }
-        private string identifier {get; set;}
-        private int identifierAddress {get; set; }
+
+        //private string finalEcuId {get; set;}
+        //private int EcuIdAddress {get; set; }
+        //private string inheritedIdentifier { get; set; }
+        //private string inheritedEcuId {get; set; }
 
         private string outputPath {get; set;}
-
-        private string inheritedIdentifier { get; set; }
-        private string inheritedEcuId {get; set; }
 
         private Definition definition { get; set; }
         private Definition inheritedDefinition {get; set;}
@@ -71,23 +72,24 @@ namespace RomModCore
 
             this.baseDefinition = new Definition((Definition.DirectorySearch(defPath, "32BITBASE")));
             this.baseDefinition.ReadXML((Definition.DirectorySearch(defPath, "32BITBASE")), false, true);
-
+            this.inheritedDefinition = new Definition(Definition.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
+            this.inheritedDefinition.ReadXML(Definition.DirectorySearch(defPath, this.parentMod.InitialCalibrationId), false, true);
             this.definition = new Definition("temp.xml");
 
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
             if (!TryCleanDef()) return false;
 
-            outputPath = defPath + identifier + ".xml";
+            outputPath = defPath + this.parentMod.ModIdent.ToString() + ".xml";
             this.definition.defPath = outputPath;
             
             definition.xRomTableList = xRomTableList;
             definition.xRamTableList = xRamTableList;
             this.definition.carInfo = this.inheritedDefinition.carInfo;
-            this.definition.carInfo["internalidaddress"] = this.identifierAddress.ToString("X");
-            this.definition.carInfo["internalidstring"] = this.identifier.ToString();
-            this.definition.carInfo["xmlid"] = this.identifier.ToString();
-            this.definition.include = this.inheritedIdentifier.ToString();
+            this.definition.carInfo["internalidaddress"] = this.parentMod.ModIdentAddress.ToString("X");
+            this.definition.carInfo["internalidstring"] = this.parentMod.ModIdent.ToString();
+            this.definition.carInfo["xmlid"] = this.parentMod.ModIdent.ToString();
+            this.definition.include = this.parentMod.InitialCalibrationId.ToString();
 
             XDocument xmlDoc = XDocument.Load(defPath + "merpslogger.xml");
 
@@ -100,7 +102,7 @@ namespace RomModCore
                 
                 if (exp != null)
                 {
-                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + this.inheritedEcuId.ToString() + "']";
+                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + this.parentMod.InitialEcuId.ToString() + "']";
                     XElement check = exp.XPathSelectElement(ch);
                     if(check != null) check.Remove();
                     exp.AddFirst(table.Value);
@@ -205,79 +207,99 @@ namespace RomModCore
             while ((metadata.Content.Count > offset + 8) &&
                 metadata.TryGetUInt32(ref cookie, ref offset))
             {
-                if (cookie == OpIdent)
+                //if (cookie == OpIdent)
+                //{
+                //    string metaString = null;
+                //    string metaString1 = null;
+                //    string metaString2 = null;
+                //    uint metaOffset = 0;
+                //    uint metaOffset1 = 0;
+                //    uint metaOffset2 = 0;
+                //    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
+                //    {
+                //        if (this.TryReadDefData(metadata, out metaString1, out metaOffset1, ref offset))
+                //        {
+                //            if (this.TryReadDefData(metadata, out metaString2, out metaOffset2, ref offset))
+                //            {
+                //                // found modName, output to string!
+                //                this.finalEcuId = metaString;
+                //                this.EcuIdAddress = (int)metaOffset;
+                //                this.inheritedIdentifier = metaString1;
+                //                this.inheritedEcuId = metaString2;
+
+                //                //READ INHERITED DEFINITION
+                //                inheritedDefinition = new Definition((Definition.DirectorySearch(defPath, this.inheritedIdentifier)));
+                //                inheritedDefinition.ReadXML(inheritedDefinition.defPath, false, false);
+                //            }
+                //        }
+                //        else
+                //        {
+                //            Console.WriteLine("Invalid definition found.");
+                //            return false;
+                //        }
+                //    }
+                //}
+                if (cookie == OpTable3d)//TODO CONDITIONALLY READ LUTS!
                 {
                     string metaString = null;
-                    string metaString1 = null;
-                    string metaString2 = null;
                     uint metaOffset = 0;
-                    uint metaOffset1 = 0;
-                    uint metaOffset2 = 0;
                     if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
                     {
-                        if (this.TryReadDefData(metadata, out metaString1, out metaOffset1, ref offset))
-                        {
-                            if (this.TryReadDefData(metadata, out metaString2, out metaOffset2, ref offset))
-                            {
-                                // found modName, output to string!
-                                this.identifier = metaString;
-                                this.identifierAddress = (int)metaOffset;
-                                this.inheritedIdentifier = metaString1;
-                                this.inheritedEcuId = metaString2;
-
-                                //READ INHERITED DEFINITION
-                                inheritedDefinition = new Definition((Definition.DirectorySearch(defPath, this.inheritedIdentifier)));
-                                inheritedDefinition.ReadXML(inheritedDefinition.defPath, false, false);
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid definition found.");
-                            return false;
-                        }
+                        Blob tableBlob;
+                        this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
+                        Lut lut = new Lut(tableBlob,metaOffset);
+                        KeyValuePair<String, XElement> tempTable = CreateTable(metaString, lut);
+                        if (tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid definition found.");
+                        return false;
                     }
                 }
-                    else if (cookie == OpTable1d || cookie == OpTable2d || cookie == OpTable3d)
+                else if (cookie == OpTable1d)// //TODO!! FIX FOR TABLE2D || cookie == OpTable2d)
+                {
+                    string metaString = null;
+                    uint metaOffset = 0;
+                    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
                     {
-                        string metaString = null;
-                        uint metaOffset = 0;
-                        if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
+                        //Blob tableBlob;
+                        //this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
+                        //Lut2D lut = new Lut(tableBlob, metaOffset);
+                        KeyValuePair<String, XElement> tempTable = CreateTable(metaString, (int)metaOffset);//lut);
+                        if (tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid definition found.");
+                        return false;
+                    }
+                }
+                else if (cookie == OpRAM)
+                {
+                    string paramName = null;
+                    string paramId = null;
+                    uint paramOffset = 0;
+                    uint paramLenght = 0;
+                    if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
+                    {
+                        if (this.TryReadDefData(metadata, out paramName, out paramLenght, ref offset))
                         {
                             // found modName, output to string!
-                            KeyValuePair<String, XElement> tempTable = CreateTable(metaString, (int)metaOffset);
-                            if (tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid definition found.");
-                            return false;
+                            KeyValuePair<String, XElement> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, (int)paramLenght);
+                            if (tempTable.Key != null) this.xRamTableList.Add(tempTable.Key, tempTable.Value);
                         }
                     }
-                    else if (cookie == OpRAM)
+                    else
                     {
-                        string paramName = null;
-                        string paramId = null;
-                        uint paramOffset = 0;
-                        uint paramLenght = 0;
-                        if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
-                        {
-                            if (this.TryReadDefData(metadata, out paramName, out paramLenght, ref offset))
-                            {
-                                // found modName, output to string!
-                                KeyValuePair<String, XElement> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, (int)paramLenght);
-                                if (tempTable.Key != null) this.xRamTableList.Add(tempTable.Key, tempTable.Value);
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid definition found.");
-                            return false;
-                        }
+                        Console.WriteLine("Invalid definition found.");
+                        return false;
                     }
-                    else if (cookie == Mod.endoffile)
-                    {
-                        break;
-                    }
+                }
+                else if (cookie == Mod.endoffile)
+                {
+                    break;
+                }
                 }
             
             return true;
@@ -396,7 +418,7 @@ namespace RomModCore
                 </ecu>
             ");
             
-            xel.Attribute("id").Value = this.inheritedEcuId;
+            xel.Attribute("id").Value = this.parentMod.InitialEcuId;
             xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
             xel.Element("address").Attribute("length").Value = length.ToString();
 
@@ -409,7 +431,103 @@ namespace RomModCore
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        private KeyValuePair<string,XElement> CreateTable(string name, int offset)
+        private KeyValuePair<string, XElement> CreateTable(string name, int offset)
+        {
+            Dictionary<string, XElement> list = this.baseDefinition.xRomTableList;
+
+            foreach (KeyValuePair<string, XElement> table in this.baseDefinition.xRomTableList)
+            {
+                if (table.Key == name)
+                {
+                    KeyValuePair<string, XElement> temptable = table;
+                    //TABLE WAS FOUND!
+                    if (temptable.Value.Attribute("offset") != null)
+                    {
+                        temptable.Value.SetAttributeValue("address",(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                    }
+                    IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
+                    List<String> remattr = new List<String>();
+                    foreach (XAttribute attr in tempattr)
+                    {
+                        if (attr.Name != "address" && attr.Name != "name")
+                        {
+                            remattr.Add(attr.Name.ToString());
+                        }
+                    }
+                    foreach (String rem in remattr)
+                    {
+                        temptable.Value.Attribute(rem).Remove();
+                    }
+
+                    List<String> eleremlist = new List<String>();
+
+                    foreach (XElement ele in temptable.Value.Elements())
+                    {
+                        IEnumerable<XAttribute> childtempattr = ele.Attributes();
+                        List<String> childremattr = new List<String>();
+
+                        if (ele.Name.ToString() != "table")
+                        {
+                            eleremlist.Add(ele.Name.ToString());
+                            continue;
+                        }
+                        if (ele.Attribute("offset") != null)
+                        {
+                            ele.SetAttributeValue("address",(System.Int32.Parse(ele.Attribute("offset").Value, System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                        }
+                        if (ele.Attribute("type").Value.ContainsCI("static"))
+                        {
+                            eleremlist.Add(ele.Name.ToString());
+                        }
+                        else if (ele.Attribute("type").Value.ContainsCI("x axis"))
+                        {
+                            ele.Attribute("name").Value = "X";
+                        }
+                        else if (ele.Attribute("type").Value.ContainsCI("y axis"))
+                        {
+                            ele.Attribute("name").Value = "Y";
+                        }
+                        foreach (XAttribute attr in childtempattr)
+                        {
+                            if (attr.Name != "address" && attr.Name != "name")
+                            {
+                                childremattr.Add(attr.Name.ToString());
+                            }
+                        }
+                        foreach (String rem in childremattr)
+                        {
+                            ele.Attribute(rem).Remove();
+                        }
+                    }
+                    foreach (String rem in eleremlist)
+                    {
+                        temptable.Value.Element(rem).Remove();
+                    }
+                    return temptable;
+                }
+            }
+            if (this.definition.xRamTableList != null)
+            {
+                foreach (KeyValuePair<string, XElement> table in this.baseDefinition.xRamTableList)
+                {
+                    if (table.Key == name)
+                    {
+                        KeyValuePair<string, XElement> temptable = table;
+                        //TABLE WAS FOUND!
+                        return temptable;
+                    }
+                }
+            }
+            return new KeyValuePair<string, XElement>();
+        }
+
+        /// <summary>
+        /// Creates a table XEL from the template file, adding proper addresses
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        private KeyValuePair<string,XElement> CreateTable(string name, Lut lut) //int offset)
         { 
             Dictionary<string,XElement> list = this.baseDefinition.xRomTableList;
 
@@ -421,7 +539,8 @@ namespace RomModCore
                     //TABLE WAS FOUND!
                     if (temptable.Value.Attribute("offset") != null)
                     {
-                        temptable.Value.SetAttributeValue("address",(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                        //temptable.Value.SetAttributeValue("address",(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                        temptable.Value.SetAttributeValue("address", lut.dataAddress.ToString("X"));
                     }
                     IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
                     List<String> remattr = new List<String>();
@@ -449,10 +568,6 @@ namespace RomModCore
                             eleremlist.Add(ele.Name.ToString());
                             continue;
                         }
-                        if (ele.Attribute("offset") != null)
-                        {
-                            ele.SetAttributeValue("address",(System.Int32.Parse(ele.Attribute("offset").Value, System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
-                        }
                         if (ele.Attribute("type").Value.ContainsCI("static"))
                         {
                             eleremlist.Add(ele.Name.ToString());
@@ -460,10 +575,12 @@ namespace RomModCore
                         else if (ele.Attribute("type").Value.ContainsCI("x axis"))
                         {
                             ele.Attribute("name").Value = "X";
+                            ele.SetAttributeValue("address", lut.colsAddress.ToString("X"));
                         }
                         else if (ele.Attribute("type").Value.ContainsCI("y axis"))
                         {
                             ele.Attribute("name").Value = "Y";
+                            ele.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
                         }
                         foreach (XAttribute attr in childtempattr)
                         {
