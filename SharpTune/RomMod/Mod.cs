@@ -34,6 +34,7 @@ namespace RomModCore
         private const uint newPatchPrefix = 0x12340004;
         private const uint copyNewPatchPrefix = 0x12340014;
         private const uint replace4BytesPrefix = 0x12340003;
+        private const uint replaceLast2Of4BytesPrefix = 0x12340013;
         private const uint modNamePrefix = 0x12340007;
         private const uint modVersionPrefix = 0x12340009;
         private const uint modAuthorPrefix = 0x12340008;
@@ -902,117 +903,6 @@ namespace RomModCore
                 metadata.TryGetUInt32(ref cookie, ref offset))
             {
                 Patch patch = null;
-                //bool isInfo = false;
-                //if (cookie == ecuIdPrefix)
-                //{
-                //    uint tempInt = 0;
-                //    if (metadata.TryGetUInt32(ref tempInt, ref offset))
-                //    {
-                //        this.EcuIdAddress = tempInt;
-                //    }
-                //    if (metadata.TryGetUInt32(ref tempInt, ref offset))
-                //    {
-                //        this.EcuIdLength = tempInt;
-                //    }
-                //    string metaString = null;
-                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                //    {
-                //        // found modName, output to string!
-                //        this.InitialEcuId = metaString;
-                //        isInfo = true;
-                //    }
-                //}
-                //if (cookie == newEcuIdPrefix)
-                //{
-                //    string metaString = null;
-                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                //    {
-                //        // found modName, output to string!
-                //        this.FinalEcuId = metaString;
-                //    }
-                //    if (this.InitialEcuId.Length == this.FinalEcuId.Length)
-                //    {
-                //        // Synthesize calibration-change patch and blobs.
-                //        patch = new Patch(
-                //            EcuIdAddress,
-                //            EcuIdAddress + ((EcuIdLength / 2)-1));
-
-                //        patch.IsMetaChecked = true;
-
-                //        patch.Baseline = new Blob(
-                //            EcuIdAddress + Mod.BaselineOffset,
-                //            InitialEcuId.ToByteArray());
-
-
-                //        patch.Payload = new Blob(
-                //            EcuIdAddress,
-                //            FinalEcuId.ToByteArray());
-                //    }
-                //}
-
-                //if (cookie == modNamePrefix)
-                //{
-                //    string metaString = null;
-                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                //    {
-                //        // found modName, output to string!
-                //        this.ModName = metaString;
-                //        isInfo = true;
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("Invalid ModName found." + patch.ToString());
-                //        return false;
-                //    }
-                //}
-
-                //if (cookie == modAuthorPrefix)
-                //{
-                //    string metaString = null;
-                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                //    {
-                //        // found modName, output to string!
-                //        this.ModAuthor = metaString;
-                //        isInfo = true;
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("Invalid patch found." + patch.ToString());
-                //        return false;
-                //    }
-                //}
-                //if (cookie == modVersionPrefix)
-                //{
-                //    string metaString = null;
-                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                //    {
-                //        // found modName, output to string!
-                //        this.ModVersion = metaString;
-                //        isInfo = true;
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("Invalid patch found." + patch.ToString());
-                //        return false;
-                //    }
-                //}
-                //if (cookie == modInfoPrefix)
-                //{
-                //    string metaString = null;
-                //    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                //    {
-                //        // found modinfo, output to string!
-                //        this.ModInfo = metaString;
-                //        isInfo = true;
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("Invalid modInfo found." + patch.ToString());
-                //        return false;
-                //    }
-                //}
-
-
                 if (cookie == patchPrefix)
                 {
                     if (!this.TryReadPatch(metadata, out patch, ref offset, blobs))
@@ -1034,6 +924,15 @@ namespace RomModCore
                     if (!this.TrySynthesize4BytePatch(metadata, out patch, ref offset))
                     {
                         Console.WriteLine("Invalid 4-byte patch found." + patch.ToString());
+                        return false;
+                    }
+
+                }
+                else if (cookie == replaceLast2Of4BytesPrefix)
+                {
+                    if (!this.TrySynthesizeLast2Of4BytePatch(metadata, out patch, ref offset))
+                    {
+                        Console.WriteLine("Invalid Last 2 Of 4-byte patch found." + patch.ToString());
                         return false;
                     }
 
@@ -1294,6 +1193,38 @@ namespace RomModCore
             
             //this.blobs.Add(new Blob(address, BitConverter.GetBytes(newValue).Reverse()));
             //this.blobs.Add(new Blob(address + BaselineOffset, BitConverter.GetBytes(oldValue).Reverse()));
+            return true;
+        }
+
+        /// <summary>
+        /// Construct a Last 2 of 4-byte patch from the metadata blob.
+        /// </summary>
+        private bool TrySynthesizeLast2Of4BytePatch(Blob metadata, out Patch patch, ref int offset)
+        {
+            uint address = 0;
+            uint oldValue = 0;
+            uint newValue = 0;
+
+            if (!metadata.TryGetUInt32(ref address, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete l2o4-byte patch record (no address).");
+            }
+
+            if (!metadata.TryGetUInt32(ref oldValue, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete l2o4-byte patch record (no baseline value).");
+            }
+
+            if (!metadata.TryGetUInt32(ref newValue, ref offset))
+            {
+                throw new InvalidDataException("This patch's metadata contains an incomplete l2o4-byte patch record (no patch value).");
+            }
+
+            patch = new Patch(address + 2, address + 3);
+            patch.IsMetaChecked = true;
+            patch.Baseline = new Blob(address + 2 + BaselineOffset, BitConverter.GetBytes(oldValue).Take(2).Reverse());
+            patch.Payload = new Blob(address + 2, BitConverter.GetBytes(newValue).Take(2).Reverse());
+
             return true;
         }
 
