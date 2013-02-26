@@ -220,7 +220,7 @@ namespace ConvTools
             //write date tag!
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
-                writer.WriteLine("#define MOD_DATE " + DateTime.Today.Year.ToString().Substring(2) + "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + System.Environment.NewLine);
+                writer.WriteLine("#define MOD_DATE " + DateTime.Today.Year.ToString().Substring(2) + "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." + DateTime.Now.Hour.ToString() + DateTime.Now.Minute.ToString() + System.Environment.NewLine);
                 foreach (var category in Defines)
                 {
                     writer.WriteLine("/////////////////////");
