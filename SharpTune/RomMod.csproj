@@ -98,6 +98,7 @@
     <Compile Include="GUI\CalidUtility.Designer.cs">
       <DependentUpon>CalidUtility.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\SimpleCombo.cs" />
     <Compile Include="GUI\CustomGrid.cs">
       <SubType>Component</SubType>
     </Compile>
