@@ -255,5 +255,20 @@ namespace SharpTune
                 targs[i - 1] = args[i];
             return targs;
         }
+
+        public static List<string> FilterOnly(this List<string> l, string f)
+        {
+            List<string> remlist = new List<string>();
+            foreach (var o in l)
+            {
+                if (!o.ToString().ContainsCI(f))
+                    remlist.Add(o.ToString());
+            }
+            foreach (string s in remlist)
+            {
+                l.Remove(s);
+            }
+            return l;
+        }
     }
 }
