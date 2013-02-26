@@ -9,6 +9,7 @@ using System.Data;
 using SharpTune;
 using SharpTuneCore;
 using SharpTune.RomMod;
+using System.IO;
 
 namespace RomModCore
 {
@@ -91,7 +92,36 @@ namespace RomModCore
             this.definition.carInfo["xmlid"] = this.parentMod.ModIdent.ToString();
             this.definition.include = this.parentMod.InitialCalibrationId.ToString();
 
-            XDocument xmlDoc = XDocument.Load(defPath + "merpslogger.xml");
+            //prompt to select logger type
+            List<string> loggerdefs = new List<string>();
+            List<string> remlist = new List<string>();
+
+            loggerdefs.AddRange(Directory.GetFiles(SharpTuner.RRLoggerDefPath));
+            loggerdefs.FilterOnly(".xml");
+
+            for(int i = 0; i < loggerdefs.Count; i++)
+            {
+                loggerdefs[i] = Path.GetFileName(loggerdefs[i]);              
+            }
+            loggerdefs.Sort();
+            loggerdefs.Reverse();
+
+            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", loggerdefs);
+
+            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);
+            InheritRRLogger(ref xmlDoc);
+
+            xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.ModIdent + ".xml");
+            
+
+            XDocument xmlBase = XDocument.Load(SharpTuner.RRLoggerDefPath + "/MerpMod/base.xml");
+            string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
+            IEnumerable<XElement> xbase = xmlBase.XPathSelectElements(bxp);
+
+            foreach (XElement xb in xbase)
+            {
+                xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
+            }
 
             //xpath by name
             foreach (KeyValuePair<string, XElement> table in this.xRamTableList)
@@ -107,13 +137,48 @@ namespace RomModCore
                     if(check != null) check.Remove();
                     exp.AddFirst(table.Value);
                 }
-                
-                xmlDoc.Save(defPath + "merpslogger.xml");
+
+                xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.ModIdent + ".xml");
             }
 
             
 
+            
+
             return true;
+        }
+
+        public void InheritRRLogger(ref XDocument xmlDoc)
+        {
+            //inherit from a base file
+            //todo add list of exemptions to skip???
+            string paramxp = "./logger/protocols/protocol/ecuparams";
+            XElement pexp = xmlDoc.XPathSelectElement(paramxp);
+            try
+            {
+                foreach (XElement xel in pexp.Elements())
+                {
+                    if (xel.Elements("ecu") != null)
+                    {
+                    
+                        foreach (XElement xecu in xel.Elements("ecu"))
+                        {
+                            string id = xecu.Attribute("id").Value.ToString();
+                            if ( id == parentMod.InitialEcuId.ToString())
+                            {
+                                //found hit, copy the ecu xel
+                                XElement newxecu = new XElement(xecu);
+                                newxecu.Attribute("id").SetValue(parentMod.FinalEcuId.ToString());
+                                xel.AddFirst(newxecu);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -418,7 +483,7 @@ namespace RomModCore
                 </ecu>
             ");
             
-            xel.Attribute("id").Value = this.parentMod.InitialEcuId;
+            xel.Attribute("id").Value = this.parentMod.FinalEcuId;
             xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
             xel.Element("address").Attribute("length").Value = length.ToString();
 
