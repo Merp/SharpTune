@@ -90,6 +90,7 @@ namespace RomModCore
         public List<Patch> patchList;
         public List<Patch> unPatchList;
         private Define definition { get; set; }
+        public string buildConfig;
 
         /// <summary>
         /// Constructor for external mods
@@ -97,6 +98,29 @@ namespace RomModCore
         /// <param name="modPath"></param>
         public Mod(string modPath)
         {
+            this.patchList = new List<Patch>();
+            this.ModAuthor = "Unknown Author";
+            this.ModName = "Unknown Mod";
+            this.ModVersion = "Unknown Version";
+            //MemoryStream modMemStream = new MemoryStream();
+            //using (FileStream fileStream = File.OpenRead(modPath))
+            //{
+            //    modMemStream.SetLength(fileStream.Length);
+            //    fileStream.Read(modMemStream.GetBuffer(), 0, (int)fileStream.Length);
+            //}
+            FileInfo f = new FileInfo(modPath);
+            FileSize = f.Length;
+            FileName = f.Name;
+            FilePath = modPath;
+            isResource = false;
+            reader = new SRecordReader(modPath);//modMemStream, modPath);
+            TryReadPatches();
+            TryReversePatches();
+        }
+
+        public Mod(string modPath, string bc)
+        {
+            this.buildConfig = bc;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
             this.ModName = "Unknown Mod";
@@ -135,6 +159,8 @@ namespace RomModCore
             TryReadPatches();
             TryReversePatches();
         }
+
+
         
         public bool TryDefinition(string defPath)
         {

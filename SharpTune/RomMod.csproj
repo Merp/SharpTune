@@ -242,11 +242,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>Copy ..\..\..\..\MerpMod\HEW\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
+    <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\HEW\MerpMod\TestRom\SharpTune.exe"
-Copy SharpTune.exe "..\..\..\..\MerpMod\HEW\MerpMod\TARGETS\SharpTune.exe"</PostBuildEvent>
+    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TestRom\SharpTune.exe"
+Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TARGETS\SharpTune.exe"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

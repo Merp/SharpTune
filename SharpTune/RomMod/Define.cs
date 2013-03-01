@@ -81,7 +81,10 @@ namespace RomModCore
 
             if (!TryCleanDef()) return false;
 
-            outputPath = defPath + this.parentMod.ModIdent.ToString() + ".xml";
+            if (this.parentMod.buildConfig != null)
+                outputPath = defPath + "/MerpMod/" + this.parentMod.buildConfig + "/";
+
+            outputPath += this.parentMod.ModIdent.ToString() + ".xml";
             this.definition.defPath = outputPath;
             
             definition.xRomTableList = xRomTableList;
@@ -111,7 +114,7 @@ namespace RomModCore
             XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);
             InheritRRLogger(ref xmlDoc);
 
-            xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.ModIdent + ".xml");
+            xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.buildConfig + "/" + parentMod.ModIdent + ".xml");
             
 
             XDocument xmlBase = XDocument.Load(SharpTuner.RRLoggerDefPath + "/MerpMod/base.xml");
@@ -138,7 +141,7 @@ namespace RomModCore
                     exp.AddFirst(table.Value);
                 }
 
-                xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.ModIdent + ".xml");
+                xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.buildConfig + "/" + parentMod.ModIdent + ".xml");
             }
 
             

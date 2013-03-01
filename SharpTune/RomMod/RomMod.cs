@@ -60,9 +60,9 @@ namespace RomModCore
             {
                 return RomModCore.RomMod.TryGenerateBaseline(args[1], args[2]);
             }
-            else if (args[0] == "baselinedefine")
+            else if (args.Length == 4 && args[0] == "baselinedefine")
             {
-                return RomModCore.RomMod.TryBaselineAndDefine(args[1], args[2], SharpTune.Program.definitionDir);
+                return RomModCore.RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTune.Program.definitionDir);
             }
             PrintHelp();
             return false;
@@ -290,11 +290,10 @@ namespace RomModCore
             return patcher.TryPrintBaselines(patchPath,romStream);
         }
 
-
-        private static bool TryBaselineAndDefine(string patchPath, string romPath, string defPath)
+        private static bool TryBaselineAndDefine(string patchPath, string romPath, string bc, string defPath)
         {
             Stream romStream = File.OpenRead(romPath);
-            Mod patcher = new Mod(patchPath);
+            Mod patcher = new Mod(patchPath, bc);
 
             if (!patcher.TryReadPatches()) return false;
             if (!patcher.TryDefinition(defPath)) return false;
