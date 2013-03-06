@@ -33,7 +33,7 @@ namespace SharpTune
             foreach (string modpath in searchresults)
             {
                 Mod tempMod = new Mod(modpath);
-                if(tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp",false))
+                if(tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", 2, false))
                     image.ModList.Add(tempMod);
             }
             return true;
@@ -50,7 +50,7 @@ namespace SharpTune
                 {
                     Stream stream = assembly.GetManifestResourceStream(modpath);
                      Mod tempMod = new Mod(stream,modpath);
-                     if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", false))
+                     if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", 2, false))
                          image.ModList.Add(tempMod);
                 }
             }

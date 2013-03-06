@@ -248,7 +248,7 @@ namespace SharpTune
                 {
                     Stream stream = assembly.GetManifestResourceStream(modpath);
                     Mod tempMod = new Mod(stream, modpath);
-                    if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", false))
+                    if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", 2, false))
                         SharpTuner.activeImage.ModList.Add(tempMod);
                 }
             }
@@ -275,7 +275,7 @@ namespace SharpTune
                 foreach (string modpath in searchresults)
                 {
                     Mod tempMod = new Mod(modpath);
-                    if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", false))
+                    if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", 2, false))
                         SharpTuner.activeImage.ModList.Add(tempMod);
                 }
                 if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == i)
@@ -369,7 +369,7 @@ namespace SharpTune
                 MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!currentmod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, d.FileName, true))
+            if (!currentmod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, d.FileName, 2, true))
             {
                 MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

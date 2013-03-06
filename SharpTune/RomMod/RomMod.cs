@@ -43,19 +43,19 @@ namespace RomModCore
             }
             else if (args.Length == 3 && args[0] == "test")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], true, false);
+                return RomModCore.RomMod.TryApply(args[1], args[2], 2, false);
             }
             else if (args.Length == 3 && args[0] == "apply")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], true, true);
+                return RomModCore.RomMod.TryApply(args[1], args[2], 0, true);
             }
             else if (args.Length == 3 && args[0] == "applied")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], false, false);
+                return RomModCore.RomMod.TryApply(args[1], args[2], 1, false);//TODO is this deprecated?
             }
             else if (args.Length == 3 && args[0] == "remove")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], false, true);
+                return RomModCore.RomMod.TryApply(args[1], args[2], 1, true);
             }
             else if (args.Length == 3 && args[0] == "baseline")
             {
@@ -134,10 +134,10 @@ namespace RomModCore
             }
         }
 
-        private static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
+        private static bool TryApply(string patchPath, string romPath, int apply, bool commit)
         {
             Mod currentMod = new Mod(patchPath);
-            return currentMod.TryCheckApplyMod(romPath, romPath, commit);
+            return currentMod.TryCheckApplyMod(romPath, romPath, apply, commit);
 
             //Stream romStream;
             //string workingPath = romPath + ".temp";

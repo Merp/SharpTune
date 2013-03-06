@@ -170,7 +170,7 @@ namespace RomModCore
             return true;
         }
 
-        public bool TryCheckApplyMod(string romPath, string outPath, bool commit)
+        public bool TryCheckApplyMod(string romPath, string outPath, int apply, bool commit)
         {
             ///string workingPath = outPath + ".temp";
             //File.Copy(romPath, outPath, true);
@@ -187,13 +187,13 @@ namespace RomModCore
             Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
             Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
 
-            if (TryValidatePatches(outStream))
+            if (apply != 1 && TryValidatePatches(outStream))
             {
                 isApplied = false;
                 isCompat = true;
                 Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
             }
-            else if (TryValidateUnPatches(outStream))
+            else if (apply != 0 && TryValidateUnPatches(outStream))
             {
                 isApplied = true;
                 isCompat = true;
