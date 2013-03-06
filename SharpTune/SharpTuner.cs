@@ -18,6 +18,7 @@ using System.IO.Ports;
 using System.IO;
 using SharpTuneCore;
 using RomModCore;
+using SharpTune.Properties;
 
 namespace SharpTune
 {
@@ -34,13 +35,11 @@ namespace SharpTune
 
         public static AvailableDevices availableDevices { get; set; }
 
-        public static string definitionPath = "rommetadata";
-
-        public static string DefRepoPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\SubaruDefs\";
-        public static string EcuFlashDefRepoPath = DefRepoPath + @"\ECUFlash\subaru standard\";
-        public static string RRDefRepoPath = DefRepoPath + @"RomRaider\";
-        public static string RREcuDefPath = RRDefRepoPath + @"ecu\standard\";
-        public static string RRLoggerDefPath = RRDefRepoPath + @"logger\";
+        public static string DefRepoPath;
+        public static string EcuFlashDefRepoPath;
+        public static string RRDefRepoPath;
+        public static string RREcuDefPath;
+        public static string RRLoggerDefPath;
 
         public static string activePort { get; set; }
 
@@ -52,9 +51,27 @@ namespace SharpTune
 
         public static string QueuedFilePath { get; set; }
 
+        public static void initSettings()
+        {
+            if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
+            {
+                Settings.Default.SubaruDefsRepoPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\SubaruDefs";
+            }
+            if (Settings.Default.PatchPath == null || Settings.Default.PatchPath == "")
+            {
+                Settings.Default.PatchPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\MerpMod\MerpMod\TestRom";
+            }
+
+            EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";
+            RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
+            RREcuDefPath = RRDefRepoPath + @"\ecu\standard\";
+            RRLoggerDefPath = RRDefRepoPath + @"\logger\";
+            Settings.Default.Save();
+        }
+
         public static void populateAvailableDevices()
         {
-            availableDevices = new AvailableDevices(definitionPath.ToString());
+            availableDevices = new AvailableDevices(EcuFlashDefRepoPath.ToString());
         }
 
         //public static void setSsmInterface(SsmInterface s)

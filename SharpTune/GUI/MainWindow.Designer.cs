@@ -40,7 +40,6 @@
             this.saveDeviceImageAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.obfuscateCALIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.manuallySelectPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -62,6 +61,7 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.manuallySelectPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -72,9 +72,9 @@
             // 
             // txtConsole
             // 
-            this.txtConsole.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtConsole.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtConsole.BackColor = System.Drawing.Color.Black;
             this.txtConsole.ForeColor = System.Drawing.Color.LawnGreen;
             this.txtConsole.Location = new System.Drawing.Point(7, 258);
@@ -159,7 +159,6 @@
             // 
             this.rOMToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.obfuscateCALIDToolStripMenuItem,
-            this.manuallySelectPatchToolStripMenuItem,
             this.xMLToIDCToolStripMenuItem,
             this.iDAToHEWToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
@@ -170,28 +169,21 @@
             // 
             this.obfuscateCALIDToolStripMenuItem.Enabled = false;
             this.obfuscateCALIDToolStripMenuItem.Name = "obfuscateCALIDToolStripMenuItem";
-            this.obfuscateCALIDToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.obfuscateCALIDToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.obfuscateCALIDToolStripMenuItem.Text = "Obfuscate CALID";
             this.obfuscateCALIDToolStripMenuItem.Click += new System.EventHandler(this.obfuscateCALIDToolStripMenuItem_Click);
-            // 
-            // manuallySelectPatchToolStripMenuItem
-            // 
-            this.manuallySelectPatchToolStripMenuItem.Name = "manuallySelectPatchToolStripMenuItem";
-            this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
-            this.manuallySelectPatchToolStripMenuItem.Text = "Manually Select Patch";
-            this.manuallySelectPatchToolStripMenuItem.Click += new System.EventHandler(this.manuallySelectPatchToolStripMenuItem_Click);
             // 
             // xMLToIDCToolStripMenuItem
             // 
             this.xMLToIDCToolStripMenuItem.Name = "xMLToIDCToolStripMenuItem";
-            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.xMLToIDCToolStripMenuItem.Text = "XML to IDC";
             this.xMLToIDCToolStripMenuItem.Click += new System.EventHandler(this.xMLToIDCToolStripMenuItem_Click);
             // 
             // iDAToHEWToolStripMenuItem
             // 
             this.iDAToHEWToolStripMenuItem.Name = "iDAToHEWToolStripMenuItem";
-            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
             this.iDAToHEWToolStripMenuItem.Click += new System.EventHandler(this.iDAToHEWToolStripMenuItem_Click);
             // 
@@ -211,7 +203,8 @@
             // xMLToolStripMenuItem
             // 
             this.xMLToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.definitionLocationToolStripMenuItem});
+            this.definitionLocationToolStripMenuItem,
+            this.manuallySelectPatchToolStripMenuItem});
             this.xMLToolStripMenuItem.Name = "xMLToolStripMenuItem";
             this.xMLToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.xMLToolStripMenuItem.Text = "Settings";
@@ -272,9 +265,9 @@
             // 
             // splitContainer2
             // 
-            this.splitContainer2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.splitContainer2.Location = new System.Drawing.Point(0, 27);
             this.splitContainer2.Name = "splitContainer2";
@@ -299,8 +292,8 @@
             // 
             // openDeviceListBox
             // 
-            this.openDeviceListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.openDeviceListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.openDeviceListBox.FormattingEnabled = true;
             this.openDeviceListBox.IntegralHeight = false;
             this.openDeviceListBox.Location = new System.Drawing.Point(6, 16);
@@ -329,8 +322,8 @@
             // 
             // treeView1
             // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView1.Location = new System.Drawing.Point(6, 207);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(519, 296);
@@ -348,8 +341,8 @@
             // 
             // buttonPatchRom
             // 
-            this.buttonPatchRom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonPatchRom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonPatchRom.Enabled = false;
             this.buttonPatchRom.Location = new System.Drawing.Point(7, 203);
             this.buttonPatchRom.Name = "buttonPatchRom";
@@ -361,9 +354,9 @@
             // 
             // selectedModTextBox
             // 
-            this.selectedModTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.selectedModTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.selectedModTextBox.Location = new System.Drawing.Point(7, 16);
             this.selectedModTextBox.Multiline = true;
             this.selectedModTextBox.Name = "selectedModTextBox";
@@ -378,6 +371,13 @@
             this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
+            // 
+            // manuallySelectPatchToolStripMenuItem
+            // 
+            this.manuallySelectPatchToolStripMenuItem.Name = "manuallySelectPatchToolStripMenuItem";
+            this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.manuallySelectPatchToolStripMenuItem.Text = "Patch Location";
+            this.manuallySelectPatchToolStripMenuItem.Click += new System.EventHandler(this.manuallySelectPatchToolStripMenuItem_Click_1);
             // 
             // MainWindow
             // 
@@ -437,11 +437,11 @@
         private System.Windows.Forms.Button buttonPatchRom;
         private System.Windows.Forms.TextBox selectedModTextBox;
         private System.Windows.Forms.TreeView treeView1;
-        private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ToolStripMenuItem xMLToIDCToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
     }
 }
 

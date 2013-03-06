@@ -58,6 +58,8 @@ namespace SharpTune
         /// </summary>
         private static bool Run(string[] args)
         {
+            SharpTuner.initSettings();
+
             if (args.Length < 1)
             {
                 SharpTune.Program.RomModGui();

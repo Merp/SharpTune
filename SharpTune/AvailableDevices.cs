@@ -21,6 +21,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SharpTune;
 
 namespace SharpTuneCore
 {
@@ -87,9 +88,7 @@ namespace SharpTuneCore
 
             try
             {
-                string[] t = new string[] {"SubaruDefs\\ECUFlash\\subaru standard"};
-                string userdir = System.Environment.GetEnvironmentVariable("USERPROFILE").ToString() + "\\Dev";
-                List<string> ts = ResourceUtil.directorySearchRecursiveDir(userdir,t);
+                List<string> ts = ResourceUtil.directorySearchRecursiveDir(SharpTuner.EcuFlashDefRepoPath,null);
                 if(!GetDevices(ts[0]))
                 {
                     Console.WriteLine("XML initialize failed");

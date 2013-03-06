@@ -35,6 +35,7 @@ using System.Xml;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using SharpTune;
+using SharpTune.Properties;
 
 
 
@@ -381,25 +382,6 @@ namespace SharpTune
             }
         }
 
-        private void manuallySelectPatchToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //Open dialog to change patch file location
-            //Then refresh patches
-
-            FolderBrowserDialog d = new FolderBrowserDialog();
-            //d.RootFolder = Environment.SpecialFolder.MyComputer;
-            string path = SharpTuner.activeImage.FileDirectory.ToString();
-            d.SelectedPath = path;
-
-            //d.ShowDialog();
-            DialogResult ret = Extensions.STAShowFDialog(d);
-
-            if (ret == DialogResult.OK)
-            {
-                LoadMods(d.SelectedPath);
-            }
-        }
-
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if ((treeView1.SelectedNode != null) && (treeView1.SelectedNode.Tag != null) && (treeView1.SelectedNode.Tag.ToString().Contains(".patch")))
@@ -518,23 +500,18 @@ namespace SharpTune
 
         private void definitionLocationToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //Open dialog to change patch file location
-            //Then refresh patches
-
             FolderBrowserDialog d = new FolderBrowserDialog();
-            //d.RootFolder = Environment.SpecialFolder.MyComputer;
             if (SharpTuner.activeImage != null)
             {
                 string path = SharpTuner.activeImage.ToString();
                 d.SelectedPath = path;
             }
-            //d.ShowDialog();
             DialogResult ret = Extensions.STAShowFDialog(d);
 
             if (ret == DialogResult.OK)
             {
-                SharpTuner.definitionPath = d.SelectedPath.ToString();
-                SharpTuner.populateAvailableDevices();
+                Settings.Default.SubaruDefsRepoPath = d.SelectedPath.ToString();
+                SharpTuner.initSettings();
                 loadDevices();
             } 
         }
@@ -575,6 +552,27 @@ namespace SharpTune
         private void SpawnIDAtoHEW()
         {
             Application.Run(new IDAtoHEW());
+        }
+
+        private void manuallySelectPatchToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            //Open dialog to change patch file location
+            //Then refresh patches
+
+            FolderBrowserDialog d = new FolderBrowserDialog();
+            //d.RootFolder = Environment.SpecialFolder.MyComputer;
+            string path = Settings.Default.PatchPath;
+            d.SelectedPath = path;
+
+            //d.ShowDialog();
+            DialogResult ret = Extensions.STAShowFDialog(d);
+
+            if (ret == DialogResult.OK)
+            {
+                LoadMods(d.SelectedPath);//TODO FIX THIS
+                Settings.Default.PatchPath = d.SelectedPath;
+                SharpTuner.initSettings();
+            }
         }
     }
 }

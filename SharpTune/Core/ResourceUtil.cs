@@ -111,13 +111,16 @@ namespace SharpTuneCore
             try
             {
                 bool found = true;
-                foreach (string t in terms)
+                if (terms != null)
+                {
+                    foreach (string t in terms)
                     {
                         if (!directory.ContainsCI(t))
                         {
                             found = false;
                         }
                     }
+                }
                 if (found)
                 {
                     dirlist.Add(directory);

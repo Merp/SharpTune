@@ -55,7 +55,7 @@ namespace RomModCore
         /// TODO: Replace template with inheritance from 32BITBASE Tables and a patch parameter that specifies the child template to use.
         /// </summary>
         /// <returns></returns>
-        public bool TryReadDefs(String defPath)
+        public bool TryReadDefs(String defPath)//TODO remove defpath and ref the static global
         {
             
             xRomTableList = new Dictionary<string,XElement>();
