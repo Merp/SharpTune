@@ -83,26 +83,26 @@ namespace SharpTuneCore
            List<string> filelist = new List<string>();
            try
            {
-
                foreach (string d in Directory.GetDirectories(directory))
                {
-                   
-                   foreach (string file in directorySearch(d, terms))
-                   {
-                       filelist.Add(file);
-                   }
-
-                   return filelist;
+                   List<string> tlist = new List<string>();
+                   tlist = (directorySearchRecursive(d, terms));
+                   if (tlist != null)
+                       filelist.AddRange(tlist);
                }
                //dumps here if no subdirs
-               return directorySearch(directory, terms);
+               List<string> telist = new List<string>();
+               telist = (directorySearch(directory, terms));
+               if (telist != null)
+                   filelist.AddRange(telist);
            }
            catch (System.Exception excpt)
            {
                Console.WriteLine(excpt.Message);
+               return null;
            }
 
-            return null;
+           return filelist;
         }
 
         public static List<string> directorySearchRecursiveDir(string directory, string[] terms)

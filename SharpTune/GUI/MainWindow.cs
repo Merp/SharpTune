@@ -141,6 +141,7 @@ namespace SharpTune
             SharpTuner.activeImage = newImage;
             this.openDeviceListBox.Items.Add(SharpTuner.activeImage.FileName + " CALID: "+SharpTuner.activeImage.CalId);
             Console.WriteLine("Successfully opened " + SharpTuner.activeImage.CalId + " filename: " + SharpTuner.activeImage.FileName);
+            LoadMods();
         }
 
         private void openDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -260,12 +261,12 @@ namespace SharpTune
             RefreshModInfo();
         }
 
-        private void LoadMods(string path)
+        public void LoadMods()
         {
             int i = SharpTuner.activeImage.ModList.Count;
             string calid = SharpTuner.activeImage.CalId.ToString();
             string[] terms = { ".patch" };
-            List<string> searchresults = ResourceUtil.directorySearch(path, terms);
+            List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
             if (searchresults == null)
             {
                 Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
@@ -395,20 +396,6 @@ namespace SharpTune
             {
                 buttonPatchRom.Enabled = false;
                 //buttonTestPatch.Enabled = false;
-            }
-        }
-
-        private void patchFileLocationToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            FolderBrowserDialog d = new FolderBrowserDialog();
-            //d.RootFolder = Environment.SpecialFolder.MyComputer;
-            string path = SharpTuner.activeImage.FileDirectory.ToString();
-            d.SelectedPath = path;
-            //d.ShowDialog();
-            DialogResult ret = Extensions.STAShowFDialog(d);
-            if (ret == DialogResult.OK)
-            {
-                LoadMods(d.SelectedPath);
             }
         }
 
@@ -569,7 +556,7 @@ namespace SharpTune
 
             if (ret == DialogResult.OK)
             {
-                LoadMods(d.SelectedPath);//TODO FIX THIS
+                LoadMods();//TODO FIX THIS
                 Settings.Default.PatchPath = d.SelectedPath;
                 SharpTuner.initSettings();
             }

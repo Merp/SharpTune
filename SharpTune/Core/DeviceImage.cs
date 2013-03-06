@@ -131,10 +131,7 @@ namespace SharpTuneCore
             //            }
             //#endif
 
-
-
             this.ModList = new List<Mod>();
-
         }
 
         /// <summary>
