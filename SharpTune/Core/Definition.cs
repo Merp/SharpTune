@@ -21,6 +21,7 @@ using System.Xml.XPath;
 using System.Xml.Linq;
 using System.Linq;
 using SharpTune;
+using SharpTune.Properties;
 
 namespace SharpTuneCore
 {
@@ -251,7 +252,7 @@ namespace SharpTuneCore
                 //Down the rabbit hole
                 //Continue Inheritance
                 //Recursively until you hit the BASE
-                ReadXML(DirectorySearch("rommetadata", include),true, false);
+                ReadXML(DirectorySearch(SharpTuner.EcuFlashDefRepoPath, include),true, false);
             }
 
             return false;
