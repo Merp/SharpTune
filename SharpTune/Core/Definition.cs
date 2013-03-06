@@ -252,7 +252,8 @@ namespace SharpTuneCore
                 //Down the rabbit hole
                 //Continue Inheritance
                 //Recursively until you hit the BASE
-                ReadXML(DirectorySearch(SharpTuner.EcuFlashDefRepoPath, include),true, false);
+                ReadXML(SharpTuner.availableDevices.findDefinition(include), true, false);
+                    //DirectorySearch(SharpTuner.EcuFlashDefRepoPath, include),true, false);
             }
 
             return false;

@@ -118,6 +118,18 @@ namespace SharpTuneCore
             return imap;
         }
 
+        public String findDefinition(String xmlid)
+        {
+            foreach (KeyValuePair<string, Pair<int, String>> pair in this.IdentifierMap)
+            {
+                if (pair.Value.Second.Equals(xmlid))
+                {
+                    return pair.Key.ToString();
+                }
+            }
+            return null;
+        }
+
         public String findInherit(String xmlid)
         {
             String fetchpath = "";
