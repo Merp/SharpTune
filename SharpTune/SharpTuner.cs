@@ -19,6 +19,8 @@ using System.IO;
 using SharpTuneCore;
 using RomModCore;
 using SharpTune.Properties;
+using System.Resources;
+using System.Collections;
 
 namespace SharpTune
 {

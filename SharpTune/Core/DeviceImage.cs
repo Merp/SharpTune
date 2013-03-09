@@ -21,6 +21,9 @@ using System.Xml.Linq;
 using System.Windows.Forms;
 using RomModCore;
 using SharpTune;
+using System.Resources;
+using SharpTune.Properties;
+using System.Collections;
 
 
 namespace SharpTuneCore
@@ -215,6 +218,69 @@ namespace SharpTuneCore
                 return false;
             }
 
+        }
+
+        public void LoadMods()
+        {
+            ModList.Clear();
+            LoadResourceMods();
+            LoadExternalMods();
+        }
+
+        private void LoadResourceMods()
+        {
+            int i = ModList.Count;
+            string calid = CalId.ToString();
+            ResourceSet ress = Resources.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
+            ResourceManager rm = SharpTune.Properties.Resources.ResourceManager;
+            foreach (DictionaryEntry r in ress)
+            {
+                if (r.Key.ToString().ContainsCI(CalId.ToString()))
+                {
+                    MemoryStream stream = new MemoryStream((byte[])rm.GetObject(r.Key.ToString()));
+                    // assembly.GetManifestResourceStream("SharpTune.Resources." + r.Key.ToString());
+
+                    Mod tempMod = new Mod(stream, r.Key.ToString());
+                    if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
+                        ModList.Add(tempMod);
+                }
+            }
+            if (ModList == null || ModList.Count == i)
+            {
+                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", FileName);
+            }
+            SharpTuner.mainWindow.RefreshModTree();
+            SharpTuner.mainWindow.RefreshModInfo();
+        }
+
+        private void LoadExternalMods()
+        {
+            int i = ModList.Count;
+            string calid = CalId.ToString();
+            string[] terms = { ".patch" };
+            List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
+            if (searchresults == null)
+            {
+                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", FileName);
+            }
+            else
+            {
+                foreach (string modpath in searchresults)
+                {
+                    if (!modpath.ContainsCI("debug") && !modpath.ContainsCI("currentbuild"))
+                    {
+                        Mod tempMod = new Mod(modpath);
+                        if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
+                            ModList.Add(tempMod);
+                    }
+                }
+                if (ModList == null || ModList.Count == i)
+                {
+                    Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", FileName);
+                }
+            }
+            SharpTuner.mainWindow.RefreshModTree();
+            SharpTuner.mainWindow.RefreshModInfo();
         }
 
     }

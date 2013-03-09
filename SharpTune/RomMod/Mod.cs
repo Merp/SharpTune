@@ -172,6 +172,8 @@ namespace RomModCore
 
         public bool TryCheckApplyMod(string romPath, string outPath, int apply, bool commit)
         {
+            if (patchList == null || patchList.Count == 0)
+                return false;
             ///string workingPath = outPath + ".temp";
             //File.Copy(romPath, outPath, true);
             //File.Copy(romPath, workingPath, true);//File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))

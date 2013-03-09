@@ -35,6 +35,8 @@ using System.Xml;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using SharpTune;
+using System.Resources;
+using System.Collections;
 using SharpTune.Properties;
 
 
@@ -72,10 +74,7 @@ namespace SharpTune
             _writer = new TextBoxStreamWriter(txtConsole);
             // Redirect the out Console stream
             Console.SetOut(_writer);
-
             loadDevices();
-            //Assembly assembly = Assembly.GetExecutingAssembly();
-            //LoadMods(assembly); TODO THIS NEEDS FIXING
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -141,7 +140,7 @@ namespace SharpTune
             SharpTuner.activeImage = newImage;
             this.openDeviceListBox.Items.Add(SharpTuner.activeImage.FileName + " CALID: "+SharpTuner.activeImage.CalId);
             Console.WriteLine("Successfully opened " + SharpTuner.activeImage.CalId + " filename: " + SharpTuner.activeImage.FileName);
-            LoadMods();
+            SharpTuner.activeImage.LoadMods();
         }
 
         private void openDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -236,59 +235,8 @@ namespace SharpTune
             RefreshModTree();
             RefreshModInfo();
         }
-        
-        private void LoadMods(Assembly assembly)
-        {
-            int i = SharpTuner.activeImage.ModList.Count;
-            SharpTuner.activeImage.ModList.Clear();
-            string calid = SharpTuner.activeImage.CalId.ToString();
-            string[] mods = assembly.GetManifestResourceNames();
-            foreach (string modpath in mods)
-            {
-                if (modpath.ContainsCI(SharpTuner.activeImage.CalId.ToString()))
-                {
-                    Stream stream = assembly.GetManifestResourceStream(modpath);
-                    Mod tempMod = new Mod(stream, modpath);
-                    if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", 2, false))
-                        SharpTuner.activeImage.ModList.Add(tempMod);
-                }
-            }
-            if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == i)
-            {
-                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
-            }
-            RefreshModTree();
-            RefreshModInfo();
-        }
 
-        public void LoadMods()
-        {
-            int i = SharpTuner.activeImage.ModList.Count;
-            string calid = SharpTuner.activeImage.CalId.ToString();
-            string[] terms = { ".patch" };
-            List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
-            if (searchresults == null)
-            {
-                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
-            }
-            else
-            {
-                foreach (string modpath in searchresults)
-                {
-                    Mod tempMod = new Mod(modpath);
-                    if (tempMod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, SharpTuner.activeImage.FilePath + ".temp", 2, false))
-                        SharpTuner.activeImage.ModList.Add(tempMod);
-                }
-                if (SharpTuner.activeImage.ModList == null || SharpTuner.activeImage.ModList.Count == i)
-                {
-                    Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", SharpTuner.activeImage.FileName);
-                }
-            }
-            RefreshModTree();
-            RefreshModInfo();
-        }
-
-        private void RefreshModInfo()
+        public void RefreshModInfo()
         {
             try
             {
@@ -307,11 +255,14 @@ namespace SharpTune
                     "Author: " +
                     SharpTuner.activeImage.ModList[selectedModIndex].ModAuthor +
                     Environment.NewLine);
-                string t = Regex.Replace(SharpTuner.activeImage.ModList[selectedModIndex].ModInfo, @"""""""""", @"""""");
-                t = Regex.Replace(t, @"""""", Environment.NewLine);
-                t = Regex.Replace(t, @"""", "");
-                selectedModTextBox.AppendText(
-                    "Description: " + t);
+                if (SharpTuner.activeImage.ModList[selectedModIndex].ModInfo != null)
+                {
+                    string t = Regex.Replace(SharpTuner.activeImage.ModList[selectedModIndex].ModInfo, @"""""""""", @"""""");
+                    t = Regex.Replace(t, @"""""", Environment.NewLine);
+                    t = Regex.Replace(t, @"""", "");
+                    selectedModTextBox.AppendText(
+                        "Description: " + t);
+                }
             }
             catch (System.Exception excpt)
             {
@@ -320,7 +271,7 @@ namespace SharpTune
             }
         }
 
-        private void RefreshModTree()
+        public void RefreshModTree()
         {
             treeView1.Nodes.Clear();
             if (SharpTuner.activeImage.ModList.Count > 0)
@@ -556,7 +507,7 @@ namespace SharpTune
 
             if (ret == DialogResult.OK)
             {
-                LoadMods();//TODO FIX THIS
+                SharpTuner.activeImage.LoadMods();//TODO FIX THIS
                 Settings.Default.PatchPath = d.SelectedPath;
                 SharpTuner.initSettings();
             }
