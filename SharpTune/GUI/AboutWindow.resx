@@ -121,21 +121,13 @@
     <value>True</value>
   </metadata>
   <data name="richTextBox1.Text" xml:space="preserve">
-    <value>RomMod
-
-Version 0.1.12619
-
-RomMod is a tool for applying "Mods" to a hex/binary file. Currently this is being used on Subaru engine computers. If you have any questions, comments, or bug reports, please submit them to Merp through one of the help links.
+    <value>SharpTune a tool for applying "Mods" to a hex/binary file. Currently this is being used on Subaru engine computers. If you have any questions, comments, or bug reports, please submit them to Merp through one of the help links.
 
 If you use this tool commercially or find it useful, please support the project by donating. 
 
-The following people have contributed significantly to RomMod:
-
--Merp - RomMod GUI Design, RomModCore upgrades, Subaru mod development
+The following people have contributed significantly to SharpTune:
+-Merp - SharpTune GUI Design, RomModCore upgrades, Subaru mod development
 -NSFW - RomModCore (Previously RomPatch), Subaru mod development (Transition to HEW)
--Dschultz - RomRaider Management/Development
--The entire RomRaider community!
-
 
 
 </value>

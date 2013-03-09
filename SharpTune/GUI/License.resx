@@ -117,16 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="richTextBox1.Text" xml:space="preserve">
-    <value>The RomMod distribution is released with a separate license for each binary component.
-
-The RomModCore binary (previously RomPatch) is released with source under a GPLv3 License.
-
-The RomMod binary is released with the following license:
-
-Copyright(C) 2012 Merrill A Myers III, Merp, merrillamyersiii@gmail.com. DISTRIBUTION OR COPYING BY ANY MEANS OR ANY WAY, FOR PROFIT OR FOR FREE, IS STRICTLY PROHIBITED. USE AT YOUR OWN RISK. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS,” AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. AUTHOR DOES NOT WARRANT THAT THIS SOFTWARE DOES NOT INFRINGE ANY RIGHTS OF THIRD PARTIES.
-
-
-</value>
-  </data>
 </root>
