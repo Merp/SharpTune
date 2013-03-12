@@ -508,11 +508,7 @@ namespace RomModCore
                 if (table.Key == name)
                 {
                     KeyValuePair<string, XElement> temptable = table;
-                    //TABLE WAS FOUND!
-                    if (temptable.Value.Attribute("offset") != null)
-                    {
-                        temptable.Value.SetAttributeValue("address",(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
-                    }
+                    temptable.Value.SetAttributeValue("address",offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
                     IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
                     List<String> remattr = new List<String>();
                     foreach (XAttribute attr in tempattr)
@@ -538,10 +534,6 @@ namespace RomModCore
                         {
                             eleremlist.Add(ele.Name.ToString());
                             continue;
-                        }
-                        if (ele.Attribute("offset") != null)
-                        {
-                            ele.SetAttributeValue("address",(System.Int32.Parse(ele.Attribute("offset").Value, System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
                         }
                         if (ele.Attribute("type").Value.ContainsCI("static"))
                         {
@@ -604,12 +596,7 @@ namespace RomModCore
                 if (table.Key == name)
                 {
                     KeyValuePair<string, XElement> temptable = table;
-                    //TABLE WAS FOUND!
-                    if (temptable.Value.Attribute("offset") != null)
-                    {
-                        //temptable.Value.SetAttributeValue("address",(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
-                        temptable.Value.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-                    }
+                    temptable.Value.SetAttributeValue("address", lut.dataAddress.ToString("X"));
                     IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
                     List<String> remattr = new List<String>();
                     foreach (XAttribute attr in tempattr)
