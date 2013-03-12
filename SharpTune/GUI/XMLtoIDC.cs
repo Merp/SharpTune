@@ -43,33 +43,43 @@ namespace SharpTune.GUI
             if (ret == DialogResult.OK)
             {
                 //TODO ERROR HANDLING, CLEAR OUTPUT FILES FIRST??
-                if (romTablesCheckBox.Checked)
+                if (romTablesCheckBox.Checked && ExtParamsCheckBox.Checked && ssmParamsCheckBox.Checked)
                 {
-                    string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_romtables.idc";
+                    string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_XmlToIdc.idc";
                     spath.deleteFile();
-                    Console.WriteLine("Writing Rom Table IDC file to " + spath);
-                    NSFW.XMLtoIDC.GuiRun(new string[] { "tables", SharpTuner.activeImage.CalId }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], null, null);
+                    Console.WriteLine("Writing SSM param IDC file to " + spath);
+                    NSFW.XMLtoIDC.GuiRun(new string[] { "makeall", "ecu", SharpTuner.activeImage.CalId, ssmBaseTextBox.Text }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                 }
-                if (ExtParamsCheckBox.Checked)
+                else
                 {
-                    string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_extparams.idc";
-                    spath.deleteFile();
-                    Console.WriteLine("Writing extended RAM param IDC file to " + spath);
-                    NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "Car", SharpTuner.activeImage.Definition.carInfo["ecuid"].ToString() }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
-                }
-                if (ssmParamsCheckBox.Checked)
-                {
-                    if(System.Text.RegularExpressions.Regex.IsMatch(ssmBaseTextBox.Text,  @"\A\b[0-9a-fA-F]+\b\Z")) //@"\A\b(0[xX])?[0-9a-fA-F]+\b\Z"))//todo analyze ssm bse address
+                    if (romTablesCheckBox.Checked)
                     {
-                        string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_ssmparams.idc";
+                        string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_romtables.idc";
                         spath.deleteFile();
-                        Console.WriteLine("Writing SSM param IDC file to " + spath);
-                        NSFW.XMLtoIDC.GuiRun(new string[] { "stdparam", "32", "Car", SharpTuner.activeImage.CalId, ssmBaseTextBox.Text} ,spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                        Console.WriteLine("Writing Rom Table IDC file to " + spath);
+                        NSFW.XMLtoIDC.GuiRun(new string[] { "tables", SharpTuner.activeImage.CalId }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], null, null);
                     }
-                    else
+                    if (ExtParamsCheckBox.Checked)
                     {
-                        MessageBox.Show("Invalid SSM base address! IDC write aborted!");
-                        Console.Write("Invalid SSM base address! IDC write aborted!");
+                        string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_extparams.idc";
+                        spath.deleteFile();
+                        Console.WriteLine("Writing extended RAM param IDC file to " + spath);
+                        NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "ecu", SharpTuner.activeImage.Definition.carInfo["ecuid"].ToString() }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                    }
+                    if (ssmParamsCheckBox.Checked)
+                    {
+                        if (System.Text.RegularExpressions.Regex.IsMatch(ssmBaseTextBox.Text, @"\A\b[0-9a-fA-F]+\b\Z")) //@"\A\b(0[xX])?[0-9a-fA-F]+\b\Z"))//todo analyze ssm bse address
+                        {
+                            string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.activeImage.CalId + @"_ssmparams.idc";
+                            spath.deleteFile();
+                            Console.WriteLine("Writing SSM param IDC file to " + spath);
+                            NSFW.XMLtoIDC.GuiRun(new string[] { "stdparam", "32", "ecu", SharpTuner.activeImage.CalId, ssmBaseTextBox.Text }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid SSM base address! IDC write aborted!");
+                            Console.Write("Invalid SSM base address! IDC write aborted!");
+                        }
                     }
                 }
                 MessageBox.Show("Finished Writing IDC Files!");
