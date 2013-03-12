@@ -315,7 +315,7 @@ namespace RomModCore
                     {
                         Blob tableBlob;
                         this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        Lut lut = new Lut(tableBlob,metaOffset);
+                        Lut3D lut = new Lut3D(tableBlob,metaOffset);
                         KeyValuePair<String, XElement> tempTable = CreateTable(metaString, lut);
                         if (tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
                     }
@@ -587,7 +587,7 @@ namespace RomModCore
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        private KeyValuePair<string,XElement> CreateTable(string name, Lut lut) //int offset)
+        private KeyValuePair<string,XElement> CreateTable(string name, Lut3D lut) //int offset)
         { 
             Dictionary<string,XElement> list = this.baseDefinition.xRomTableList;
 

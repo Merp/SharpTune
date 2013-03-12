@@ -87,6 +87,38 @@ namespace RomModCore
         }
 
         /// <summary>
+        /// Try to get a unsigned short from the blob at the given offset. If successful, incrmenet offset
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        public bool TryGetUInt16(ref UInt16 result, ref int offset)
+        {
+            if (this.Content.Count < offset + 2)
+            {
+                return false;
+            }
+
+            result = 0;
+            byte temp = 0;
+            if (!this.TryGetByte(ref temp, ref offset))
+            {
+                return false;
+            }
+
+            result |= temp;
+            if (!this.TryGetByte(ref temp, ref offset))
+            {
+                return false;
+            }
+
+            result <<= 8;
+            result |= temp;
+
+            return true;
+        }
+
+        /// <summary>
         /// Try to get an unsigned 32-bit integer from the blob at the given offset.  If successful, increment the offset.
         /// </summary>
         public bool TryGetUInt32(ref uint result, ref int offset)
