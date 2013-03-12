@@ -281,7 +281,7 @@ namespace NSFW
             }
 
             File.Delete("logger.dtd");
-            File.Copy(loggerdtd, "logger.dtd");
+            File.Copy(loggerdtd, Environment.CurrentDirectory + "/logger.dtd");
 
             WriteHeader2(functionName);
             WriteStandardParameters(target, calId, ssmBase, cpu, loggerdef);
@@ -309,6 +309,10 @@ namespace NSFW
                                 MessageBoxDefaultButton.Button1);
                 return;
             }
+
+
+            File.Delete("logger.dtd");
+            File.Copy(loggerdtd, Environment.CurrentDirectory + "/logger.dtd");
 
             WriteHeader2(functionName);
             WriteExtendedParameters(target, ecuId, cpu, loggerdef);

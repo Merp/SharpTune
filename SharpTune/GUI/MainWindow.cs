@@ -70,7 +70,9 @@ namespace SharpTune
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            MessageBox.Show("THIS SOFTWARE IS PROVIDED 'AS IS' AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.","SharpTune");
             // Instantiate the writer
+            //TODO switch to traces instead of console redirection.
             _writer = new TextBoxStreamWriter(txtConsole);
             // Redirect the out Console stream
             Console.SetOut(_writer);
