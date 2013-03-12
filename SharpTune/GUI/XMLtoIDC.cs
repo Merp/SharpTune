@@ -95,21 +95,34 @@ namespace SharpTune.GUI
         {
             byte[] byc = new byte[4];
             long highlimit = 5000000;
+            long lowlimit = 100000;
+            long difflimit = 100000;
             if(SharpTuner.activeImage.imageStream.Length < highlimit)
                 highlimit = SharpTuner.activeImage.imageStream.Length;
-            for (long i = 100000; i < highlimit; i += 4)
+            for (long i = lowlimit; i < highlimit; i += 4)
             {
                 long start = i;
                 SharpTuner.activeImage.imageStream.Seek(i, SeekOrigin.Begin);
-                if (SSMBaseRecursion(i, 0, 0))
+                if (SSMBaseRecursion(i, 0, 0, difflimit))
                     return start.ToString("X");
                 else
                     continue;
             }
+            difflimit += 40000;
+            for (long i = lowlimit; i < highlimit; i += 4)
+            {
+                long start = i;
+                SharpTuner.activeImage.imageStream.Seek(i, SeekOrigin.Begin);
+                if (SSMBaseRecursion(i, 0, 0, difflimit))
+                    return start.ToString("X");
+                else
+                    continue;
+            }
+
             return "Enter SSM Base";
         }
 
-        private bool SSMBaseRecursion(long currentoffset, int lastaddress, int recursionlevel)
+        private bool SSMBaseRecursion(long currentoffset, int lastaddress, int recursionlevel, long min)
         {
             int addinc;
             if (recursionlevel < 6)
@@ -124,13 +137,13 @@ namespace SharpTune.GUI
             bc = BitConverter.ToInt32(byc,0);
             if(recursionlevel == 0)
                 lastaddress = bc;
-            if(bc > 0 && Math.Abs(currentoffset - bc) < 100000 && lastaddress + addinc > bc)
+            if(bc > 0 && Math.Abs(currentoffset - bc) < min && lastaddress + addinc > bc)
             {
                 if (recursionlevel > 40)
                     return true;
                 recursionlevel++;
                 currentoffset += 4;
-                return SSMBaseRecursion(currentoffset, bc, recursionlevel);
+                return SSMBaseRecursion(currentoffset, bc, recursionlevel, min);
             }
             else
                 return false;
