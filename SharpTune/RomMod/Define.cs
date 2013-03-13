@@ -92,6 +92,7 @@ namespace RomModCore
             this.definition.carInfo = this.inheritedDefinition.carInfo;
             this.definition.carInfo["internalidaddress"] = this.parentMod.ModIdentAddress.ToString("X");
             this.definition.carInfo["internalidstring"] = this.parentMod.ModIdent.ToString();
+            this.definition.carInfo["ecuid"] = this.parentMod.FinalEcuId.ToString();
             this.definition.carInfo["xmlid"] = this.parentMod.ModIdent.ToString();
             this.definition.include = this.parentMod.InitialCalibrationId.ToString();
 
