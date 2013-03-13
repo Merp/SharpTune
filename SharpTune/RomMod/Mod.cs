@@ -773,11 +773,18 @@ namespace RomModCore
                         return false;
                     }
 
-                    this.FinalCalibrationId = finalCalibrationId;
+                    if (finalCalibrationId.ContainsCI("ffffffff"))
+                    {
+                        StringBuilder s = new StringBuilder(initialCalibrationId, 0,initialCalibrationId.Length, initialCalibrationId.Length);
+                        s.Remove(initialCalibrationId.Length-2,2);
+                        s.Insert(initialCalibrationId.Length-2,"MM");
+                        FinalCalibrationId = s.ToString();
+                    }
 
+                    this.FinalCalibrationId = finalCalibrationId;
                     // Synthesize calibration-change patch and blobs.
                     patch = new Patch(
-                        CalIdAddress, 
+                        CalIdAddress,
                         CalIdAddress + (CalIdLength - 1));
 
                     patch.IsMetaChecked = true;
@@ -785,11 +792,11 @@ namespace RomModCore
                     patch.Baseline = new Blob(
                         CalIdAddress + Mod.BaselineOffset,
                         Encoding.ASCII.GetBytes(initialCalibrationId));
-                
+
                     patch.Payload = new Blob(
-                        CalIdAddress, 
+                        CalIdAddress,
                         Encoding.ASCII.GetBytes(finalCalibrationId));
-            
+
                     this.patchList.Add(patch);
                 }
                 else if (cookie == modIdPrefix)
@@ -827,12 +834,28 @@ namespace RomModCore
                         // found modName, output to string!
                         this.FinalEcuId = metaString;
                     }
-
-                    
-
                     if (this.InitialEcuId.Length == this.FinalEcuId.Length)
                     {
                         // Synthesize calibration-change patch and blobs.
+                        if(FinalEcuId.ContainsCI("ffffffff"))
+                        {
+                            StringBuilder feid = new StringBuilder(DateTime.Today.Year.ToString().Substring(2));
+                            feid.Append(DateTime.Today.Month.ToString());
+                            if(feid.Length < 4)
+                                feid.Append("F");
+                            feid.Append(DateTime.Today.Day.ToString());
+                            if (feid.Length < 6)
+                                feid.Append("F");
+                            feid.Append(DateTime.Now.Hour.ToString());
+                            if (feid.Length < 8)
+                                feid.Append("F");
+                            feid.Append(DateTime.Now.Minute.ToString());
+                            while (feid.Length < this.InitialEcuId.Length)
+                            {
+                                feid.Append("F");
+                            }
+                            this.FinalEcuId = feid.ToString();
+                        }
                         patch = new Patch(
                             EcuIdAddress,
                             EcuIdAddress + ((EcuIdLength / 2) - 1));
@@ -911,13 +934,11 @@ namespace RomModCore
                     break;
                 }
             }
-
             if (this.patchList.Count < 2)
             {
                 Console.WriteLine("This patch file's metadata contains no CALID or ECUID patch!!.");
                 return false;
             }
-
             return true;
         }
 
@@ -1032,7 +1053,7 @@ namespace RomModCore
                  {
                      offset -= 4;
 
-                     char[] splitter = { '\0' };
+                     char[] splitter = { '\0' }; //TODO FIX THIS
                      string tempstring = System.Text.Encoding.ASCII.GetString(tempbytelist.ToArray());
                      metaString = tempstring.Split(splitter)[0];
                      return true;
