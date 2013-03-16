@@ -125,6 +125,12 @@
     <Compile Include="GUI\SSMTestApp.Designer.cs">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\UndefinedWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\UndefinedWindow.Designer.cs">
+      <DependentUpon>UndefinedWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\XMLtoIDC.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -179,6 +185,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SSMTestApp.resx">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\UndefinedWindow.resx">
+      <DependentUpon>UndefinedWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\XMLtoIDC.resx">
       <DependentUpon>XMLtoIDC.cs</DependentUpon>
