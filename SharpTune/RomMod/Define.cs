@@ -71,12 +71,13 @@ namespace RomModCore
             this.defBlob = metadataBlob;
             int offs = 0;
 
-            this.baseDefinition = new Definition((Definition.DirectorySearch(defPath, "32BITBASE")));
-            this.baseDefinition.ReadXML((Definition.DirectorySearch(defPath, "32BITBASE")), false, true);
-            this.inheritedDefinition = new Definition(Definition.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
-            this.inheritedDefinition.ReadXML(Definition.DirectorySearch(defPath, this.parentMod.InitialCalibrationId), false, true);
+            this.baseDefinition = new Definition((Utils.DirectorySearch(defPath, "32BITBASE")));
+            this.baseDefinition.ReadXML((Utils.DirectorySearch(defPath, "32BITBASE")), false, true);
+            this.inheritedDefinition = new Definition(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
             this.definition = new Definition("temp.xml");
 
+            this.inheritedDefinition.ReadXML(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId), false, true);
+  
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
             if (!TryCleanDef()) return false;

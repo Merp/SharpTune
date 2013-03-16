@@ -504,52 +504,6 @@ namespace SharpTuneCore
     }
     
 
-    public static class XExtrensions
-    {
 
-         public static XElement Merge(this XElement table, XElement xel)
-         {
-             //Merge the child (table) with the inherited/base (xel)
-             foreach (XAttribute newattribute in xel.Attributes())
-             {
-                 bool found = false;
-                 foreach (XAttribute existingattribute in table.Attributes())
-                 {
-                     if (newattribute.Name == existingattribute.Name)
-                     {
-                         found = true;
-                         break;
-                     }
-                 }
-             if(found == false)
-             {
-                table.Add(newattribute);
-             }
-             }
-
-             //merge the children
-             foreach (XElement newchild in xel.Elements())
-             {
-                 bool found = false;
-                 foreach(XElement existingchild in table.Elements())
-                 {
-                     if ((newchild.Attribute("type") != null) && existingchild.Attribute("name") != null && newchild.Attribute("type").Value.Contains(existingchild.Attribute("name").Value.ToString()))
-                     {
-                         //found a match, merge them
-                         found = true;
-                         existingchild.Attribute("name").Remove();
-                         existingchild.Merge(newchild);
-                         break;
-                     }
-                 }
-                 if(found == false)
-                 {
-                     table.Add(newchild);
-                 }
-             }
-
-             return table;
-
-         }
     }
 }

@@ -299,7 +299,7 @@ namespace SharpTune
             d.InitialDirectory = SharpTuner.activeImage.FilePath;
             d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
             //d.ShowDialog();
-            DialogResult ret = Extensions.STAShowSADialog(d);
+            DialogResult ret = Utils.STAShowSADialog(d);
 
             if (ret == DialogResult.OK && d.FileName != null)
             {
@@ -446,7 +446,7 @@ namespace SharpTune
                 string path = SharpTuner.activeImage.ToString();
                 d.SelectedPath = path;
             }
-            DialogResult ret = Extensions.STAShowFDialog(d);
+            DialogResult ret = Utils.STAShowFDialog(d);
 
             if (ret == DialogResult.OK)
             {
@@ -505,7 +505,7 @@ namespace SharpTune
             d.SelectedPath = path;
 
             //d.ShowDialog();
-            DialogResult ret = Extensions.STAShowFDialog(d);
+            DialogResult ret = Utils.STAShowFDialog(d);
 
             if (ret == DialogResult.OK)
             {

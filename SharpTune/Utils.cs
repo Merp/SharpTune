@@ -18,6 +18,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace SharpTune
 {
@@ -52,7 +53,7 @@ namespace SharpTune
         }
     }
 
-    public static class Extensions
+    public static class Utils
     {
         public static DialogResult STAShowFDialog(FolderBrowserDialog dialog)
         {
@@ -269,6 +270,98 @@ namespace SharpTune
                 l.Remove(s);
             }
             return l;
+        }
+
+        /// <summary>
+        /// Recursively search directory for rom definition by filename
+        /// TODO: open files and read XMLID instead of filename!
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
+        public static string DirectorySearch(string directory, string calid)
+        {
+            string filepath = null;
+
+            try
+            {
+
+                foreach (string d in Directory.GetDirectories(directory))
+                {
+                    string[] files = Directory.GetFiles(d);
+                    foreach (string f in files)
+                    {
+                        if (f.Contains(calid))
+                        {
+                            return f;
+                        }
+                    }
+                    filepath = DirectorySearch(d, calid);
+                    if (filepath != null) return filepath;
+                }
+
+                return null;
+            }
+            catch (System.Exception excpt)
+            {
+                Console.WriteLine(excpt.Message);
+            }
+
+            return null;
+        }
+
+        public static XElement Merge(this XElement table, XElement xel)
+        {
+            //Merge the child (table) with the inherited/base (xel)
+            foreach (XAttribute newattribute in xel.Attributes())
+            {
+                bool found = false;
+                foreach (XAttribute existingattribute in table.Attributes())
+                {
+                    if (newattribute.Name == existingattribute.Name)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found == false)
+                {
+                    table.Add(newattribute);
+                }
+            }
+
+            //merge the children
+            foreach (XElement newchild in xel.Elements())
+            {
+                bool found = false;
+                foreach (XElement existingchild in table.Elements())
+                {
+                    if ((newchild.Attribute("type") != null) && existingchild.Attribute("name") != null && newchild.Attribute("type").Value.Contains(existingchild.Attribute("name").Value.ToString()))
+                    {
+                        //found a match, merge them
+                        found = true;
+                        existingchild.Attribute("name").Remove();
+                        existingchild.Merge(newchild);
+                        break;
+                    }
+                }
+                if (found == false)
+                {
+                    table.Add(newchild);
+                }
+            }
+
+            return table;
+
+        }
+
+        public static bool ContainsCI(this List<string> list, string s)
+        {
+            foreach (string l in list)
+            {
+                if (l.EqualsCI(s))
+                    return true;
+            }
+            return false;
         }
     }
 }

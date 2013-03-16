@@ -28,7 +28,7 @@ namespace SharpTune.GUI
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "MAP/HEADER files (*.map; *.h)|*.map;*.h";
-            DialogResult ret = SharpTune.Extensions.STAShowOFDialog(ofd);
+            DialogResult ret = SharpTune.Utils.STAShowOFDialog(ofd);
             if (ret == DialogResult.OK)
             {
                 textBox1.Text = ofd.FileName;

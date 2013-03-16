@@ -66,11 +66,11 @@ namespace SharpTune
             }
             else if (args[0] == "convtools")
             {
-                ConvTools.ConvTools.Run(Extensions.ShiftLeftTruncate(args));
+                ConvTools.ConvTools.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {
-                RomModCore.RomMod.Run(Extensions.ShiftLeftTruncate(args));
+                RomModCore.RomMod.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "xmltoidc")
             {

@@ -39,7 +39,7 @@ namespace SharpTune.GUI
                 string t = Path.GetDirectoryName(SharpTuner.activeImage.FilePath);
                 d.SelectedPath = t;
             }
-            DialogResult ret = SharpTune.Extensions.STAShowFDialog(d);
+            DialogResult ret = SharpTune.Utils.STAShowFDialog(d);
             if (ret == DialogResult.OK)
             {
                 //TODO ERROR HANDLING, CLEAR OUTPUT FILES FIRST??
@@ -189,13 +189,13 @@ namespace SharpTune.GUI
             RomInfoTextBox.Text = rominfo;
 
             //search through defs for logger.dtd
-            loggerdtds = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger.dtd" });
-            Extensions.getFilePaths(loggerdtds, ref loggerdtdfiles);
+            loggerdtds = Utils.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger.dtd" });
+            Utils.getFilePaths(loggerdtds, ref loggerdtdfiles);
             comboBoxLoggerDTD.DataSource = loggerdtdfiles;
 
             //search through defs for logger defs
-            loggerdefs = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger" , ".xml" });
-            Extensions.getFilePaths(loggerdefs, ref loggerdeffiles);
+            loggerdefs = Utils.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { "logger" , ".xml" });
+            Utils.getFilePaths(loggerdefs, ref loggerdeffiles);
             comboBoxLoggerDef.DataSource = loggerdeffiles;
             foreach (string d in loggerdeffiles)
             {
@@ -204,8 +204,8 @@ namespace SharpTune.GUI
             }
 
             //search through defs for ecu defs
-            ecudefs = Extensions.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
-            Extensions.getFilePaths(ecudefs, ref ecudeffiles);
+            ecudefs = Utils.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
+            Utils.getFilePaths(ecudefs, ref ecudeffiles);
             comboBoxEcuDef.DataSource = ecudeffiles;
             foreach (string d in ecudeffiles)
             {
