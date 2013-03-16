@@ -74,8 +74,6 @@ namespace RomModCore
             this.baseDefinition = new Definition((Utils.DirectorySearch(defPath, "32BITBASE")));
             this.baseDefinition.ReadXML((Utils.DirectorySearch(defPath, "32BITBASE")), false, true);
             this.inheritedDefinition = new Definition(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
-            this.definition = new Definition("temp.xml");
-
             this.inheritedDefinition.ReadXML(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId), false, true);
   
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
@@ -86,16 +84,15 @@ namespace RomModCore
                 outputPath = defPath + "/MerpMod/" + this.parentMod.buildConfig + "/";
 
             outputPath += this.parentMod.ModIdent.ToString() + ".xml";
-            this.definition.defPath = outputPath;
-            
-            definition.xRomTableList = xRomTableList;
-            definition.xRamTableList = xRamTableList;
-            this.definition.carInfo = this.inheritedDefinition.carInfo;
-            this.definition.carInfo["internalidaddress"] = this.parentMod.ModIdentAddress.ToString("X");
-            this.definition.carInfo["internalidstring"] = this.parentMod.ModIdent.ToString();
-            this.definition.carInfo["ecuid"] = this.parentMod.FinalEcuId.ToString();
-            this.definition.carInfo["xmlid"] = this.parentMod.ModIdent.ToString();
-            this.definition.include = this.parentMod.InitialCalibrationId.ToString();
+            XElement xci = inheritedDefinition.xRomId;
+            Dictionary<string,string> tci = this.inheritedDefinition.carInfo;
+            tci["internalidaddress"] = this.parentMod.ModIdentAddress.ToString("X");
+            tci["internalidstring"] = this.parentMod.ModIdent.ToString();
+            tci["ecuid"] = this.parentMod.FinalEcuId.ToString();
+            tci["xmlid"] = this.parentMod.ModIdent.ToString();
+            string tincl = this.parentMod.InitialCalibrationId.ToString();
+
+            definition = new Definition(outputPath, tci, tincl, xRomTableList, xRamTableList);
 
             //prompt to select logger type
             List<string> loggerdefs = new List<string>();

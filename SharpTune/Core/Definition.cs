@@ -31,91 +31,114 @@ namespace SharpTuneCore
     /// </summary>
     public class Definition
     {
-        public string internalId { get; set; }
+        public string internalId { get; private set; }
+        public int internalIdAddress { get; private set; }
         /// <summary>
         /// Contains basic info for the definition
         /// Make, Model, etc
         /// </summary>
-        public Dictionary<string,string> carInfo { get; set; }
+        public Dictionary<string,string> carInfo { get; private set; }
         /// <summary>
         /// Contains the file path to the XML definition (top)
         /// </summary>
-        public string defPath { get; set; }
+        public string defPath { get; private set; }
+        
+        public string include { get; private set; }
         /// <summary>
         /// Holds all XElements pulled from XML for ROM tables
         /// Includes inherited XML
         /// </summary>
+        public XElement xRomId { get; private set; }     
 
-        public XElement romIdData { get; set; }
-
-        public string include { get; set; }
-
-        public Dictionary<string, XElement> xRomTableList { get; set; }
+        public Dictionary<string, XElement> xRomTableList { get; private set; }
         /// <summary>
         /// Holds all Xelements pulled form XML for RAM tables
         /// Includes inherited XML
         /// </summary>
-        public Dictionary<string, XElement> xRamTableList { get; set; }
+        public Dictionary<string, XElement> xRamTableList { get; private set; }
 
-        public Dictionary<string, XElement> xScalingList { get; set; }
-
+        public Dictionary<string, XElement> xScalingList { get; private set; }
         /// <summary>
         /// Holds all scalings pulled from XML
         /// Doesn't store XML because there is no inheritance among scalings
         /// TODO: Rethink this?
         /// </summary>
-        public List<Scaling> scalingList { get; set; }
+        public List<Scaling> scalingList { get; private set; }
 
         /// <summary>
         /// Constructor
         /// TODO: Change to a factory to share already-opened definitions
-        /// TODO: Include information about inheritance in the class for def-editing
+        /// TODO: Include more information about inheritance in the class for def-editing
         /// </summary>
         /// <param name="calID"></param>
         public Definition(string filepath)
         {
-            this.internalId = null;
-            this.xRomTableList = new Dictionary<string, XElement>();
-            this.xRamTableList = new Dictionary<string, XElement>();
-            this.scalingList = new List<Scaling>();
-            this.defPath = filepath;
+            carInfo = new Dictionary<string, string>();
+            internalId = null;
+            xRomTableList = new Dictionary<string, XElement>();
+            xRamTableList = new Dictionary<string, XElement>();
+            scalingList = new List<Scaling>();
+            defPath = filepath;
+            ReadRomId();
         }
 
         /// <summary>
-        /// Recursively search directory for rom definition by filename
-        /// TODO: open files and read XMLID instead of filename!
+        /// Constructor used to create new definitions using existing data
         /// </summary>
-        /// <param name="directory"></param>
-        /// <returns></returns>
-        public static string DirectorySearch(string directory, string calid)
+        /// <param name="filepath"></param>
+        /// <param name="carinfo"></param>
+        /// <param name="include"></param>
+        /// <param name="xromt"></param>
+        /// <param name="xramt"></param>
+        public Definition(string filepath, Dictionary<string, string> carinfo, string include, Dictionary<string, XElement> xromt, Dictionary<string, XElement> xramt)
         {
-            string filepath = null;
+            //TODO error handling
+            carInfo = carinfo;
+            internalId = carinfo["internalidstring"];
+            internalIdAddress = int.Parse(carinfo["internalidaddress"],System.Globalization.NumberStyles.AllowHexSpecifier);
+            scalingList = new List<Scaling>();
+            defPath = filepath;
+            xRomTableList = xramt;
+            xRamTableList = xramt;
+        }
 
-            try	
+        public void ParseRomId()
+        {
+            foreach (XElement element in xRomId.Elements())
             {
-
-                foreach (string d in Directory.GetDirectories(directory)) 
-                {
-                    string[] files = Directory.GetFiles(d);
-                    foreach (string f in files)
-                    {
-                        if (f.Contains(calid))
-                        {
-                            return f;
-                        }
-                    }
-                    filepath = DirectorySearch(d,calid);
-                    if (filepath != null) return filepath;
-                }
-
-                return null;
+                carInfo.Add(element.Name.ToString(), element.Value.ToString());
             }
-            catch (System.Exception excpt) 
+            if (carInfo.ContainsKey("internalidstring"))
+                internalId = carInfo["internalidstring"];
+            if (carInfo.ContainsKey("internalidaddress"))
+                internalIdAddress = int.Parse(carInfo["internalidaddress"],System.Globalization.NumberStyles.AllowHexSpecifier);
+        }
+
+        /// <summary>
+        /// Read the rom identification header and include from a file
+        /// </summary>
+        /// <param name="fetchPath"></param>
+        /// <returns></returns>
+        public void ReadRomId()
+        {
+            XDocument xmlDoc = XDocument.Load(defPath);
+            this.xRomId = xmlDoc.XPathSelectElement("/rom/romid");
+            ParseRomId();
+            if(xmlDoc.XPathSelectElement("/rom/include") != null)
+                include = xmlDoc.XPathSelectElement("/rom/include").Value.ToString();
+        }
+
+        /// <summary>
+        /// Populates a 'short def' (romid + include) into a full definition
+        /// </summary>
+        /// <returns></returns>
+        public bool Populate()
+        {
+            if (internalId != null && defPath != null)
             {
-                Console.WriteLine(excpt.Message);
+                return ReadXML(defPath, true, false);
             }
-
-            return null;
+            return false;
         }
 
         /// <summary>
@@ -125,36 +148,6 @@ namespace SharpTuneCore
         {
             if (fetchPath == null) return false;
             XDocument xmlDoc = XDocument.Load(fetchPath);
-            XElement xmlEle = XElement.Load(fetchPath);
-
-            this.romIdData = xmlDoc.XPathSelectElement("/rom/romid");
-            Dictionary<string,string> tempinfo = new Dictionary<string, string>();
-            string tempcalid = null;
-
-            if (romIdData == null)  tempcalid = "template";
-            else
-            {
-                foreach (XElement element in romIdData.Elements())
-                {
-                    tempinfo.Add(element.Name.ToString(), element.Value.ToString());
-                }
-                if (tempinfo.ContainsKey("internalidstring"))
-                {
-                    tempcalid = tempinfo["internalidstring"];
-                }
-                else tempcalid = tempinfo["xmlid"];
-
-                if (carInfo == null)
-                {
-                    this.carInfo = tempinfo;
-                }
-                if(internalId == null)
-                {
-                    this.internalId = tempcalid;
-                }
-            }
-
-
             // ROM table fetches here!
             var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
                              //where table.Ancestors("table").First().IsEmpty
@@ -168,21 +161,18 @@ namespace SharpTuneCore
 
                 if (this.xRomTableList.ContainsKey(tablename))
                 {
-                    //table already exists
-                    //add data to existing table
+                    //table already exists add data to existing table
                     this.xRomTableList[tablename].Merge(table);
                     //Console.WriteLine("table " + tablename + " already exists, merging tables");
                 }
 
-                else if (!tempcalid.ContainsCI("base") || isbase)
+                else if (!internalId.ContainsCI("base") || isbase)
                 {
-                    //table does not exist
-                    //call constructor
+                    //table does not exist call constructor
                     this.xRomTableList.Add(tablename, table);
                     //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
                 }
             }
-
             // RAM table feteches here!
             var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
                                 //where table.Ancestors("table").First().IsEmpty
@@ -196,21 +186,16 @@ namespace SharpTuneCore
 
                 if (this.xRomTableList.ContainsKey(tablename))
                 {
-                    //table already exists
-                    //add data to existing table
+                    //table already exists add data to existing table
                     this.xRamTableList[tablename].Merge(table);
-                    //Console.WriteLine("table " + tablename + " already exists, merging tables");
                 }
 
-                else if (!tempcalid.ContainsCI("base") || isbase)
+                else if (!internalId.ContainsCI("base") || isbase)
                 {
-                    //table does not exist
-                    //call constructor
+                    //table does not exist call constructor
                     this.xRamTableList.Add(tablename, table);
-                    //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
                 }
             }
-
             //Read Scalings
             this.xScalingList = new Dictionary<string, XElement>();
 
@@ -227,37 +212,24 @@ namespace SharpTuneCore
                     this.xScalingList.Add(scalingname, scaling);
                 }
 
-                if (this.scalingList.Exists(sc => sc.name == scalingname)) //   this.fullTableList.Exists(o => o.name == tablename))
+                if (this.scalingList.Exists(sc => sc.name == scalingname))
                 {
-                    //scaling already exists
-                    //add data to existing table
+                    //scaling already exists add data to existing table
                     int index = this.scalingList.FindIndex(o => o.name == scalingname);
                     Scaling newscaling = this.scalingList.ElementAt(index);
                     this.scalingList[index] = this.scalingList.ElementAt(index).AddBase(ScalingFactory.CreateScaling(scaling));
-                    //Console.WriteLine("scaling " + scalingname + " already exists, merging scalings");
                 }
                 else
                 {
-                    //scaling does not exist
-                    //call constructor
                     this.scalingList.Add(ScalingFactory.CreateScaling(scaling));
-                    //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
                 }
             }
 
-            //Recurse if not working in the BASE
-            if (!tempcalid.Contains("BASE") && recurse)
+            if (!internalId.Contains("BASE") && recurse)
             {
-                string include = xmlEle.Element("include").Value.ToString();
-                //Down the rabbit hole
-                //Continue Inheritance
-                //Recursively until you hit the BASE
-                ReadXML(SharpTuner.availableDevices.findDefinition(include), true, false);
-                    //DirectorySearch(SharpTuner.EcuFlashDefRepoPath, include),true, false);
+                ReadXML(SharpTuner.availableDevices.getDefPath(include), true, false);
             }
-
             return false;
-            
         }
 
 		/// <summary>
@@ -299,8 +271,6 @@ namespace SharpTuneCore
                 }
         }
 		
-        
-
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
@@ -501,9 +471,15 @@ namespace SharpTuneCore
                 writer.WriteEndDocument();
             }
         }
-    }
-    
 
-
+        private void createXRomId()
+        {
+            XElement x = new XElement("romid");
+            foreach (KeyValuePair<string, string> kvp in this.carInfo)
+            {
+                x.Add(new XElement(kvp.Key.ToString(), kvp.Value.ToString()));
+            }
+            xRomId = x;
+        }
     }
 }
