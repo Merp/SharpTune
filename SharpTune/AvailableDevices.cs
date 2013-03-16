@@ -25,65 +25,24 @@ using SharpTune;
 
 namespace SharpTuneCore
 {
-    public sealed class Pair<TFirst, TSecond>
-    : IEquatable<Pair<TFirst, TSecond>>
-    {
-        private readonly TFirst first;
-        private readonly TSecond second;
-
-        public Pair(TFirst first, TSecond second)
-        {
-            this.first = first;
-            this.second = second;
-        }
-
-        public TFirst First
-        {
-            get { return first; }
-        }
-
-        public TSecond Second
-        {
-            get { return second; }
-        }
-
-        public bool Equals(Pair<TFirst, TSecond> other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
-            return EqualityComparer<TFirst>.Default.Equals(this.First, other.First) &&
-                   EqualityComparer<TSecond>.Default.Equals(this.Second, other.Second);
-        }
-
-        public override bool Equals(object o)
-        {
-            return Equals(o as Pair<TFirst, TSecond>);
-        }
-
-        public override int GetHashCode()
-        {
-            return EqualityComparer<TFirst>.Default.GetHashCode(first) * 37 +
-                   EqualityComparer<TSecond>.Default.GetHashCode(second);
-        }
-    }
-
-
     public class AvailableDevices
     {
-        
-        public Dictionary<string, Pair<int, string>> IdentifierMap {get; set;}
 
-        public int DeviceCount { get; set; }
+        private List<Definition> definitions;
+      
+        public Dictionary<string, KeyValuePair<int, string>> IdentifierMap {get; private set;}
+
+        public List<string> IdentifierList { get; private set; }
+
+        public int DeviceCount { get; private set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         public AvailableDevices(string xmldir)
         {
-            IdentifierMap = new Dictionary<string, Pair<int, string>>();
-
+            IdentifierMap = new Dictionary<string, KeyValuePair<int, string>>();
+            IdentifierList = new List<string>();
             this.DeviceCount = 0;
 
             try
@@ -107,38 +66,21 @@ namespace SharpTuneCore
             
         }
 
+        //TODO, populate entire map instead of just finding base??? use lists?
         public Dictionary<String, String> BuildInheritanceMap()
         {
             Dictionary<String, String> imap = new Dictionary<String, String>();
 
-            foreach (KeyValuePair<String, Pair<int, String>> pair in this.IdentifierMap)
+            foreach (KeyValuePair<String, KeyValuePair<int, String>> pair in this.IdentifierMap)
             {
-                imap.Add(pair.Key, findInherit(pair.Value.Second));
+                imap.Add(pair.Key, findInherit(pair.Value.Value));
             }
             return imap;
         }
 
-        public String findDefinition(String xmlid)
-        {
-            foreach (KeyValuePair<string, Pair<int, String>> pair in this.IdentifierMap)
-            {
-                if (pair.Value.Second.Equals(xmlid))
-                {
-                    return pair.Key.ToString();
-                }
-            }
-            return null;
-        }
-
         public String findInherit(String xmlid)
         {
-            String fetchpath = "";
-            foreach(KeyValuePair<string,Pair<int,String>> pair in this.IdentifierMap){
-                if(pair.Value.Second.Equals(xmlid)){
-                    fetchpath = pair.Key.ToString();
-                    break;
-                }
-            }
+            String fetchpath = getDefPath(xmlid);
             XDocument xmlDoc = XDocument.Load(fetchpath);
             XElement inc = xmlDoc.XPathSelectElement("/rom/include");
             if (inc != null && inc.Value.ToString().Contains("BASE"))
@@ -162,31 +104,16 @@ namespace SharpTuneCore
                 Parallel.ForEach(
                     files, f =>
                     {
-                        string ident;
-                        int identaddress;
                         try
                         {
-                            if (!ReadIdent(f, out ident, out identaddress))
+                            Definition d = new Definition(f);
+                            if (d.include != null)
                             {
-                                Console.WriteLine("no identifier found for " + f);
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    Pair<int, string> temppair = new Pair<int, string>(identaddress, ident);
-                                    lock (this.IdentifierMap)
-                                    {
-                                        this.IdentifierMap.Add(f, temppair);
-                                    }
-                                    //Console.WriteLine("Added Device {0} with identaddress {1}", ident, identaddress);
-                                    DeviceCount++;
-                                }
-                                catch (System.Exception excpt)
-                                {
-                                    Console.WriteLine("Error reading XML file, adding identifier to map " + f);
-                                    Console.WriteLine(excpt.Message);
-                                }
+                                lock(IdentifierMap)
+                                    IdentifierMap.Add(d.defPath, new KeyValuePair<int, string>(d.internalIdAddress, d.internalId));
+                                lock(IdentifierList)
+                                    IdentifierList.Add(d.internalId);
+                                DeviceCount++;
                             }
                         }
                         catch (System.Exception excpt)
@@ -194,7 +121,6 @@ namespace SharpTuneCore
                             Console.WriteLine("Error reading XML file " + f);
                             Console.WriteLine(excpt.Message);
                         }
-
                     });
 
                 List<string> directories = Directory.GetDirectories(directory).ToList();
@@ -218,51 +144,31 @@ namespace SharpTuneCore
             return false;
         }
 
-        private bool ReadIdent(string fetchpath, out string ident, out int identaddress)
+        public string getDefPath(string id)
         {
-            ident = null;
-            identaddress = 0;
-            if (fetchpath == null) return false;
-
-            XDocument xmlDoc;
-            XElement xmlEle;
-
-            try
+            foreach (Definition d in definitions)
             {
-                xmlDoc = XDocument.Load(fetchpath);
-                xmlEle = XElement.Load(fetchpath);
+                if (d.internalId == id)
+                {
+                    //Check if definition is populated!
+                    return d.defPath;
+                }
             }
-            catch (System.Exception excpt)
-            {
-                Console.WriteLine("Error loading XML file " + fetchpath);
-                Console.WriteLine(excpt.Message);
-            }
-            finally
-            {
-                xmlDoc = XDocument.Load(fetchpath);
-                xmlEle = XElement.Load(fetchpath);
-            }
-
-            //Initial definition fetch, without inheritance
-
-            if (xmlDoc.XPathSelectElement("//rom/romid/internalidstring") != null)
-            {
-                string internalidstring = xmlDoc.XPathSelectElement("//rom/romid/internalidstring").Value;
-                ident = internalidstring;
-            }
-            else if (xmlDoc.XPathSelectElement("//rom/romid/internalidhex") != null)
-            {
-                string internalidhex = xmlDoc.XPathSelectElement("//rom/romid/internalidhex").Value;
-                ident = internalidhex;
-            }
-            else
-            {
-                return false;
-            }
-            identaddress = int.Parse(xmlDoc.XPathSelectElement("//rom/romid/internalidaddress").Value, NumberStyles.AllowHexSpecifier);
-            return true;
-
+            return null;
         }
 
-    }
+        public Definition getDef(string id)
+        {
+            foreach(Definition d in definitions)
+            {
+                if (d.internalId == id)
+                {
+                    //Check if definition is populated!
+                    d.Populate();
+                    return d;
+                }
+            }
+            return null;
+        }
+    }   
 }

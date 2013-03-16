@@ -69,7 +69,7 @@ namespace SharpTuneCore
             this.FileName = f.Name;
             this.FilePath = fPath;
             this.FileDirectory = fPath.Replace(f.Name, "");
-            //f.Delete();
+            ModList = new List<Mod>();
 
             using (FileStream fileStream = File.OpenRead(fPath))
             {
@@ -78,23 +78,20 @@ namespace SharpTuneCore
                 fileStream.Read(memStream.GetBuffer(), 0, (int)fileStream.Length);
                 this.imageStream = memStream;
             }
-            //this.imageStream = File.Open(this.FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
-            foreach (KeyValuePair<string, Pair<int, string>> device in SharpTuner.availableDevices.IdentifierMap)
+            foreach (KeyValuePair<string, KeyValuePair<int, string>> device in SharpTuner.availableDevices.IdentifierMap)
             {
-                this.imageStream.Seek(device.Value.First, SeekOrigin.Begin);
+                this.imageStream.Seek(device.Value.Key, SeekOrigin.Begin);
 
-                byte[] b = new byte[device.Value.Second.Length];
-                this.imageStream.Read(b, 0, device.Value.Second.Length);
+                byte[] b = new byte[device.Value.Value.Length];
+                this.imageStream.Read(b, 0, device.Value.Value.Length);
 
-                if (device.Value.Second.ToString() == System.Text.Encoding.UTF8.GetString(b))
+                if (device.Value.Value.ToString() == System.Text.Encoding.UTF8.GetString(b))
                 {
-                    this.CalIdOffset = device.Value.First;
-                    this.CalId = device.Value.Second.ToString();
+                    this.CalIdOffset = device.Value.Key;
+                    this.CalId = device.Value.Value.ToString();
                     this.Definition = new Definition(device.Key.ToString());
                     Definition.ReadXML(device.Key.ToString(), true, false);
-
-
                     //this.tableList = new List<Table>();
 
                     //foreach (XElement table in this.Definition.xRomTableList.Values)
@@ -107,34 +104,12 @@ namespace SharpTuneCore
                 }
             }
 
-            //TODO: Figure something better out here
-            //#if ADMIN
-            //                if (this.CalId == null)
-            //                {
-            //                    string inputcalid = SimplePrompt.ShowDialog("Definition Not Found", "Enter Definition CALID");
-            //                    foreach (KeyValuePair<string, Pair<int, string>> device in this.parent.availableDevices.IdentifierMap)
-            //                    {
-            //                        if (device.Value.Second.ToString() == inputcalid)
-            //                        {
-            //                            this.CalIdOffset = device.Value.First;
-            //                            this.CalId = device.Value.Second.ToString();
-            //                            this.Definition = new Definition(device.Key.ToString(), this);
-
-
-            //                            this.tableList = new List<Table>();
-
-            //                            foreach (XElement table in this.Definition.xRomTableList.Values)
-            //                            {
-            //                                this.tableList.Add(TableFactory.CreateTable(table, this));
-            //                            }
-            //                            this.imageTree = new TableTree(this);
-            //                        }
-            //                    }
-
-            //            }
-            //#endif
-
-            this.ModList = new List<Mod>();
+            if (this.CalId == null)
+            {
+                string inputcalid = SimplePrompt.ShowDialog("Definition Not Found", "Enter Definition CALID");//TODO create new prompt to select inheritance or start fresh
+                //AvailableDevices.DefineNew();
+                //CALL OPEN ROM after saving the definition.
+            }
         }
 
         /// <summary>
@@ -201,7 +176,7 @@ namespace SharpTuneCore
 
         }
 
-        public void FindInAvailableDevices(Dictionary<string, Pair<int, string>> availableDevices, Stream imageStream)
+        public void FindInAvailableDevices(Dictionary<string,KeyValuePair<int, string>> availableDevices, Stream imageStream)
         {
 
         }
