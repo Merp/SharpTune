@@ -22,7 +22,6 @@ using System.IO;
 using ConsoleRedirection;
 using DumpXML;
 using System.IO.Ports;
-//using NateW.Ssm;
 using RomModCore;
 using System.Security.AccessControl;
 using System.Security.Permissions;
@@ -376,7 +375,7 @@ namespace SharpTune
 
         private void convertEFXMLRRv2ToolStripMenuItem_Click (object sender, EventArgs e)
 		{
-
+            //TODO: this is a big fucking mess
 			List<XElement> xscalings = new List<XElement> ();
             List<XElement> xblobscalings = new List<XElement>();
 			List<String> blobscalings = new List<string>();
