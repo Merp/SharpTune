@@ -103,25 +103,12 @@ namespace SharpTune
 
         private void button2_Click(object sender, EventArgs e)
         {
-            //Run preliminary checks!
-            bool isdefined = false;
-
             if (newcalidbox.Text.Length != this.currentImage.CalId.Length)
             {
                 MessageBox.Show("ID is not long enough!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            foreach (KeyValuePair<string, Pair<int, string>> device in SharpTuner.availableDevices.IdentifierMap)
-            {
-                if (newcalidbox.Text.ToString() == device.Value.Second.ToString())
-                {
-                    isdefined = true;
-                    break;
-                }
-            }
-
-            if (isdefined)
+            if (SharpTuner.availableDevices.IdentifierList.ContainsCI(newcalidbox.Text.ToString()))
             {
                 MessageBox.Show("ID is already defined!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -129,13 +116,8 @@ namespace SharpTune
             SaveFileDialog d = new SaveFileDialog();
             d.InitialDirectory = this.currentImage.FilePath;
             d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
-            //d.ShowDialog();
             DialogResult ret = STAShowSADialog(d);
 
-
-            
-
-            
                 if (d.FileName != null)
                 {
                     try
@@ -170,25 +152,7 @@ namespace SharpTune
                     MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-           
-
-            //Write new CALID here!
-            //FileStream romStream = new FileStream(d.FileName , FileMode.OpenOrCreate,FileAccess.Write);
-     
-            //romStream.Seek(this.currentImage.CalIdOffset, SeekOrigin.Begin);
-            //string newcalid = newcalidbox.Text.ToString();
-            ////byte[] bytes = new byte[newcalid.Length * sizeof(char)];
-
-            //byte[] bytes = Encoding.ASCII.GetBytes(newcalid);
-
-
-            //romStream.Write(bytes, 0, bytes.Length);
-
-            //romStream.Close();
-
             this.Close();
-
         }
-
     }
 }
