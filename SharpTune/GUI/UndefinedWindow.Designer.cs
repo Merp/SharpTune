@@ -55,6 +55,8 @@
             this.comboBoxCopyDef.Name = "comboBoxCopyDef";
             this.comboBoxCopyDef.Size = new System.Drawing.Size(249, 21);
             this.comboBoxCopyDef.TabIndex = 1;
+            this.comboBoxCopyDef.SelectedValueChanged += new System.EventHandler(this.comboBoxCopyDef_SelectedValueChanged);
+            this.comboBoxCopyDef.TextChanged += new System.EventHandler(this.comboBoxCopyDef_TextChanged);
             // 
             // label1
             // 
@@ -83,6 +85,7 @@
             this.comboBoxIncludeDef.Name = "comboBoxIncludeDef";
             this.comboBoxIncludeDef.Size = new System.Drawing.Size(318, 21);
             this.comboBoxIncludeDef.TabIndex = 5;
+            this.comboBoxIncludeDef.SelectedIndexChanged += new System.EventHandler(this.comboBoxIncludeDef_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -111,6 +114,7 @@
             this.buttonSave.TabIndex = 8;
             this.buttonSave.Text = "Save New Definition";
             this.buttonSave.UseVisualStyleBackColor = true;
+            this.buttonSave.Click += new System.EventHandler(this.buttonSave_Click);
             // 
             // label4
             // 
@@ -130,6 +134,7 @@
             this.button1.TabIndex = 10;
             this.button1.Text = "Find Calibration ID";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // UndefinedWindow
             // 

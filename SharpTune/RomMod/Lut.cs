@@ -6,18 +6,32 @@ using RomModCore;
 
 namespace SharpTune.RomMod
 {
-    public class Lut3D
+    public class Lut
     {
-        public byte[] rawdata;
-        public int length;
-        public UInt16 cols;
-        public UInt16 rows;
-        public uint colsAddress;
-        public uint rowsAddress;
         public uint dataAddress;
-        public uint tableType;
-        public uint gradient;
-        public uint offset;
+        
+        public Lut()
+        {    
+        }
+
+        public Lut(uint da)
+        {
+            dataAddress = da;
+        }
+    }
+
+    public class Lut3D : Lut2D
+    {
+        //public byte[] rawdata;
+        //public int length;
+        //public UInt16 cols;
+        public UInt16 rows;
+        //public uint colsAddress;
+        public uint rowsAddress;
+        //public uint dataAddress;
+        //public uint tableType;
+        //public uint gradient;
+        //public uint offset;
         
         //for lookup tables
         public Lut3D()
@@ -45,13 +59,13 @@ namespace SharpTune.RomMod
         }
     }
 
-    public class Lut2D
+    public class Lut2D : Lut
     {
         public byte[] rawdata;
         public int length;
         public UInt16 cols;
         public uint colsAddress;
-        public uint dataAddress;
+        //public uint dataAddress;
         public uint tableType;
         public uint gradient;
         public uint offset;

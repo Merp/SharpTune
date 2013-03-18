@@ -27,12 +27,10 @@ namespace SharpTuneCore
 {
     public class AvailableDevices
     {
+     
+        public Dictionary<string, Definition> DefDictionary {get; private set;}
 
-        private List<Definition> definitions;
-      
-        public Dictionary<string, KeyValuePair<int, string>> IdentifierMap {get; private set;}
-
-        public List<string> IdentifierList { get; private set; }
+        public List<string> IdentList { get; private set; }
 
         public int DeviceCount { get; private set; }
 
@@ -41,8 +39,8 @@ namespace SharpTuneCore
         /// </summary>
         public AvailableDevices(string xmldir)
         {
-            IdentifierMap = new Dictionary<string, KeyValuePair<int, string>>();
-            IdentifierList = new List<string>();
+            DefDictionary = new Dictionary<string,Definition>();
+            IdentList = new List<string>();
             this.DeviceCount = 0;
 
             try
@@ -71,9 +69,9 @@ namespace SharpTuneCore
         {
             Dictionary<String, String> imap = new Dictionary<String, String>();
 
-            foreach (KeyValuePair<String, KeyValuePair<int, String>> pair in this.IdentifierMap)
+            foreach (KeyValuePair<String, Definition> pair in this.DefDictionary)
             {
-                imap.Add(pair.Key, findInherit(pair.Value.Value));
+                imap.Add(pair.Value.defPath, findInherit(pair.Key));
             }
             return imap;
         }
@@ -107,14 +105,13 @@ namespace SharpTuneCore
                         try
                         {
                             Definition d = new Definition(f);
-                            if (d.include != null)
-                            {
-                                lock(IdentifierMap)
-                                    IdentifierMap.Add(d.defPath, new KeyValuePair<int, string>(d.internalIdAddress, d.internalId));
-                                lock(IdentifierList)
-                                    IdentifierList.Add(d.internalId);
-                                DeviceCount++;
-                            }
+                            if (d.isBase)
+                                d.LoadRomId();
+                            lock(DefDictionary)
+                                DefDictionary.Add(d.internalId, d);
+                            lock(IdentList)
+                                IdentList.Add(d.internalId);
+                            DeviceCount++;
                         }
                         catch (System.Exception excpt)
                         {
@@ -146,29 +143,26 @@ namespace SharpTuneCore
 
         public string getDefPath(string id)
         {
-            foreach (Definition d in definitions)
-            {
-                if (d.internalId == id)
-                {
-                    //Check if definition is populated!
-                    return d.defPath;
-                }
-            }
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
+                return DefDictionary[id].defPath;
             return null;
         }
 
         public Definition getDef(string id)
         {
-            foreach(Definition d in definitions)
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
             {
-                if (d.internalId == id)
-                {
-                    //Check if definition is populated!
-                    d.Populate();
-                    return d;
-                }
+                DefDictionary[id].Populate();
+                return DefDictionary[id];
             }
             return null;
+        }
+
+        public bool LoadFullDef(string id)
+        {
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
+                DefDictionary[id].Populate();
+            return true;
         }
     }   
 }

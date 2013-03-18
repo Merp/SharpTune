@@ -54,6 +54,7 @@ namespace SharpTuneCore
 
     public class Scaling
     {
+        public XElement xml { get; private set; }
         public string name { get; set; }
         public string units { get; private set; }
         public string toexpr { get; private set; }
@@ -79,6 +80,7 @@ namespace SharpTuneCore
         /// </summary>
         public Scaling(XElement xel)
         {
+            xml = xel;
             this.properties = new Dictionary<string, string>();
 
             foreach (XAttribute attribute in xel.Attributes())

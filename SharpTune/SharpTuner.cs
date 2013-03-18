@@ -37,6 +37,9 @@ namespace SharpTune
 
         public static AvailableDevices availableDevices { get; set; }
 
+        public static List<Scaling> DataScalings {get; set; }
+        public static List<Scaling> UnitScalings { get; set; }
+
         public static string DefRepoPath;
         public static string EcuFlashDefRepoPath;
         public static string RRDefRepoPath;
@@ -52,6 +55,15 @@ namespace SharpTune
         public static bool fileQueued { get; set; }
 
         public static string QueuedFilePath { get; set; }
+
+        static SharpTuner()
+        {
+            imageList = new List<DeviceImage>();
+            DataScalings = new List<Scaling>();
+            UnitScalings = new List<Scaling>();
+            initSettings();
+            populateAvailableDevices();
+        }
 
         public static void initSettings()
         {

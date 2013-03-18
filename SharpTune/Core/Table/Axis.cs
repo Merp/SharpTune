@@ -162,8 +162,8 @@ namespace SharpTuneCore
 
                     case "scaling":
                         this.defaultScaling = new Scaling();
-                        this.defaultScaling = table.parentImage.Definition.scalingList.Find(s => s.name == attribute.Value.ToString());
-                        this.endian = this.defaultScaling.endian;
+                        this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name == attribute.Value.ToString());
+                        //TODO FIX: this.endian = this.defaultScaling.endian;
                         continue;
 
                     case "type":

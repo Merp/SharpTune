@@ -25,8 +25,8 @@ namespace SharpTuneCore
     public class Table2D : Table
     {
 
-        public Table2D(XElement xel, DeviceImage image)
-            : base(xel, image)
+        public Table2D(XElement xel)
+            : base(xel)
         {
 
         }
@@ -56,7 +56,7 @@ namespace SharpTuneCore
         {
             DeviceImage image = this.parentImage;
             this.elements = this.yAxis.elements;    // * this.yAxis.elements;
-            this.defaultScaling = image.Definition.scalingList.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
+            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
             lock (image.imageStream)
@@ -108,8 +108,8 @@ namespace SharpTuneCore
     public class RamTable2D : Table2D
     {
 
-        public RamTable2D(XElement xel, DeviceImage image)
-            : base(xel, image)
+        public RamTable2D(XElement xel)
+            : base(xel)
         {
 
         }

@@ -27,8 +27,8 @@ namespace SharpTuneCore
     {
 
 
-        public Table1D(XElement xel, DeviceImage image)
-            : base(xel, image)
+        public Table1D(XElement xel)
+            : base(xel)
         {
 
         }
@@ -55,7 +55,7 @@ namespace SharpTuneCore
         {
             DeviceImage image = this.parentImage;
             this.elements = 1;
-            this.defaultScaling = image.Definition.scalingList.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
+            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
             lock (image.imageStream)
@@ -102,7 +102,7 @@ namespace SharpTuneCore
     public class RamTable1D : Table1D
     {
         public RamTable1D(XElement xel, DeviceImage image)
-            : base(xel, image)
+            : base(xel)
         {
 
         }
@@ -126,7 +126,7 @@ namespace SharpTuneCore
         {
             DeviceImage image = this.parentImage;
             this.elements = 1;
-            this.defaultScaling = image.Definition.scalingList.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
+            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
             ////Check SSM interface ID vs the device ID

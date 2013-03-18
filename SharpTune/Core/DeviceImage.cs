@@ -24,6 +24,7 @@ using SharpTune;
 using System.Resources;
 using SharpTune.Properties;
 using System.Collections;
+using SharpTune.GUI;
 
 
 namespace SharpTuneCore
@@ -71,44 +72,13 @@ namespace SharpTuneCore
             this.FileDirectory = fPath.Replace(f.Name, "");
             ModList = new List<Mod>();
 
-            using (FileStream fileStream = File.OpenRead(fPath))
-            {
-                MemoryStream memStream = new MemoryStream();
-                memStream.SetLength(fileStream.Length);
-                fileStream.Read(memStream.GetBuffer(), 0, (int)fileStream.Length);
-                this.imageStream = memStream;
-            }
-
-            foreach (KeyValuePair<string, KeyValuePair<int, string>> device in SharpTuner.availableDevices.IdentifierMap)
-            {
-                this.imageStream.Seek(device.Value.Key, SeekOrigin.Begin);
-
-                byte[] b = new byte[device.Value.Value.Length];
-                this.imageStream.Read(b, 0, device.Value.Value.Length);
-
-                if (device.Value.Value.ToString() == System.Text.Encoding.UTF8.GetString(b))
-                {
-                    this.CalIdOffset = device.Value.Key;
-                    this.CalId = device.Value.Value.ToString();
-                    this.Definition = new Definition(device.Key.ToString());
-                    Definition.ReadXML(device.Key.ToString(), true, false);
-                    //this.tableList = new List<Table>();
-
-                    //foreach (XElement table in this.Definition.xRomTableList.Values)
-                    //{
-                    //    this.tableList.Add(TableFactory.CreateTable(table, this));
-                    //}
-                    //this.imageTree = new TableTree(this);
-                    this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
-                    break;
-                }
-            }
+            TryOpenRom(fPath);
 
             if (this.CalId == null)
             {
-                string inputcalid = SimplePrompt.ShowDialog("Definition Not Found", "Enter Definition CALID");//TODO create new prompt to select inheritance or start fresh
-                //AvailableDevices.DefineNew();
-                //CALL OPEN ROM after saving the definition.
+                UndefinedWindow uw = new UndefinedWindow(fPath);
+                uw.ShowDialog();
+                TryOpenRom(fPath);
             }
         }
 
@@ -135,6 +105,43 @@ namespace SharpTuneCore
             }
         }
 
+        private bool TryOpenRom(string f)
+        {
+            using (FileStream fileStream = File.OpenRead(f))
+            {
+                MemoryStream memStream = new MemoryStream();
+                memStream.SetLength(fileStream.Length);
+                fileStream.Read(memStream.GetBuffer(), 0, (int)fileStream.Length);
+                this.imageStream = memStream;
+            }
+
+            foreach (KeyValuePair<string, Definition> device in SharpTuner.availableDevices.DefDictionary)
+            {
+                this.imageStream.Seek(device.Value.internalIdAddress, SeekOrigin.Begin);
+
+                byte[] b = new byte[device.Value.internalId.Length];
+                this.imageStream.Read(b, 0, device.Value.internalId.Length);
+
+                if (device.Value.internalId.ToString() == System.Text.Encoding.UTF8.GetString(b))
+                {
+                    CalIdOffset = device.Value.internalIdAddress;
+                    CalId = device.Key.ToString();
+                    Definition = device.Value;
+                    Definition.Populate();
+                    //this.tableList = new List<Table>();
+
+                    //foreach (XElement table in this.Definition.xRomTableList.Values)
+                    //{
+                    //    this.tableList.Add(TableFactory.CreateTable(table, this));
+                    //}
+                    //this.imageTree = new TableTree(this);
+                    this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
+                    return true;
+                }
+            }
+            MessageBox.Show("Error opening Rom!, Definition not found!");
+            return false;
+        }
         /// <summary>
         /// Memory Stream "Save AS" -> disk
         /// </summary>

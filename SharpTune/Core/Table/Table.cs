@@ -34,23 +34,23 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Table CreateTable(XElement xel, DeviceImage image)
+        public static Table CreateTable(XElement xel)
         {
             if (xel.Attribute("type") != null)
             {
                 switch (xel.Attribute("type").Value.ToString())
                 {
                     case "1D":
-                        return new Table1D(xel, image);
+                        return new Table1D(xel);
                     case "2D":
-                        return new Table2D(xel, image);
+                        return new Table2D(xel);
                     case "3D":
-                        return new Table3D(xel, image);
+                        return new Table3D(xel);
                     default:
                         break;
                 }
             }
-            return new Table(xel, image);
+            return new Table(xel);
         }
 
         public static Scaling NewScalingHandler(XElement xel)
@@ -75,6 +75,7 @@ namespace SharpTuneCore
 
     public class Table
     {
+        public XElement xml { get; private set; }
         public DataTable dataTable { get; set; }
         public string name { get; set; }
         public string type { get; set; }
@@ -113,13 +114,14 @@ namespace SharpTuneCore
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
-        public Table(XElement xel, DeviceImage pimage)
+        public Table(XElement xel)
         {
+
+            xml = xel;
+
             dataTable = new DataTable();
 
             properties = new Dictionary<string, string>();
-
-            this.parentImage = pimage;
 
             foreach (XAttribute attribute in xel.Attributes())
             {
@@ -155,7 +157,7 @@ namespace SharpTuneCore
 
                     case "scaling":
                         this.scaling = new Scaling();
-                        this.scaling = pimage.Definition.scalingList.Find(s => s.name == property.Value.ToString());
+                        this.scaling = SharpTuner.DataScalings.Find(s => s.name == property.Value.ToString());
                         continue;
 
                     case "type":

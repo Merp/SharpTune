@@ -391,12 +391,12 @@ namespace SharpTune
 
             Dictionary<String,String> imap = SharpTuner.availableDevices.BuildInheritanceMap();
             
-			foreach (String deffile in SharpTuner.availableDevices.IdentifierMap.Keys) {
+			foreach (String deffile in SharpTuner.availableDevices.DefDictionary.Keys) {
 				Definition.pullScalings (deffile, ref xblobscalings, ref xscalings);
 			}
 			Definition.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
 			Definition.pullScalings("rommetadata\\bases\\16BITBASE.xml", ref xblobscalings, ref xscalings);
-            foreach (String deffile in SharpTuner.availableDevices.IdentifierMap.Keys)
+            foreach (String deffile in SharpTuner.availableDevices.DefDictionary.Keys)
             {
                 Definition.pullScalings(deffile, ref xblobscalings, ref xscalings);
             }
@@ -409,7 +409,7 @@ namespace SharpTune
             Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			
-            foreach (String deffile in SharpTuner.availableDevices.IdentifierMap.Keys) {
+            foreach (String deffile in SharpTuner.availableDevices.DefDictionary.Keys) {
 				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
 			}
 			

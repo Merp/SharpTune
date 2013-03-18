@@ -29,8 +29,8 @@ namespace RomModCore
         private const uint OpStaticY = 0x43210007;
         private const uint OpRAM = 0x43210008;
 
-        private Dictionary<string,XElement> xRomTableList {get; set;}
-        private Dictionary<string,XElement> xRamTableList { get; set; }
+        private Dictionary<string,Table> RomTableList {get; set;}
+        private Dictionary<string,Table> RamTableList { get; set; }
 
         private Mod parentMod { get; set; }
         private Blob defBlob { get; set; }
@@ -58,8 +58,8 @@ namespace RomModCore
         public bool TryReadDefs(String defPath)//TODO remove defpath and ref the static global
         {
             
-            xRomTableList = new Dictionary<string,XElement>();
-            xRamTableList = new Dictionary<string, XElement>();
+            RomTableList = new Dictionary<string,Table>();
+            RamTableList = new Dictionary<string, Table>();
             
             List<Blob> blobs = parentMod.blobList.Blobs;
             Blob metadataBlob;
@@ -71,18 +71,13 @@ namespace RomModCore
             this.defBlob = metadataBlob;
             int offs = 0;
 
-            this.baseDefinition = new Definition((Utils.DirectorySearch(defPath, "32BITBASE")));
-            this.baseDefinition.ReadXML((Utils.DirectorySearch(defPath, "32BITBASE")), false, true);
-            this.inheritedDefinition = new Definition(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
-            this.inheritedDefinition.ReadXML(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId), false, true);
-  
-            if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
-
-            if (!TryCleanDef()) return false;
-
+            this.baseDefinition = SharpTuner.availableDevices.DefDictionary["32BITBASE"];// new Definition((Utils.DirectorySearch(defPath, "32BITBASE")));
+            this.baseDefinition.Populate(); // ReadXML((Utils.DirectorySearch(defPath, "32BITBASE")));
+            this.inheritedDefinition = SharpTuner.availableDevices.DefDictionary[parentMod.InitialCalibrationId];// new Definition(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
+            this.inheritedDefinition.Populate();// ReadXML(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
+            
             if (this.parentMod.buildConfig != null)
                 outputPath = defPath + "/MerpMod/" + this.parentMod.buildConfig + "/";
-
             outputPath += this.parentMod.ModIdent.ToString() + ".xml";
             XElement xci = inheritedDefinition.xRomId;
             Dictionary<string,string> tci = this.inheritedDefinition.carInfo;
@@ -91,8 +86,12 @@ namespace RomModCore
             tci["ecuid"] = this.parentMod.FinalEcuId.ToString();
             tci["xmlid"] = this.parentMod.ModIdent.ToString();
             string tincl = this.parentMod.InitialCalibrationId.ToString();
+            //TODO: First create short definition, then add tables 
+            definition = new Definition(outputPath, tci, tincl);
+  
+            if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
-            definition = new Definition(outputPath, tci, tincl, xRomTableList, xRamTableList);
+            if (!TryCleanDef()) return false;
 
             //prompt to select logger type
             List<string> loggerdefs = new List<string>();
@@ -126,7 +125,7 @@ namespace RomModCore
             }
 
             //xpath by name
-            foreach (KeyValuePair<string, XElement> table in this.xRamTableList)
+            foreach (KeyValuePair<string, Table> table in this.RamTableList)
             {
                 string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
                 XElement exp = xmlDoc.XPathSelectElement(xp);
@@ -137,7 +136,7 @@ namespace RomModCore
                     string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + this.parentMod.InitialEcuId.ToString() + "']";
                     XElement check = exp.XPathSelectElement(ch);
                     if(check != null) check.Remove();
-                    exp.AddFirst(table.Value);
+                    exp.AddFirst(table.Value.xml);
                 }
 
                 xmlDoc.Save(SharpTuner.RRLoggerDefPath + "/MerpMod/" + parentMod.buildConfig + "/" + parentMod.ModIdent + ".xml");
@@ -227,11 +226,11 @@ namespace RomModCore
         private bool TryCleanDef()
         {
             List<string> removelist = new List<string>();
-            foreach (KeyValuePair<string, XElement> table in this.definition.xRomTableList)
+            foreach (KeyValuePair<string, Table> table in this.definition.RomTableList)
             {
-                if (table.Value.Attribute("address") != null)
+                if (table.Value.xml.Attribute("address") != null)
                 {
-                    if (System.Int32.Parse(table.Value.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit )
+                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit )
                     {
                         removelist.Add(table.Key.ToString());
                         continue;
@@ -241,16 +240,16 @@ namespace RomModCore
             }
             foreach(string table in removelist)
             {
-            this.definition.xRomTableList.Remove(table);
+            this.definition.RomTableList.Remove(table);
             }
 
             //same operation for ramtables
             removelist.Clear();
-            foreach (KeyValuePair<string, XElement> table in this.definition.xRamTableList)
+            foreach (KeyValuePair<string, Table> table in this.definition.RamTableList)
             {
-                if (table.Value.Attribute("address") != null)
+                if (table.Value.xml.Attribute("address") != null)
                 {
-                    if (System.Int32.Parse(table.Value.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
+                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
                     {
                         removelist.Add(table.Key.ToString());
                         continue;
@@ -260,7 +259,7 @@ namespace RomModCore
             }
             foreach(string table in removelist)
             {
-            this.definition.xRamTableList.Remove(table);
+            this.definition.RamTableList.Remove(table);
             }
             return true;
         }
@@ -315,8 +314,8 @@ namespace RomModCore
                         Blob tableBlob;
                         this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
                         Lut3D lut = new Lut3D(tableBlob,metaOffset);
-                        KeyValuePair<String, XElement> tempTable = CreateTable(metaString, lut);
-                        if (tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
+                        //KeyValuePair<String, Table> tempTable = CreateTable(metaString, lut);
+                        if (metaString != null) definition.ExposeTable(metaString, lut);// this.RomTableList.Add(tempTable.Key, tempTable.Value);
                     }
                     else
                     {
@@ -332,9 +331,9 @@ namespace RomModCore
                     {
                         //Blob tableBlob;
                         //this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        //Lut2D lut = new Lut(tableBlob, metaOffset);
-                        KeyValuePair<String, XElement> tempTable = CreateTable(metaString, (int)metaOffset);//lut);
-                        if (tempTable.Key != null) this.xRomTableList.Add(tempTable.Key, tempTable.Value);
+                        Lut lut = new Lut(metaOffset);
+                        //KeyValuePair<String,Table> tempTable = CreateTable(metaString, (int)metaOffset);//lut);
+                        if (metaString != null) definition.ExposeTable(metaString, lut); //this.RomTableList.Add(tempTable.Key, tempTable.Value);
                     }
                     else
                     {
@@ -353,8 +352,8 @@ namespace RomModCore
                         if (this.TryReadDefData(metadata, out paramName, out paramLenght, ref offset))
                         {
                             // found modName, output to string!
-                            KeyValuePair<String, XElement> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, (int)paramLenght);
-                            if (tempTable.Key != null) this.xRamTableList.Add(tempTable.Key, tempTable.Value);
+                            KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, (int)paramLenght);
+                            if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
                         }
                     }
                     else
@@ -477,7 +476,7 @@ namespace RomModCore
             }
         };
 
-        private KeyValuePair<string,XElement> CreateRomRaiderRamTable(string name, int offset, string id, int length)
+        private KeyValuePair<string,Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
         {
             XElement xel = XElement.Parse(@"
                 <ecu id="""">
@@ -489,7 +488,7 @@ namespace RomModCore
             xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
             xel.Element("address").Attribute("length").Value = length.ToString();
 
-            return new KeyValuePair<string, XElement>(name, xel);
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel));
         }
 
         /// <summary>
@@ -498,17 +497,17 @@ namespace RomModCore
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        private KeyValuePair<string, XElement> CreateTable(string name, int offset)
+        private KeyValuePair<string, Table> CreateTable(string name, int offset)
         {
-            Dictionary<string, XElement> list = this.baseDefinition.xRomTableList;
+            //Dictionary<string, Table> list = 
 
-            foreach (KeyValuePair<string, XElement> table in this.baseDefinition.xRomTableList)
+            foreach (KeyValuePair<string, Table> table in this.baseDefinition.RomTableList)
             {
                 if (table.Key == name)
                 {
-                    KeyValuePair<string, XElement> temptable = table;
-                    temptable.Value.SetAttributeValue("address",offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
-                    IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
+                    KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name, table.Value);
+                    temptable.Value.xml.SetAttributeValue("address",offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                    IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
                     List<String> remattr = new List<String>();
                     foreach (XAttribute attr in tempattr)
                     {
@@ -519,12 +518,12 @@ namespace RomModCore
                     }
                     foreach (String rem in remattr)
                     {
-                        temptable.Value.Attribute(rem).Remove();
+                        temptable.Value.xml.Attribute(rem).Remove();
                     }
 
                     List<String> eleremlist = new List<String>();
 
-                    foreach (XElement ele in temptable.Value.Elements())
+                    foreach (XElement ele in temptable.Value.xml.Elements())
                     {
                         IEnumerable<XAttribute> childtempattr = ele.Attributes();
                         List<String> childremattr = new List<String>();
@@ -560,24 +559,24 @@ namespace RomModCore
                     }
                     foreach (String rem in eleremlist)
                     {
-                        temptable.Value.Element(rem).Remove();
+                        temptable.Value.xml.Element(rem).Remove();
                     }
                     return temptable;
                 }
             }
-            if (this.definition.xRamTableList != null)
+            if (this.baseDefinition.RamTableList != null)
             {
-                foreach (KeyValuePair<string, XElement> table in this.baseDefinition.xRamTableList)
+                foreach (KeyValuePair<string, Table> table in this.baseDefinition.RamTableList)
                 {
                     if (table.Key == name)
                     {
-                        KeyValuePair<string, XElement> temptable = table;
+                        KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name,table.Value);
                         //TABLE WAS FOUND!
                         return temptable;
                     }
                 }
             }
-            return new KeyValuePair<string, XElement>();
+            return new KeyValuePair<string,Table>();
         }
 
         /// <summary>
@@ -586,17 +585,17 @@ namespace RomModCore
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        private KeyValuePair<string,XElement> CreateTable(string name, Lut3D lut) //int offset)
+        private KeyValuePair<string,Table> CreateTable(string name, Lut3D lut) //int offset)
         { 
-            Dictionary<string,XElement> list = this.baseDefinition.xRomTableList;
+            Dictionary<string,Table> list = this.baseDefinition.RomTableList;
 
-            foreach (KeyValuePair<string,XElement> table in this.baseDefinition.xRomTableList)
+            foreach (KeyValuePair<string,Table> table in this.baseDefinition.RomTableList)
             {
                 if (table.Key == name)
                 {
-                    KeyValuePair<string, XElement> temptable = table;
-                    temptable.Value.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-                    IEnumerable<XAttribute> tempattr = temptable.Value.Attributes();
+                    KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name, table.Value);
+                    temptable.Value.xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
+                    IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
                     List<String> remattr = new List<String>();
                     foreach (XAttribute attr in tempattr)
                     {
@@ -607,12 +606,12 @@ namespace RomModCore
                     }
                     foreach (String rem in remattr)
                     {
-                        temptable.Value.Attribute(rem).Remove();
+                        temptable.Value.xml.Attribute(rem).Remove();
                     }
 
                     List<String> eleremlist = new List<String>();
                     
-                    foreach (XElement ele in temptable.Value.Elements())
+                    foreach (XElement ele in temptable.Value.xml.Elements())
                     {
                         IEnumerable<XAttribute> childtempattr = ele.Attributes();
                         List<String> childremattr = new List<String>();
@@ -650,24 +649,24 @@ namespace RomModCore
                     }
                     foreach (String rem in eleremlist)
                     {
-                        temptable.Value.Element(rem).Remove();
+                        temptable.Value.xml.Element(rem).Remove();
                     }
                     return temptable;
                 }
             }
-            if (this.definition.xRamTableList != null)
+            if (this.baseDefinition.RamTableList != null)
             {
-                foreach (KeyValuePair<string, XElement> table in this.baseDefinition.xRamTableList)
+                foreach (KeyValuePair<string, Table> table in this.baseDefinition.RamTableList)
                 {
                     if (table.Key == name)
                     {
-                        KeyValuePair<string, XElement> temptable = table;
+                        KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name, table.Value);
                         //TABLE WAS FOUND!
                         return temptable;
                     }
                 }
             }
-            return new KeyValuePair<string, XElement>();
+            return new KeyValuePair<string, Table>();
         }
 
         /// <summary>
