@@ -45,6 +45,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.manuallySelectPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.romRaiderIRCChannelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,7 +62,7 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.manuallySelectPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mAPToRRLoggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -160,7 +161,8 @@
             this.rOMToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.obfuscateCALIDToolStripMenuItem,
             this.xMLToIDCToolStripMenuItem,
-            this.iDAToHEWToolStripMenuItem});
+            this.iDAToHEWToolStripMenuItem,
+            this.mAPToRRLoggerToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
             this.rOMToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.rOMToolStripMenuItem.Text = "Tools";
@@ -169,21 +171,21 @@
             // 
             this.obfuscateCALIDToolStripMenuItem.Enabled = false;
             this.obfuscateCALIDToolStripMenuItem.Name = "obfuscateCALIDToolStripMenuItem";
-            this.obfuscateCALIDToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.obfuscateCALIDToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.obfuscateCALIDToolStripMenuItem.Text = "Obfuscate CALID";
             this.obfuscateCALIDToolStripMenuItem.Click += new System.EventHandler(this.obfuscateCALIDToolStripMenuItem_Click);
             // 
             // xMLToIDCToolStripMenuItem
             // 
             this.xMLToIDCToolStripMenuItem.Name = "xMLToIDCToolStripMenuItem";
-            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.xMLToIDCToolStripMenuItem.Text = "XML to IDC";
             this.xMLToIDCToolStripMenuItem.Click += new System.EventHandler(this.xMLToIDCToolStripMenuItem_Click);
             // 
             // iDAToHEWToolStripMenuItem
             // 
             this.iDAToHEWToolStripMenuItem.Name = "iDAToHEWToolStripMenuItem";
-            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
             this.iDAToHEWToolStripMenuItem.Click += new System.EventHandler(this.iDAToHEWToolStripMenuItem_Click);
             // 
@@ -215,6 +217,13 @@
             this.definitionLocationToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             this.definitionLocationToolStripMenuItem.Text = "Definition Location";
             this.definitionLocationToolStripMenuItem.Click += new System.EventHandler(this.definitionLocationToolStripMenuItem_Click);
+            // 
+            // manuallySelectPatchToolStripMenuItem
+            // 
+            this.manuallySelectPatchToolStripMenuItem.Name = "manuallySelectPatchToolStripMenuItem";
+            this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.manuallySelectPatchToolStripMenuItem.Text = "Patch Location";
+            this.manuallySelectPatchToolStripMenuItem.Click += new System.EventHandler(this.manuallySelectPatchToolStripMenuItem_Click_1);
             // 
             // helpToolStripMenuItem
             // 
@@ -372,12 +381,12 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
             // 
-            // manuallySelectPatchToolStripMenuItem
+            // mAPToRRLoggerToolStripMenuItem
             // 
-            this.manuallySelectPatchToolStripMenuItem.Name = "manuallySelectPatchToolStripMenuItem";
-            this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            this.manuallySelectPatchToolStripMenuItem.Text = "Patch Location";
-            this.manuallySelectPatchToolStripMenuItem.Click += new System.EventHandler(this.manuallySelectPatchToolStripMenuItem_Click_1);
+            this.mAPToRRLoggerToolStripMenuItem.Name = "mAPToRRLoggerToolStripMenuItem";
+            this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to RR Logger";
+            this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -442,6 +451,7 @@
         private System.Windows.Forms.ToolStripMenuItem xMLToIDCToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mAPToRRLoggerToolStripMenuItem;
     }
 }
 

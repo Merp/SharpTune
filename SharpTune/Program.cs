@@ -66,7 +66,7 @@ namespace SharpTune
             }
             else if (args[0] == "convtools")
             {
-                ConvTools.ConvTools.Run(Utils.ShiftLeftTruncate(args));
+                ConvTools.ConvTool.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {

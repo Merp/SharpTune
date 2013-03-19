@@ -79,7 +79,7 @@ namespace SharpTuneCore
         public String findInherit(String xmlid)
         {
             String fetchpath = getDefPath(xmlid);
-            XDocument xmlDoc = XDocument.Load(fetchpath);
+            XDocument xmlDoc = XDocument.Load(fetchpath, LoadOptions.PreserveWhitespace);
             XElement inc = xmlDoc.XPathSelectElement("/rom/include");
             if (inc != null && inc.Value.ToString().Contains("BASE"))
                     return inc.Value.ToString();

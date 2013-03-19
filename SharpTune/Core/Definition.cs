@@ -134,7 +134,7 @@ namespace SharpTuneCore
         /// <returns></returns>
         public void LoadRomId()
         {
-            XDocument xmlDoc = XDocument.Load(defPath);
+            XDocument xmlDoc = XDocument.Load(defPath, LoadOptions.PreserveWhitespace);
             this.xRomId = xmlDoc.XPathSelectElement("/rom/romid");
             ParseRomId();
             if (xmlDoc.XPathSelectElement("/rom/include") != null)
@@ -181,7 +181,7 @@ namespace SharpTuneCore
         public bool ReadXML(string path)
         {
             if (path == null) return false;
-            XDocument xmlDoc = XDocument.Load(path);
+            XDocument xmlDoc = XDocument.Load(path, LoadOptions.PreserveWhitespace);
             // ROM table fetches here!
             var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
                              //where table.Ancestors("table").First().IsEmpty
@@ -265,7 +265,7 @@ namespace SharpTuneCore
 
             if (fetchPath == null) return;
             List<XElement> xlist = new List<XElement>();
-            XDocument xmlDoc = XDocument.Load(fetchPath);
+            XDocument xmlDoc = XDocument.Load(fetchPath, LoadOptions.PreserveWhitespace);
             var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
                                //where table.Ancestors("table").First().IsEmpty
                                select sc;
@@ -302,7 +302,7 @@ namespace SharpTuneCore
         {
 
             if (fetchPath == null) return;
-            XDocument xmlDoc = XDocument.Load(fetchPath);
+            XDocument xmlDoc = XDocument.Load(fetchPath, LoadOptions.PreserveWhitespace);
             List<String> newtables = new List<String>();
             String rombase;
 

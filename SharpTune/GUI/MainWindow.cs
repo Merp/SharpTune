@@ -513,5 +513,16 @@ namespace SharpTune
                 SharpTuner.initSettings();
             }
         }
+
+        private void mAPToRRLoggerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ofd.Filter = "MAP Files (*.map)|*.map";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)","Enter EcuId");
+                //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
+                Define.DefineRRLogEcu(ofd.FileName, ecuid);
+            }
+        }
     }
 }

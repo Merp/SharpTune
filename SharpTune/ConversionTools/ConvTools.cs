@@ -11,18 +11,23 @@ using System.Text.RegularExpressions;
 
 namespace ConvTools
 {
-    public class ConvTools
+    public class ConvTool
     {
         public static Dictionary<string, List<Define>> Defines;
         public static Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
         public static List<IdaName> IdaNames;
 
-        public static void Run(string[] args)
+        public ConvTool()
         {
-            ConvTools prog = new ConvTools();
             Defines = new Dictionary<string, List<Define>>();
             Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
             IdaNames = new List<IdaName>();
+        }
+
+        public static void Run(string[] args)
+        {
+            ConvTool prog = new ConvTool();
+            
             if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
             {
                 Console.WriteLine("IDAtoHEW CopyRight Merrill A. Myers III 2012");
@@ -41,7 +46,7 @@ namespace ConvTools
             }
             else if (args[0].ContainsCI(".map"))
             {
-                prog.ReadLines(args[0]);
+                prog.ReadMapLines(args[0]);
                 prog.NamesToDefines();
                 if (args.Length < 3)
                     prog.WriteIDC(Regex.Split(args[0], ".map")[0] + ".idc");
@@ -51,7 +56,7 @@ namespace ConvTools
             else if (args[0].ContainsCI(".xml") && args.Length == 4)
             {
                 prog.LoadXML(args[0]);
-                prog.ReadLines(args[1]);
+                prog.ReadMapLines(args[1]);
                 prog.FindAndWriteDefines(args[2]);
                 prog.FindAndWriteSections(args[3]);
             }
@@ -59,9 +64,19 @@ namespace ConvTools
                 Console.WriteLine("invalid command!");
         }
 
+        public Dictionary<string,string> GetIdaRamNames()
+        {
+            Dictionary<string, string> td = new Dictionary<string, string>();
+            foreach (IdaName idn in IdaNames)
+            {
+                td.Add(idn.name, idn.define);
+            }
+            return td;
+        }
+
         public void LoadXML(string file)
         {
-            XDocument xmlDoc = XDocument.Load(file);
+            XDocument xmlDoc = XDocument.Load(file, LoadOptions.PreserveWhitespace);
             XElement xdefs = xmlDoc.XPathSelectElement("//idatohew/defines");
             foreach (XElement xel in xdefs.Elements("category"))
             {
@@ -174,7 +189,7 @@ namespace ConvTools
             Defines.Add(" ", defines);
         }
 
-        public void ReadLines(string filename)
+        public void ReadMapLines(string filename)
         {
             using (StreamReader reader = new StreamReader(filename))
             {
