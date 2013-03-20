@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using SharpTune;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace RomModCore
 {
@@ -185,7 +186,7 @@ namespace RomModCore
             }
 
             Console.WriteLine("This patch file was intended for: {0}.", this.InitialCalibrationId);
-            Console.WriteLine("This patch file converts ROM to:  {0}.", this.FinalCalibrationId);
+            Console.WriteLine("This patch file converts ROM to:  {0}.", this.ModIdent);
             Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
             Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
 
@@ -737,10 +738,10 @@ namespace RomModCore
         {
             UInt32 cookie = 0;
             uint tempInt = 0;
+            Patch patch = null;
             while ((metadata.Content.Count > offset + 8) &&
                 metadata.TryGetUInt32(ref cookie, ref offset))
             {
-                Patch patch = null;
                 if (cookie == Mod.calibrationIdPrefix)
                 {
                     if (!metadata.TryGetUInt32(ref tempInt, ref offset))
@@ -834,44 +835,6 @@ namespace RomModCore
                         // found modName, output to string!
                         this.FinalEcuId = metaString;
                     }
-                    if (this.InitialEcuId.Length == this.FinalEcuId.Length)
-                    {
-                        // Synthesize calibration-change patch and blobs.
-                        if(FinalEcuId.ContainsCI("ffffffff"))
-                        {
-                            StringBuilder feid = new StringBuilder(DateTime.Today.Year.ToString().Substring(2));
-                            feid.Append(DateTime.Today.Month.ToString());
-                            if(feid.Length < 4)
-                                feid.Append("F");
-                            feid.Append(DateTime.Today.Day.ToString());
-                            if (feid.Length < 6)
-                                feid.Append("F");
-                            feid.Append(DateTime.Now.Hour.ToString());
-                            if (feid.Length < 8)
-                                feid.Append("F");
-                            feid.Append(DateTime.Now.Minute.ToString());
-                            while (feid.Length < this.InitialEcuId.Length)
-                            {
-                                feid.Append("F");
-                            }
-                            this.FinalEcuId = feid.ToString();
-                        }
-                        patch = new Patch(
-                            EcuIdAddress,
-                            EcuIdAddress + ((EcuIdLength / 2) - 1));
-
-                        patch.IsMetaChecked = true;
-
-                        patch.Baseline = new Blob(
-                            EcuIdAddress + Mod.BaselineOffset,
-                            InitialEcuId.ToByteArray());
-
-                        patch.Payload = new Blob(
-                            EcuIdAddress,
-                            FinalEcuId.ToByteArray());
-
-                        this.patchList.Add(patch);
-                    }
                 }
                 else if (cookie == modNamePrefix)
                 {
@@ -933,6 +896,34 @@ namespace RomModCore
                 {
                     break;
                 }
+            }
+            if (this.InitialEcuId.Length == this.FinalEcuId.Length)
+            {
+                // Synthesize calibration-change patch and blobs.
+                if (FinalEcuId.ContainsCI("ffffffff"))
+                {
+                    StringBuilder feid = new StringBuilder(Regex.Split(this.ModIdent,"_v")[1].Replace(".", ""));
+                    while (feid.Length < this.InitialEcuId.Length)
+                    {
+                        feid.Append("F");
+                    }
+                    this.FinalEcuId = feid.ToString();
+                }
+                patch = new Patch(
+                    EcuIdAddress,
+                    EcuIdAddress + ((EcuIdLength / 2) - 1));
+
+                patch.IsMetaChecked = true;
+
+                patch.Baseline = new Blob(
+                    EcuIdAddress + Mod.BaselineOffset,
+                    InitialEcuId.ToByteArray());
+
+                patch.Payload = new Blob(
+                    EcuIdAddress,
+                    FinalEcuId.ToByteArray());
+
+                this.patchList.Add(patch);
             }
             if (this.patchList.Count < 2)
             {

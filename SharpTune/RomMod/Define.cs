@@ -96,7 +96,7 @@ namespace RomModCore
             if (!TryCleanDef()) return false;
 
             //prompt to select logger type
-            NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.buildConfig + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialCalibrationId.ToString(),parentMod.FinalCalibrationId.ToString());
+            NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.buildConfig + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(),parentMod.FinalEcuId.ToString());
             return true;
         }
 
