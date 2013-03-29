@@ -19,7 +19,7 @@ using SharpTune;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
     /// <summary>
     /// Defines and Applies a Mod (series of patches) to a ROM.
@@ -90,7 +90,7 @@ namespace RomModCore
         public string FinalEcuId { get; private set; }
         public List<Patch> patchList;
         public List<Patch> unPatchList;
-        private Define definition { get; set; }
+        private DefCreator defCreator { get; set; }
         public string buildConfig;
 
         /// <summary>
@@ -160,14 +160,12 @@ namespace RomModCore
             TryReadPatches();
             TryReversePatches();
         }
-
-
         
         public bool TryDefinition(string defPath)
         {
-            this.definition = new Define(this);
-            if (!definition.TryReadDefs(defPath)) return false;
-            if (!definition.TryPrintDef(this.ModIdent.ToString())) return false;
+            this.defCreator = new DefCreator(this);
+            if (!defCreator.TryReadDefs(defPath)) return false;
+            if (!defCreator.TryPrintEcuFlashDef()) return false;
             return true;
         }
 

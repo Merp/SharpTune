@@ -22,15 +22,25 @@ using System.Xml.Linq;
 using System.Linq;
 using SharpTune;
 using SharpTune.Properties;
-using SharpTune.RomMod;
+using SharpTune.Core;
 
 namespace SharpTuneCore
 {
+    
+    public interface IDeepCloneable
+    {
+        object DeepClone();
+    }
+    public interface IDeepCloneable<T> : IDeepCloneable
+    {
+        T DeepClone();
+    }
+
     /// <summary>
     /// Represents an individual device definition
     /// Includes ALL scalings from base to top
     /// </summary>
-    public class Definition
+    public class Definition : IDeepCloneable
     {
         public bool isBase { get; private set; }
         public string internalId { get; set; }
@@ -110,6 +120,28 @@ namespace SharpTuneCore
             Inherit();
         }
 
+        public Definition DeepClone()
+        {
+            Definition clone = new Definition();
+            clone.isBase = isBase;
+            clone.internalId = internalId;
+            clone.internalIdAddress = internalIdAddress;
+            clone.carInfo = new Dictionary<string,string>(carInfo);
+            clone.defPath = defPath;
+            clone.include = include;
+            clone.xRomId = new XElement(xRomId);
+            clone.RomTableList = new Dictionary<string,Table>(RomTableList);
+            clone.RamTableList = new Dictionary<string,Table>(RamTableList);
+            clone.ScalingList = new Dictionary<string,Scaling>(ScalingList);
+            clone.inheritList = new List<string>(inheritList);
+            return clone;
+        }
+
+        object IDeepCloneable.DeepClone()   
+        {
+            return DeepClone();
+        }
+
         public void ParseRomId()
         {
             carInfo.Clear();
@@ -124,7 +156,6 @@ namespace SharpTuneCore
             if (carInfo.ContainsKey("xmlid"))
                 if (carInfo["xmlid"].Contains("BASE"))
                     internalId = carInfo["xmlid"].ToString();
-
         }
 
         /// <summary>
@@ -451,48 +482,57 @@ namespace SharpTuneCore
             }
         }
 
-        public void ExportXML(string filepath)
+        public bool ExportXML(string filepath)
         {
-            XmlWriterSettings objXmlWriterSettings = new XmlWriterSettings();
-            objXmlWriterSettings.Indent = true;
-            objXmlWriterSettings.OmitXmlDeclaration = false;
-            using (XmlWriter writer = XmlWriter.Create(filepath, objXmlWriterSettings))
+            try
             {
-                //Start writing doc
-                writer.WriteStartDocument();
-
-                //Write romid elements
-                //TODO THIS IS REDUNDANT
-                writer.WriteStartElement("rom");
-                writer.WriteStartElement("romid");
-                foreach (KeyValuePair<string, string> kvp in this.carInfo)
+                XmlWriterSettings objXmlWriterSettings = new XmlWriterSettings();
+                objXmlWriterSettings.Indent = true;
+                objXmlWriterSettings.OmitXmlDeclaration = false;
+                using (XmlWriter writer = XmlWriter.Create(filepath, objXmlWriterSettings))
                 {
-                    writer.WriteElementString(kvp.Key.ToString(), kvp.Value.ToString());
-                }
-                writer.WriteEndElement();
+                    //Start writing doc
+                    writer.WriteStartDocument();
 
-                //Write include
-                if(this.include != null)
-                    writer.WriteElementString("include", this.include.ToString());
-
-                //Write scalings
-
-                if (this.ScalingList != null)
-                {
-                    foreach (KeyValuePair<string, Scaling> table in this.ScalingList)
+                    //Write romid elements
+                    //TODO THIS IS REDUNDANT
+                    writer.WriteStartElement("rom");
+                    writer.WriteStartElement("romid");
+                    foreach (KeyValuePair<string, string> kvp in this.carInfo)
                     {
-                        table.Value.xml.WriteTo(writer);
+                        writer.WriteElementString(kvp.Key.ToString(), kvp.Value.ToString());
                     }
-                }
-                //Write ROM tables
-                if (this.RomTableList != null)
-                {
-                    foreach (KeyValuePair<string, Table> table in this.RomTableList)
+                    writer.WriteEndElement();
+
+                    //Write include
+                    if (this.include != null)
+                        writer.WriteElementString("include", this.include.ToString());
+
+                    //Write scalings
+
+                    if (this.ScalingList != null)
                     {
-                        table.Value.xml.WriteTo(writer);
+                        foreach (KeyValuePair<string, Scaling> table in this.ScalingList)
+                        {
+                            table.Value.xml.WriteTo(writer);
+                        }
                     }
+                    //Write ROM tables
+                    if (this.RomTableList != null)
+                    {
+                        foreach (KeyValuePair<string, Table> table in this.RomTableList)
+                        {
+                            table.Value.xml.WriteTo(writer);
+                        }
+                    }
+                    writer.WriteEndDocument();
                 }
-                writer.WriteEndDocument();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return false;
             }
         }
 

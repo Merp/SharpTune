@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
     /// <summary>
     /// Represents a single row of a Motorola S-Record file.

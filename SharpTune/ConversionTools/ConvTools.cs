@@ -9,19 +9,19 @@ using System.Xml.XPath;
 using System.Xml;
 using System.Text.RegularExpressions;
 
-namespace ConvTools
+namespace SharpTune.ConversionTools
 {
     public class ConvTool
     {
         public static Dictionary<string, List<Define>> Defines;
         public static Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
-        public static List<IdaName> IdaNames;
+        public static IdaMap idaMap;
+
 
         public ConvTool()
         {
             Defines = new Dictionary<string, List<Define>>();
             Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
-            IdaNames = new List<IdaName>();
         }
 
         public static void Run(string[] args)
@@ -46,8 +46,8 @@ namespace ConvTools
             }
             else if (args[0].ContainsCI(".map"))
             {
-                prog.ReadMapLines(args[0]);
-                prog.NamesToDefines();
+                idaMap = new IdaMap(args[0]);
+                prog.MapToDefines();
                 if (args.Length < 3)
                     prog.WriteIDC(Regex.Split(args[0], ".map")[0] + ".idc");
                 else
@@ -56,22 +56,12 @@ namespace ConvTools
             else if (args[0].ContainsCI(".xml") && args.Length == 4)
             {
                 prog.LoadXML(args[0]);
-                prog.ReadMapLines(args[1]);
+                idaMap = new IdaMap(args[1]);
                 prog.FindAndWriteDefines(args[2]);
                 prog.FindAndWriteSections(args[3]);
             }
             else
                 Console.WriteLine("invalid command!");
-        }
-
-        public Dictionary<string,string> GetIdaRamNames()
-        {
-            Dictionary<string, string> td = new Dictionary<string, string>();
-            foreach (IdaName idn in IdaNames)
-            {
-                td.Add(idn.name, idn.define);
-            }
-            return td;
         }
 
         public void LoadXML(string file)
@@ -156,6 +146,17 @@ namespace ConvTools
             }
         }
 
+        public void MapToDefines()
+        {
+            foreach (List<Define> category in Defines.Values)
+            {
+                foreach (Define define in category)
+                {
+                    define.findOffset(idaMap.IdaNames);
+                }
+            }
+        }
+
         public void WriteIDC(string filename)
         {
             using (StreamWriter writer = new StreamWriter(filename))
@@ -170,65 +171,14 @@ namespace ConvTools
                     writer.WriteLine("/////////////////////");
                     foreach (Define d in c.Value)
                     {
-                        if(d.define.Length == 8)
-                            writer.WriteLine("MakeNameEx(0x" + d.define + ", \"" + d.name + "\", SN_CHECK);");
+                        if(d.offset.Length == 8)
+                            writer.WriteLine("MakeNameEx(0x" + d.offset + ", \"" + d.name + "\", SN_CHECK);");
                     }
                 }
                 writer.WriteLine("}");
                 writer.WriteLine("static main () { Params(); }");
             }
-        }
-
-        public void NamesToDefines()
-        {
-            List<Define> defines = new List<Define>();
-            foreach (var idn in IdaNames)
-            {
-                defines.Add(new Define(idn.name, idn.define));
-            }
-            Defines.Add(" ", defines);
-        }
-
-        public void ReadMapLines(string filename)
-        {
-            using (StreamReader reader = new StreamReader(filename))
-            {
-                bool isram = false;
-                string line;
-                int offset = 0;
-                int offsetdelta = 0;
-                bool start = false;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (line.ContainsCI("Publics by Value"))
-                    {
-                        start = true;
-                        continue;
-                    }
-                    if (start && line.Length > 21)
-                    {
-                        string offsetstr = line.Substring(6, 8);
-                        int offs = int.Parse(offsetstr, System.Globalization.NumberStyles.HexNumber);
-                        offsetdelta = offs - offset;
-                        offset = offs;
-                        if (offsetdelta < 0) isram = true;
-                        if (line.ToString().ContainsCI("BITMASK"))
-                        {
-                            offsetstr = line.Substring(line.Length - 2, 2);
-                            string name = line.Substring(21, line.Length - 26);
-                            IdaNames.Add(new IdaName(name, offsetstr));
-                        }
-                        else
-                        {
-                            if (!isram) offsetstr = line.Substring(6, 8);
-                            else offsetstr = "FFFF" + line.Substring(10, 4);
-                            string name = line.Substring(21, line.Length - 21);
-                            IdaNames.Add(new IdaName(name, offsetstr));
-                        }
-                    }
-                }
-            }
-        }
+        }        
 
         public void FindAndWriteDefines(string outfilename)
         {
@@ -244,7 +194,6 @@ namespace ConvTools
                     writer.WriteLine("");
                     foreach (var def in category.Value)
                     {
-                        def.find(IdaNames);
                         def.print(writer);
                     }
                     writer.WriteLine("");
@@ -268,11 +217,11 @@ namespace ConvTools
 
                     foreach (string sec in tl)
                     {
-                        foreach (var idan in IdaNames)
+                        foreach (var idan in idaMap.IdaNames)
                         {
-                            if (idan.name.ToString().EqualsCI(sec))
+                            if (idan.Key.ToString().EqualsCI(sec))
                             {
-                                writer.WriteLine("\t" + ls.Key.Key.ToString() + " 0x" + idan.define + " : AT (0x" + idan.define + ")");
+                                writer.WriteLine("\t" + ls.Key.Key.ToString() + " 0x" + idan.Value + " : AT (0x" + idan.Value + ")");
                                 writer.WriteLine("\t{");
                                 foreach (string section in ls.Value)
                                 {

@@ -17,7 +17,7 @@ using System.Text;
 using System.Reflection;
 using SharpTune;
 using System.IO;
-using RomModCore;
+using SharpTune.RomMod;
 using SharpTuneCore;
 
 namespace SharpTune

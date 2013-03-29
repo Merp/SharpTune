@@ -21,7 +21,7 @@ using SharpTune;
 using SharpTuneCore;
 using SharpTune.Properties;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
     public class RomMod
     {
@@ -39,31 +39,31 @@ namespace RomModCore
             }
             else if (args.Length == 2 && args[0] == "dump")
             {
-                return RomModCore.RomMod.TryDumpSRecordFile(args[1]);
+                return SharpTune.RomMod.RomMod.TryDumpSRecordFile(args[1]);
             }
             else if (args.Length == 3 && args[0] == "test")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], 2, false);
+                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 2, false);
             }
             else if (args.Length == 3 && args[0] == "apply")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], 0, true);
+                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 0, true);
             }
             else if (args.Length == 3 && args[0] == "applied")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], 1, false);//TODO is this deprecated?
+                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 1, false);//TODO is this deprecated?
             }
             else if (args.Length == 3 && args[0] == "remove")
             {
-                return RomModCore.RomMod.TryApply(args[1], args[2], 1, true);
+                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 1, true);
             }
             else if (args.Length == 3 && args[0] == "baseline")
             {
-                return RomModCore.RomMod.TryGenerateBaseline(args[1], args[2]);
+                return SharpTune.RomMod.RomMod.TryGenerateBaseline(args[1], args[2]);
             }
             else if (args.Length == 4 && args[0] == "baselinedefine")
             {
-                return RomModCore.RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+                return SharpTune.RomMod.RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
             }
             PrintHelp();
             return false;
@@ -74,7 +74,7 @@ namespace RomModCore
         /// </summary>
         private static void PrintHelp()
         {
-            Console.WriteLine("RomPatch Version {0}.", RomModCore.RomMod.Version);
+            Console.WriteLine("RomPatch Version {0}.", SharpTune.RomMod.RomMod.Version);
             Console.WriteLine("Commands:");
             Console.WriteLine();
             Console.WriteLine("test       - determine whether a patch is suitable for a ROM");

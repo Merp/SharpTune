@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
     /// <summary>
     /// Reads SRecord objects from an SRecord file.

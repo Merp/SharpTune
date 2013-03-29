@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
     /// <summary>
     /// Merges the content of contiguous SRecords into a list of Blobs.

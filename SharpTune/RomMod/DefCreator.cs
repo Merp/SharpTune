@@ -8,14 +8,14 @@ using System.Xml.XPath;
 using System.Data;
 using SharpTune;
 using SharpTuneCore;
-using SharpTune.RomMod;
 using System.IO;
-using ConvTools;
 using System.Text.RegularExpressions;
+using SharpTune.ConversionTools;
+using SharpTune.Core;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
-    class Define
+    class DefCreator
     {
         private const int tableaddresslimit = 1024;
 
@@ -47,11 +47,12 @@ namespace RomModCore
         private Definition definition { get; set; }
         private Definition inheritedDefinition {get; set;}
         private Definition baseDefinition { get; set; }
-        public Define(Mod parent)
+        public DefCreator(Mod parent)
         {
             this.parentMod = parent;
         }
 
+        #region Patch Reading Code
         /// <summary>
         /// Cycles through the template definition and replaces "0" addresses with addresses from the patch file.
         /// TODO: Replace template with inheritance from 32BITBASE Tables and a patch parameter that specifies the child template to use.
@@ -100,23 +101,21 @@ namespace RomModCore
             return true;
         }
 
-        public static void NewRRLogDefInheritWithTemplate(Dictionary<string,Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
+        public static void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
         {
             XDocument xmlDoc = SelectGetRRLogDef();
             InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
             AddRRLogDefBase(ref xmlDoc, outPath, template);
             PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
-            xmlDoc.Save(outPath);
+            xmlDoc.SaveToFile(outPath);
         }
 
         public static void DefineRRLogEcu(string mapFile, string ident)
         {
-            ConvTool ct = new ConvTool();
-            ct.ReadMapLines(mapFile);
-            Dictionary<string, string> map = ct.GetIdaRamNames();
-            Dictionary<string, string> addMap = new Dictionary<string,string>();
+            IdaMap im = new IdaMap(mapFile);
+            Dictionary<string, string> addMap = new Dictionary<string, string>();
             Dictionary<string, string> defMap = ReadRRLogDefExtTables();
-            foreach (KeyValuePair<string, string> def in map)
+            foreach (KeyValuePair<string, string> def in im.IdaNames)
             {
                 foreach (KeyValuePair<string, string> table in defMap)
                 {
@@ -126,23 +125,23 @@ namespace RomModCore
                         string[] b = Regex.Split(table.Key, "E");
                         if (a.Length == 2 && b.Length == 2 && a[1].EqualsCI(b[1]))
                         {
-                            addMap.Add(table.Value, def.Value.Replace("FFFF","FF"));
+                            addMap.Add(table.Value, def.Value.Replace("FFFF", "FF"));
                             break;
                         }
                     }
                 }
             }
             string ld = SelectRRLogDef();
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld, LoadOptions.PreserveWhitespace);
+            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
             PopulateRRLogDefTables(ref xmlDoc, SharpTuner.RRLoggerDefPath + ld, addMap, ident);
-            //xmlDoc.Save(SharpTuner.RRLoggerDefPath + ld);
+            //xmlDoc.SaveToFile(SharpTuner.RRLoggerDefPath + ld);
         }
 
-        private static Dictionary<string,string> ReadRRLogDefExtTables()
+        private static Dictionary<string, string> ReadRRLogDefExtTables()
         {
             Dictionary<string, string> ls = new Dictionary<string, string>();
             string ld = SelectRRLogDef();
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld, LoadOptions.PreserveWhitespace);
+            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
             string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
             IEnumerable<XElement> xbase = xmlDoc.XPathSelectElements(bxp);
 
@@ -152,7 +151,7 @@ namespace RomModCore
             }
             return ls;
         }
-        
+
         private static List<string> GetRRLoggerDefs()
         {
             List<string> loggerdefs = new List<string>();
@@ -178,13 +177,14 @@ namespace RomModCore
         private static XDocument SelectGetRRLogDef()
         {
             string ld = SelectRRLogDef();
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld, LoadOptions.PreserveWhitespace);
-            return xmlDoc;
+            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
+            XDocument xmlDoc2 = new XDocument(xmlDoc);
+            return xmlDoc2;
         }
 
         private static void AddRRLogDefBase(ref XDocument xmlDoc, string outPath, string templatePath)
         {
-            XDocument xmlBase = XDocument.Load(templatePath, LoadOptions.PreserveWhitespace);
+            XDocument xmlBase = XDocument.Load(templatePath);//, LoadOptions.PreserveWhitespace);
             string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
             IEnumerable<XElement> xbase = xmlBase.XPathSelectElements(bxp);
 
@@ -192,7 +192,7 @@ namespace RomModCore
             {
                 xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
             }
-            xmlDoc.Save(outPath);
+            xmlDoc.SaveToFile(outPath);
         }
 
         private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, Table> ramTableList, string ident)
@@ -202,25 +202,30 @@ namespace RomModCore
                 string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
                 XElement exp = xmlDoc.XPathSelectElement(xp);
 
+                string cxp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']/conversions";
+                XElement cexp = xmlDoc.XPathSelectElement(cxp);
+
 
                 if (exp != null)
                 {
                     string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
                     XElement check = exp.XPathSelectElement(ch);
                     if (check != null) check.Remove();
-                    exp.AddFirst(table.Value.xml);
+                    cexp.AddBeforeSelf(table.Value.xml);
                 }
             }
-            xmlDoc.Save(outPath);
+            xmlDoc.SaveToFile(outPath);
         }
 
-        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string,string> ramTableList,string ident)
+        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, string> ramTableList, string ident)
         {
             foreach (KeyValuePair<string, string> table in ramTableList)
             {
                 string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
                 XElement exp = xmlDoc.XPathSelectElement(xp);
 
+                string cxp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']/conversions";
+                XElement cexp = xmlDoc.XPathSelectElement(cxp);
 
                 if (exp != null)
                 {
@@ -233,7 +238,7 @@ namespace RomModCore
                         ad = new XElement(check);
                     ad.Attribute("id").Value = ident;
                     ad.Descendants().First().Value = "0x" + table.Value;
-                    exp.AddFirst(ad);
+                    cexp.AddBeforeSelf(ad);
 
                     //if(exp.Descendants("ecu") != null)
                     //{
@@ -243,7 +248,7 @@ namespace RomModCore
                     //exp.AddFirst("0x" + table.Value);
                 }
             }
-            xmlDoc.Save(outPath);
+            xmlDoc.SaveToFile(outPath);
         }
 
         private static void InheritRRLogger(ref XDocument xmlDoc, string outPath, string inheritIdent, string newIdent)
@@ -258,11 +263,11 @@ namespace RomModCore
                 {
                     if (xel.Elements("ecu") != null)
                     {
-                    
+
                         foreach (XElement xecu in xel.Elements("ecu"))
                         {
                             string id = xecu.Attribute("id").Value.ToString();
-                            if ( id == inheritIdent)//parentMod.InitialEcuId.ToString())
+                            if (id == inheritIdent)//parentMod.InitialEcuId.ToString())
                             {
                                 //found hit, copy the ecu xel
                                 XElement newxecu = new XElement(xecu);
@@ -272,7 +277,7 @@ namespace RomModCore
                         }
                     }
                 }
-            xmlDoc.Save(outPath);
+                xmlDoc.SaveToFile(outPath);
             }
             catch (Exception e)
             {
@@ -280,45 +285,19 @@ namespace RomModCore
             }
         }
 
-        /// <summary>
-        /// Populate tables here, read from an input XML files, and instantiate the tables
-        /// Then update tables with proper info
-        /// Then create a function to export XML
-        /// </summary>
-        private void PopulateTableList()
+        private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
         {
-            
+            XElement xel = XElement.Parse(@"
+                <ecu id="""">
+                    <address length=""""></address>
+                </ecu>
+            ");
 
+            xel.Attribute("id").Value = this.parentMod.FinalEcuId;
+            xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
+            xel.Element("address").Attribute("length").Value = length.ToString();
 
-            //XDocument xmlDoc = XDocument.Load(filepath);
-            //XElement xmlEle = XElement.Load(filepath);
-            //XElement romdata = new XElement("rom", 
-            //    new XElement("romid",
-            //        new XElement("xmlid",this.identifier.ToString()),
-            //        new XElement("internalidaddress",this.identifierAddress.ToString()),
-            //        new XElement("internalidstring",this.identifier.ToString()),
-            //        new XElement("
-
-            //try
-            //{
-            //    XElement xmlEle = XElement.Load(filepath);
-
-            //    DataSet ds = new DataSet();
-            //    ds.ReadXml(xmlEle.CreateReader());
-            //    DataSet ds2 = new DataSet();
-            //    ds2.ReadXml(xmlreader2);
-            //    ds.Merge(ds2);
-            //    ds.WriteXml("C:\\Books.xml");
-            //    Console.WriteLine("Completed merging XML documents");
-            //}
-            //catch (System.Exception ex)
-            //{
-            //    Console.Write(ex.Message);
-            //}
-
-
-
-            
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel));
         }
 
         private bool TryCleanDef()
@@ -328,17 +307,17 @@ namespace RomModCore
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
-                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit )
+                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
                     {
                         removelist.Add(table.Key.ToString());
                         continue;
                     }
-                
+
                 }
             }
-            foreach(string table in removelist)
+            foreach (string table in removelist)
             {
-            this.definition.RomTableList.Remove(table);
+                this.definition.RomTableList.Remove(table);
             }
 
             //same operation for ramtables
@@ -355,9 +334,9 @@ namespace RomModCore
 
                 }
             }
-            foreach(string table in removelist)
+            foreach (string table in removelist)
             {
-            this.definition.RamTableList.Remove(table);
+                this.definition.RamTableList.Remove(table);
             }
             return true;
         }
@@ -411,7 +390,7 @@ namespace RomModCore
                     {
                         Blob tableBlob;
                         this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        Lut3D lut = new Lut3D(tableBlob,metaOffset);
+                        Lut3D lut = new Lut3D(tableBlob, metaOffset);
                         //KeyValuePair<String, Table> tempTable = CreateTable(metaString, lut);
                         if (metaString != null) definition.ExposeTable(metaString, lut);// this.RomTableList.Add(tempTable.Key, tempTable.Value);
                     }
@@ -464,131 +443,73 @@ namespace RomModCore
                 {
                     break;
                 }
-                }
-            
+            }
+
             return true;
         }
 
-        private Dictionary<string, XElement> RRTemplate = new Dictionary<string, XElement>
+        /// <summary>
+        /// Read a single string from the metadata blob.
+        /// </summary>
+        /// <remarks>
+        /// Consider returning false, printing error message.  But, need to 
+        /// be certain to abort the whole process at that point...
+        /// </remarks>
+        public bool TryReadDefData(Blob metadata, out string metaString, out uint metaOffset, ref int offset)
         {
-            {"Maf Mode Switch",
-                XElement.Parse(@"
-                <ecuparam id=""E124"" name=""Maf Mode Switch"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") },
+            metaString = null;
+            metaOffset = 0;
+            UInt32 cookie = 0;
+            List<byte> tempbytelist = new List<byte>();
+            metadata.TryGetUInt32(ref metaOffset, ref offset);
 
-            {"Volumetric Efficiency Direct", 
-                XElement.Parse(@"
-                <ecuparam id=""E124"" name=""Volumetric Efficiency Direct"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") },
 
-            {"Maf From Speed Density Direct",
-            XElement.Parse(@"
-                <ecuparam id=""E124"" name=""Maf From Speed Density Direct"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") },
+            while ((metadata.Content.Count > offset + 8) &&
+                metadata.TryGetUInt32(ref cookie, ref offset))
+            {
+                if ((cookie < 0x43210010 && cookie > 0x43210000) || cookie == 0x00090009)
+                {
+                    if (cookie != 0x00090009)
+                    {
+                        offset -= 4;
+                    }
 
-            {"Maf From Maf Sensor Direct",
-                XElement.Parse(@"
-                <ecuparam id=""E124"" name=""Maf Mode Switch"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") 
-            },
+                    char[] splitter = { '\0' };
+                    string tempstring = System.Text.Encoding.ASCII.GetString(tempbytelist.ToArray());
+                    metaString = tempstring.Split(splitter)[0];
+                    return true;
+                }
 
-            {"SD Atmospheric Compensation Direct",
-                XElement.Parse(@"
-                <ecuparam id=""E124"" name=""SD Atmospheric Compensation Direct"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") 
-            },
+                byte tempbyte = new byte();
+                offset -= 4;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!metadata.TryGetByte(ref tempbyte, ref offset))
+                    {
+                        return false;
+                    }
+                    tempbytelist.Add(tempbyte);
 
-            {"SD Blending Ratio Direct",
-            XElement.Parse(@"
-                <ecuparam id=""E124"" name=""SD Blending Ratio Direct"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") 
-            },
+                }
 
-            {"SD Maf From Blending Direct",
-                XElement.Parse(@"
-                <ecuparam id=""E124"" name=""SD Maf From Blending Direct"" desc="""">
-                    <ecu id="""">
-                        <address length=""""></address>
-                    </ecu>
-                    <conversions>
-                        <conversion units=""estimated AFR"" expr=""14.7/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""lambda"" expr=""1/(x*.0004882812)"" format=""0.00"" />
-                        <conversion units=""fuel-air equivalence ratio"" expr=""x*.0004882812"" format=""0.00"" />
-                    </conversions>
-                </ecuparam>
-                ") 
             }
-        };
 
-        private KeyValuePair<string,Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
-        {
-            XElement xel = XElement.Parse(@"
-                <ecu id="""">
-                    <address length=""""></address>
-                </ecu>
-            ");
-            
-            xel.Attribute("id").Value = this.parentMod.FinalEcuId;
-            xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
-            xel.Element("address").Attribute("length").Value = length.ToString();
-
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel));
+            tempbytelist.ToString();
+            return false;
         }
 
+        /// <summary>
+        /// Prints out an ECUFlash XML definition of the table
+        /// </summary>
+        public bool TryPrintEcuFlashDef()
+        {
+            if(this.definition.ExportXML(outputPath))
+                return true;
+            return false;
+        }
+        #endregion
+
+        #region RR XML Code
         /// <summary>
         /// Creates a table XEL from the template file, adding proper addresses
         /// </summary>
@@ -767,64 +688,42 @@ namespace RomModCore
             return new KeyValuePair<string, Table>();
         }
 
-        /// <summary>
-        /// Read a single string from the metadata blob.
-        /// </summary>
-        /// <remarks>
-        /// Consider returning false, printing error message.  But, need to 
-        /// be certain to abort the whole process at that point...
-        /// </remarks>
-        public bool TryReadDefData(Blob metadata, out string metaString, out uint metaOffset, ref int offset)
+        #endregion
+        #region ECUFlash XML Code
+        public static void MapToECUFlash(string filepath,string ident)
         {
-            metaString = null;
-            metaOffset = 0;
-            UInt32 cookie = 0;
-            List<byte> tempbytelist = new List<byte>();
-            metadata.TryGetUInt32(ref metaOffset, ref offset);
-            
-
-            while ((metadata.Content.Count > offset + 8) &&
-                metadata.TryGetUInt32(ref cookie, ref offset))
+            IdaMap idaMap = new IdaMap(filepath);
+            //TODO: add ability to select a new base or use multiple inheritance.
+            SharpTuner.availableDevices.DefDictionary["32BITBASE"].Populate();
+            Definition baseDef = SharpTuner.availableDevices.DefDictionary["32BITBASE"].DeepClone();
+            //loop through base def and search for table names in map
+            Dictionary<Table, string> foundRomTables = new Dictionary<Table, string>();
+            Dictionary<Table, string> foundRamTables = new Dictionary<Table, string>();
+            foreach (var romtable in baseDef.RomTableList)
             {
-                if ((cookie < 0x43210010 && cookie > 0x43210000) || cookie == 0x00090009)
+                foreach(var idan in idaMap.IdaCleanNames)
                 {
-                    if (cookie != 0x00090009)
+                    if (romtable.Key.EqualsIdaString(idan.Key))
                     {
-                        offset -= 4;
+                        foundRomTables.Add(romtable.Value, idan.Value);
+                        break;
                     }
-
-                    char[] splitter = { '\0' };
-                    string tempstring = System.Text.Encoding.ASCII.GetString(tempbytelist.ToArray());
-                    metaString = tempstring.Split(splitter)[0];
-                    return true;
                 }
-
-                byte tempbyte = new byte();
-                offset -= 4;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (!metadata.TryGetByte(ref tempbyte, ref offset))
-                    {
-                        return false;
-                    }
-                    tempbytelist.Add(tempbyte);
-
-                }
-
             }
-
-            tempbytelist.ToString();
-            return false;
+            foreach (var ramtable in baseDef.RamTableList)
+            {
+                foreach (var idan in idaMap.IdaCleanNames)
+                {
+                    if (ramtable.Key.EqualsIdaString(idan.Key))
+                    {
+                        foundRomTables.Add(ramtable.Value, idan.Value);
+                        break;
+                    }
+                }
+            }
         }
-
-        /// <summary>
-        /// Prints out an ECUFlash XML definition of the table
-        /// </summary>
-        public bool TryPrintDef(string calid)
-        {
-            this.definition.ExportXML(outputPath);
-            return true;
-        }
-
+        #endregion
     }
 }
+
+

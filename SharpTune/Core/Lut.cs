@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using RomModCore;
+using SharpTune.RomMod;
 
-namespace SharpTune.RomMod
+namespace SharpTune.Core
 {
     public class Lut
     {

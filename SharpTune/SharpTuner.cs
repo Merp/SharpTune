@@ -17,7 +17,7 @@ using System.Text;
 using System.IO.Ports;
 using System.IO;
 using SharpTuneCore;
-using RomModCore;
+using SharpTune.RomMod;
 using SharpTune.Properties;
 using System.Resources;
 using System.Collections;

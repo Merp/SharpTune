@@ -16,9 +16,9 @@ using System.Linq;
 using System.Windows.Forms;
 using ConsoleRedirection;
 using System.Diagnostics;
-using RomModCore;
-using ConvTools;
+using SharpTune.RomMod;
 using System.IO;
+using SharpTune.ConversionTools;
 
 namespace SharpTune
 {
@@ -66,11 +66,11 @@ namespace SharpTune
             }
             else if (args[0] == "convtools")
             {
-                ConvTools.ConvTool.Run(Utils.ShiftLeftTruncate(args));
+                ConvTool.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {
-                RomModCore.RomMod.Run(Utils.ShiftLeftTruncate(args));
+                SharpTune.RomMod.RomMod.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "xmltoidc")
             {
@@ -90,7 +90,7 @@ namespace SharpTune
         /// </summary>
         private static void PrintHelp()
         {
-            Console.WriteLine("RomPatch Version {0}.", RomModCore.RomMod.Version);
+            Console.WriteLine("RomPatch Version {0}.", SharpTune.RomMod.RomMod.Version);
             Console.WriteLine("Commands:");
             Console.WriteLine();
             Console.WriteLine("test       - determine whether a patch is suitable for a ROM");

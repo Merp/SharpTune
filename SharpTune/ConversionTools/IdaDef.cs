@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using SharpTune;
 
-namespace ConvTools
+namespace SharpTune.ConversionTools
 {
     public class IdaDef
     {
@@ -31,16 +31,6 @@ namespace ConvTools
             name = n;
             type = "default";
             priority = 1;
-        }
-
-        public string findName(List<IdaName> inames)
-        {
-            foreach (var idan in inames)
-            {
-                if(idan.name.EqualsCI(name))
-                    return idan.getOffset();
-            }
-            return null;
         }
     }
 }

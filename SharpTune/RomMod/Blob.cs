@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RomModCore
+namespace SharpTune.RomMod
 {
     /// <summary>
     /// Basically a list of bytes plus a start-address.

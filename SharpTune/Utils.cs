@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace SharpTune
 {
@@ -88,6 +89,60 @@ namespace SharpTune
             t.Start();
             t.Join();
             return state.result;
+        }
+
+        public static void SaveToFile(this XDocument xmlDoc, string outPath)
+        {
+            xmlDoc.Save(outPath, SaveOptions.None);
+            //FileStream fs = new FileStream(outPath,FileMode.OpenOrCreate);
+            //XmlWriterSettings settings = new XmlWriterSettings();
+            //settings.Encoding = Encoding.UTF8;
+            //settings.ConformanceLevel = ConformanceLevel.Document;
+            //settings.Indent = true;
+            //using (XmlWriter xw = XmlTextWriter.Create(fs, settings))
+            //{
+            //    xmlDoc.Save(xw);
+            //}
+        }
+
+        public static List<string> CleanIdaString(this string source)
+        {
+            bool endscore=false;
+            if(source[source.Length-1].ToString() == "_")
+                endscore=true;
+            if (source.Substring(0, 5).ContainsCI("Table"))
+                source = source.Substring(5, source.Length - 5);
+
+            source = Regex.Replace(source, "_", " ");
+            source = Regex.Replace(source, @"\(", "");
+            source = Regex.Replace(source, @"\)", "");
+            source = Regex.Replace(source, @"\.", "");
+            
+            if(endscore)
+                source += "_";
+            
+            return source.Split(' ').ToList();
+        }
+
+        public static bool EqualsIdaString(this string defname, List<string> idacleanname)
+        {
+            List<string> defcleannames = defname.CleanIdaString();
+            if (defcleannames.Count != idacleanname.Count)
+                return false;
+
+            bool found;
+            foreach (string idastr in idacleanname)
+            {
+                found = false;
+                foreach (string defstr in defcleannames)
+                {
+                    if (idastr.EqualsCI(defstr))
+                        found = true;
+                }
+                if (!found)
+                    return false;
+            }
+            return true;
         }
 
         public static bool Contains(this string source, string toCheck, StringComparison comp)

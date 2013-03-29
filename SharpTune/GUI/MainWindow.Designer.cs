@@ -42,6 +42,7 @@
             this.obfuscateCALIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mAPToRRLoggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,7 +63,7 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.mAPToRRLoggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mAPToECUFlashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -162,7 +163,8 @@
             this.obfuscateCALIDToolStripMenuItem,
             this.xMLToIDCToolStripMenuItem,
             this.iDAToHEWToolStripMenuItem,
-            this.mAPToRRLoggerToolStripMenuItem});
+            this.mAPToRRLoggerToolStripMenuItem,
+            this.mAPToECUFlashToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
             this.rOMToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.rOMToolStripMenuItem.Text = "Tools";
@@ -188,6 +190,13 @@
             this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
             this.iDAToHEWToolStripMenuItem.Click += new System.EventHandler(this.iDAToHEWToolStripMenuItem_Click);
+            // 
+            // mAPToRRLoggerToolStripMenuItem
+            // 
+            this.mAPToRRLoggerToolStripMenuItem.Name = "mAPToRRLoggerToolStripMenuItem";
+            this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to RR Logger";
+            this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -381,12 +390,12 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
             // 
-            // mAPToRRLoggerToolStripMenuItem
+            // mAPToECUFlashToolStripMenuItem
             // 
-            this.mAPToRRLoggerToolStripMenuItem.Name = "mAPToRRLoggerToolStripMenuItem";
-            this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to RR Logger";
-            this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
+            this.mAPToECUFlashToolStripMenuItem.Name = "mAPToECUFlashToolStripMenuItem";
+            this.mAPToECUFlashToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.mAPToECUFlashToolStripMenuItem.Text = "MAP to ECUFlash";
+            this.mAPToECUFlashToolStripMenuItem.Click += new System.EventHandler(this.mAPToECUFlashToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -452,6 +461,7 @@
         private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mAPToRRLoggerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mAPToECUFlashToolStripMenuItem;
     }
 }
 

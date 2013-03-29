@@ -6,14 +6,14 @@ using System.Xml.Linq;
 using SharpTune;
 using System.IO;
 
-namespace ConvTools
+namespace SharpTune.ConversionTools
 {
     public class Define
     {
         public string name { get; private set; }
         public string type { get; private set; }
         public Dictionary<int,IdaDef> idaDefs { get; private set; }
-        public string define {get; private set; }
+        public string offset {get; private set; }
 
         public Define(XElement xe)
         {
@@ -35,7 +35,7 @@ namespace ConvTools
         public Define(string n, string hexaddr)
         {
             name = n;
-            define = hexaddr;
+            offset = hexaddr;
         }
 
         public string printType()
@@ -45,24 +45,28 @@ namespace ConvTools
             return "(" + type + ")";
         }
 
-        public void find(List<IdaName> inames)
-        {
-            string tdef = null;
-            for (int i = 0; i < idaDefs.Count; i++)
-            {
-                tdef = idaDefs[i].findName(inames);
-                if(tdef != null) 
-                    break;
-            }
-            define = tdef;
-        }
-
         public void print(StreamWriter writer)
         {
-            if (define == null)
+            if (offset == null)
                 Console.WriteLine("COULD NOT FIND DEFINE: " + name);
             else
-                writer.WriteLine("#define " + name + " (" + this.printType() + "0x" + define + ")");
+                writer.WriteLine("#define " + name + " (" + this.printType() + "0x" + offset + ")");
+        }
+
+        public void findOffset(Dictionary<string, string> map)
+        {
+            foreach (var entry in map)
+            {
+                string tdef = null;
+                for (int i = 0; i < idaDefs.Count; i++)
+                {
+                    if (entry.Key.EqualsCI(idaDefs[i].name))
+                    {
+                        offset = entry.Value.ToString();
+                        return;
+                    }
+                }
+            }
         }
     }
 }

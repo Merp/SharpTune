@@ -71,7 +71,7 @@
     <Compile Include="ConversionTools\ConvTools.cs" />
     <Compile Include="ConversionTools\Define.cs" />
     <Compile Include="ConversionTools\IdaDef.cs" />
-    <Compile Include="ConversionTools\IdaName.cs" />
+    <Compile Include="ConversionTools\IdaMap.cs" />
     <Compile Include="ConversionTools\XMLtoIDC.cs" />
     <Compile Include="Core\Definition.cs" />
     <Compile Include="Core\DeviceImage.cs" />
@@ -144,8 +144,8 @@
     </Compile>
     <Compile Include="RomMod\Blob.cs" />
     <Compile Include="RomMod\BlobList.cs" />
-    <Compile Include="RomMod\Define.cs" />
-    <Compile Include="RomMod\Lut.cs" />
+    <Compile Include="RomMod\DefCreator.cs" />
+    <Compile Include="Core\Lut.cs" />
     <Compile Include="RomMod\Mod.cs" />
     <Compile Include="RomMod\Patch.cs" />
     <Compile Include="RomMod\RomMod.cs" />

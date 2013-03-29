@@ -22,7 +22,7 @@ using System.IO;
 using ConsoleRedirection;
 using DumpXML;
 using System.IO.Ports;
-using RomModCore;
+using SharpTune.RomMod;
 using System.Security.AccessControl;
 using System.Security.Permissions;
 using System.Threading;
@@ -521,7 +521,18 @@ namespace SharpTune
             {
                 string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)","Enter EcuId");
                 //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
-                Define.DefineRRLogEcu(ofd.FileName, ecuid);
+                DefCreator.DefineRRLogEcu(ofd.FileName, ecuid);
+            }
+        }
+
+        private void mAPToECUFlashToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ofd.Filter = "MAP Files (*.map)|*.map";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
+                //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
+                DefCreator.MapToECUFlash(ofd.FileName, ecuid);
             }
         }
     }
