@@ -43,6 +43,7 @@
             this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mAPToRRLoggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mAPToECUFlashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +64,6 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.mAPToECUFlashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -197,6 +197,14 @@
             this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to RR Logger";
             this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
+            // 
+            // mAPToECUFlashToolStripMenuItem
+            // 
+            this.mAPToECUFlashToolStripMenuItem.Enabled = false;
+            this.mAPToECUFlashToolStripMenuItem.Name = "mAPToECUFlashToolStripMenuItem";
+            this.mAPToECUFlashToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.mAPToECUFlashToolStripMenuItem.Text = "MAP to ECUFlash";
+            this.mAPToECUFlashToolStripMenuItem.Click += new System.EventHandler(this.mAPToECUFlashToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -389,13 +397,6 @@
             this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
-            // 
-            // mAPToECUFlashToolStripMenuItem
-            // 
-            this.mAPToECUFlashToolStripMenuItem.Name = "mAPToECUFlashToolStripMenuItem";
-            this.mAPToECUFlashToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.mAPToECUFlashToolStripMenuItem.Text = "MAP to ECUFlash";
-            this.mAPToECUFlashToolStripMenuItem.Click += new System.EventHandler(this.mAPToECUFlashToolStripMenuItem_Click);
             // 
             // MainWindow
             // 

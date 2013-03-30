@@ -194,6 +194,7 @@ namespace SharpTune.ConversionTools
                     writer.WriteLine("");
                     foreach (var def in category.Value)
                     {
+                        def.findOffset(idaMap.IdaNames);
                         def.print(writer);
                     }
                     writer.WriteLine("");

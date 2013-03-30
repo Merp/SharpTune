@@ -457,7 +457,17 @@ namespace SharpTune
 
         private void xMLToIDCToolStripMenuItem_Click(object sender, EventArgs e)
         {
-             if (SharpTuner.activeImage == null)
+            if (ForceOpenRom())
+            {
+                // Initialise and start worker thread
+                this.workerThread = new Thread(new ThreadStart(this.SpawnXMLToIDC));
+                this.workerThread.Start();
+            }
+        }
+
+        private bool ForceOpenRom()
+        {
+            if (SharpTuner.activeImage == null)
             {
                 MessageBox.Show("No ROM selected! Please open and select a ROM first!");
                 ofd.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
@@ -469,12 +479,10 @@ namespace SharpTune
                 {
                     MessageBox.Show("OPEN A ROM, DUMMY!");
                     this.Close();
-                    return;
+                    return false;
                 }
             }
-            // Initialise and start worker thread
-            this.workerThread = new Thread(new ThreadStart(this.SpawnXMLToIDC));
-            this.workerThread.Start();
+            return true;
         }
 
         private void SpawnXMLToIDC()
@@ -516,23 +524,29 @@ namespace SharpTune
 
         private void mAPToRRLoggerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ofd.Filter = "MAP Files (*.map)|*.map";
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)","Enter EcuId");
-                //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
-                DefCreator.DefineRRLogEcu(ofd.FileName, ecuid);
-            }
+            //if (ForceOpenRom()) //TODO IMPLEMENT LATER
+            //{
+                this.workerThread = new Thread(new ThreadStart(this.SpawnMapToDef));
+                this.workerThread.Start();
+            //}
+        }
+
+        private void SpawnMapToDef()
+        {
+            Application.Run(new MapToDef());
         }
 
         private void mAPToECUFlashToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ofd.Filter = "MAP Files (*.map)|*.map";
-            if (ofd.ShowDialog() == DialogResult.OK)
+            if (ForceOpenRom())
             {
-                string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
-                //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
-                DefCreator.MapToECUFlash(ofd.FileName, ecuid);
+                ofd.Filter = "MAP Files (*.map)|*.map";
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
+                    //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
+                    DefCreator.MapToECUFlash(ofd.FileName, ecuid);
+                }
             }
         }
     }

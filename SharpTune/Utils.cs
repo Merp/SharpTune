@@ -110,7 +110,7 @@ namespace SharpTune
             bool endscore=false;
             if(source[source.Length-1].ToString() == "_")
                 endscore=true;
-            if (source.Substring(0, 5).ContainsCI("Table"))
+            if (source.Length > 4 && source.Substring(0, 5).ContainsCI("Table"))
                 source = source.Substring(5, source.Length - 5);
 
             source = Regex.Replace(source, "_", " ");

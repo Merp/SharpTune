@@ -97,6 +97,12 @@
     <Compile Include="GUI\CalidUtility.Designer.cs">
       <DependentUpon>CalidUtility.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\MapToDef.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\MapToDef.Designer.cs">
+      <DependentUpon>MapToDef.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\SimpleCombo.cs" />
     <Compile Include="GUI\CustomGrid.cs">
       <SubType>Component</SubType>
@@ -182,6 +188,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\MapToDef.resx">
+      <DependentUpon>MapToDef.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SSMTestApp.resx">
       <DependentUpon>SSMTestApp.cs</DependentUpon>

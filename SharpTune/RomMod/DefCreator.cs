@@ -52,7 +52,7 @@ namespace SharpTune.RomMod
             this.parentMod = parent;
         }
 
-        #region Patch Reading Code
+        #region Patch ReadingCode
         /// <summary>
         /// Cycles through the template definition and replaces "0" addresses with addresses from the patch file.
         /// TODO: Replace template with inheritance from 32BITBASE Tables and a patch parameter that specifies the child template to use.
@@ -60,10 +60,10 @@ namespace SharpTune.RomMod
         /// <returns></returns>
         public bool TryReadDefs(String defPath)//TODO remove defpath and ref the static global
         {
-            
-            RomTableList = new Dictionary<string,Table>();
+
+            RomTableList = new Dictionary<string, Table>();
             RamTableList = new Dictionary<string, Table>();
-            
+
             List<Blob> blobs = parentMod.blobList.Blobs;
             Blob metadataBlob;
             if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
@@ -78,12 +78,12 @@ namespace SharpTune.RomMod
             this.baseDefinition.Populate(); // ReadXML((Utils.DirectorySearch(defPath, "32BITBASE")));
             this.inheritedDefinition = SharpTuner.availableDevices.DefDictionary[parentMod.InitialCalibrationId];// new Definition(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
             this.inheritedDefinition.Populate();// ReadXML(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
-            
+
             if (this.parentMod.buildConfig != null)
                 outputPath = defPath + "/MerpMod/" + this.parentMod.buildConfig + "/";
             outputPath += this.parentMod.ModIdent.ToString() + ".xml";
             XElement xci = inheritedDefinition.xRomId;
-            Dictionary<string,string> tci = this.inheritedDefinition.carInfo;
+            Dictionary<string, string> tci = this.inheritedDefinition.carInfo;
             tci["internalidaddress"] = this.parentMod.ModIdentAddress.ToString("X");
             tci["internalidstring"] = this.parentMod.ModIdent.ToString();
             tci["ecuid"] = this.parentMod.FinalEcuId.ToString();
@@ -91,214 +91,16 @@ namespace SharpTune.RomMod
             string tincl = this.parentMod.InitialCalibrationId.ToString();
             //TODO: First create short definition, then add tables 
             definition = new Definition(outputPath, tci, tincl);
-  
+
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
             if (!TryCleanDef()) return false;
 
             //prompt to select logger type
-            NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.buildConfig + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(),parentMod.FinalEcuId.ToString());
+            NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.buildConfig + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(), parentMod.FinalEcuId.ToString());
             return true;
         }
 
-        public static void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
-        {
-            XDocument xmlDoc = SelectGetRRLogDef();
-            InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
-            AddRRLogDefBase(ref xmlDoc, outPath, template);
-            PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
-            xmlDoc.SaveToFile(outPath);
-        }
-
-        public static void DefineRRLogEcu(string mapFile, string ident)
-        {
-            IdaMap im = new IdaMap(mapFile);
-            Dictionary<string, string> addMap = new Dictionary<string, string>();
-            Dictionary<string, string> defMap = ReadRRLogDefExtTables();
-            foreach (KeyValuePair<string, string> def in im.IdaNames)
-            {
-                foreach (KeyValuePair<string, string> table in defMap)
-                {
-                    if (def.Key.ContainsCI("Ext_"))
-                    {
-                        string[] a = Regex.Split(def.Key, "Ext_E");
-                        string[] b = Regex.Split(table.Key, "E");
-                        if (a.Length == 2 && b.Length == 2 && a[1].EqualsCI(b[1]))
-                        {
-                            addMap.Add(table.Value, def.Value.Replace("FFFF", "FF"));
-                            break;
-                        }
-                    }
-                }
-            }
-            string ld = SelectRRLogDef();
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
-            PopulateRRLogDefTables(ref xmlDoc, SharpTuner.RRLoggerDefPath + ld, addMap, ident);
-            //xmlDoc.SaveToFile(SharpTuner.RRLoggerDefPath + ld);
-        }
-
-        private static Dictionary<string, string> ReadRRLogDefExtTables()
-        {
-            Dictionary<string, string> ls = new Dictionary<string, string>();
-            string ld = SelectRRLogDef();
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
-            string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
-            IEnumerable<XElement> xbase = xmlDoc.XPathSelectElements(bxp);
-
-            foreach (XElement xb in xbase)
-            {
-                ls.Add(xb.Attribute("id").Value.ToString(), xb.Attribute("name").Value.ToString());
-            }
-            return ls;
-        }
-
-        private static List<string> GetRRLoggerDefs()
-        {
-            List<string> loggerdefs = new List<string>();
-            List<string> remlist = new List<string>();
-
-            loggerdefs.AddRange(Directory.GetFiles(SharpTuner.RRLoggerDefPath));
-            loggerdefs.FilterOnly(".xml");
-
-            for (int i = 0; i < loggerdefs.Count; i++)
-            {
-                loggerdefs[i] = Path.GetFileName(loggerdefs[i]);
-            }
-            loggerdefs.Sort();
-            loggerdefs.Reverse();
-            return loggerdefs;
-        }
-
-        private static string SelectRRLogDef()
-        {
-            return SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetRRLoggerDefs());
-        }
-
-        private static XDocument SelectGetRRLogDef()
-        {
-            string ld = SelectRRLogDef();
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
-            XDocument xmlDoc2 = new XDocument(xmlDoc);
-            return xmlDoc2;
-        }
-
-        private static void AddRRLogDefBase(ref XDocument xmlDoc, string outPath, string templatePath)
-        {
-            XDocument xmlBase = XDocument.Load(templatePath);//, LoadOptions.PreserveWhitespace);
-            string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
-            IEnumerable<XElement> xbase = xmlBase.XPathSelectElements(bxp);
-
-            foreach (XElement xb in xbase)
-            {
-                xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
-            }
-            xmlDoc.SaveToFile(outPath);
-        }
-
-        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, Table> ramTableList, string ident)
-        {
-            foreach (KeyValuePair<string, Table> table in ramTableList)
-            {
-                string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
-                XElement exp = xmlDoc.XPathSelectElement(xp);
-
-                string cxp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']/conversions";
-                XElement cexp = xmlDoc.XPathSelectElement(cxp);
-
-
-                if (exp != null)
-                {
-                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
-                    XElement check = exp.XPathSelectElement(ch);
-                    if (check != null) check.Remove();
-                    cexp.AddBeforeSelf(table.Value.xml);
-                }
-            }
-            xmlDoc.SaveToFile(outPath);
-        }
-
-        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, string> ramTableList, string ident)
-        {
-            foreach (KeyValuePair<string, string> table in ramTableList)
-            {
-                string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
-                XElement exp = xmlDoc.XPathSelectElement(xp);
-
-                string cxp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']/conversions";
-                XElement cexp = xmlDoc.XPathSelectElement(cxp);
-
-                if (exp != null)
-                {
-                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
-                    XElement check = exp.XPathSelectElement(ch);
-                    XElement ad;
-                    if (check == null)
-                        ad = new XElement(exp.Descendants("ecu").First());
-                    else
-                        ad = new XElement(check);
-                    ad.Attribute("id").Value = ident;
-                    ad.Descendants().First().Value = "0x" + table.Value;
-                    cexp.AddBeforeSelf(ad);
-
-                    //if(exp.Descendants("ecu") != null)
-                    //{
-                    //    if (exp.Descendants("ecu").First().Descendants("address") != null)
-                    //        len = exp.Descendants("ecu").First().Descendants("address").First().Attribute("length").Value.ToString();
-                    //}
-                    //exp.AddFirst("0x" + table.Value);
-                }
-            }
-            xmlDoc.SaveToFile(outPath);
-        }
-
-        private static void InheritRRLogger(ref XDocument xmlDoc, string outPath, string inheritIdent, string newIdent)
-        {
-            //inherit from a base file
-            //todo add list of exemptions to skip???
-            string paramxp = "./logger/protocols/protocol/ecuparams";
-            XElement pexp = xmlDoc.XPathSelectElement(paramxp);
-            try
-            {
-                foreach (XElement xel in pexp.Elements())
-                {
-                    if (xel.Elements("ecu") != null)
-                    {
-
-                        foreach (XElement xecu in xel.Elements("ecu"))
-                        {
-                            string id = xecu.Attribute("id").Value.ToString();
-                            if (id == inheritIdent)//parentMod.InitialEcuId.ToString())
-                            {
-                                //found hit, copy the ecu xel
-                                XElement newxecu = new XElement(xecu);
-                                newxecu.Attribute("id").SetValue(newIdent);///parentMod.FinalEcuId.ToString());
-                                xel.AddFirst(newxecu);
-                            }
-                        }
-                    }
-                }
-                xmlDoc.SaveToFile(outPath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
-        {
-            XElement xel = XElement.Parse(@"
-                <ecu id="""">
-                    <address length=""""></address>
-                </ecu>
-            ");
-
-            xel.Attribute("id").Value = this.parentMod.FinalEcuId;
-            xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
-            xel.Element("address").Attribute("length").Value = length.ToString();
-
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel));
-        }
 
         private bool TryCleanDef()
         {
@@ -503,13 +305,11 @@ namespace SharpTune.RomMod
         /// </summary>
         public bool TryPrintEcuFlashDef()
         {
-            if(this.definition.ExportXML(outputPath))
+            if (this.definition.ExportXML(outputPath))
                 return true;
             return false;
         }
-        #endregion
 
-        #region RR XML Code
         /// <summary>
         /// Creates a table XEL from the template file, adding proper addresses
         /// </summary>
@@ -524,8 +324,8 @@ namespace SharpTune.RomMod
             {
                 if (table.Key == name)
                 {
-                    KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name, table.Value);
-                    temptable.Value.xml.SetAttributeValue("address",offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+                    KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
+                    temptable.Value.xml.SetAttributeValue("address", offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
                     IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
                     List<String> remattr = new List<String>();
                     foreach (XAttribute attr in tempattr)
@@ -589,13 +389,13 @@ namespace SharpTune.RomMod
                 {
                     if (table.Key == name)
                     {
-                        KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name,table.Value);
+                        KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
                         //TABLE WAS FOUND!
                         return temptable;
                     }
                 }
             }
-            return new KeyValuePair<string,Table>();
+            return new KeyValuePair<string, Table>();
         }
 
         /// <summary>
@@ -604,15 +404,15 @@ namespace SharpTune.RomMod
         /// <param name="name"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        private KeyValuePair<string,Table> CreateTable(string name, Lut3D lut) //int offset)
-        { 
-            Dictionary<string,Table> list = this.baseDefinition.RomTableList;
+        private KeyValuePair<string, Table> CreateTable(string name, Lut3D lut) //int offset)
+        {
+            Dictionary<string, Table> list = this.baseDefinition.RomTableList;
 
-            foreach (KeyValuePair<string,Table> table in this.baseDefinition.RomTableList)
+            foreach (KeyValuePair<string, Table> table in this.baseDefinition.RomTableList)
             {
                 if (table.Key == name)
                 {
-                    KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name, table.Value);
+                    KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
                     temptable.Value.xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
                     IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
                     List<String> remattr = new List<String>();
@@ -629,12 +429,12 @@ namespace SharpTune.RomMod
                     }
 
                     List<String> eleremlist = new List<String>();
-                    
+
                     foreach (XElement ele in temptable.Value.xml.Elements())
                     {
                         IEnumerable<XAttribute> childtempattr = ele.Attributes();
                         List<String> childremattr = new List<String>();
-                        
+
                         if (ele.Name.ToString() != "table")
                         {
                             eleremlist.Add(ele.Name.ToString());
@@ -679,7 +479,7 @@ namespace SharpTune.RomMod
                 {
                     if (table.Key == name)
                     {
-                        KeyValuePair<string, Table> temptable = new KeyValuePair<string,Table>(name, table.Value);
+                        KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
                         //TABLE WAS FOUND!
                         return temptable;
                     }
@@ -689,6 +489,265 @@ namespace SharpTune.RomMod
         }
 
         #endregion
+
+        #region RR XML Code
+        
+        public static void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
+        {
+            XDocument xmlDoc = SelectGetRRLogDef();
+            InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
+            AddRRLogDefBase(ref xmlDoc, outPath, template);
+            PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
+            xmlDoc.SaveToFile(outPath);
+        }
+
+        public static void DefineRRLogEcuFromMap(string mapFile, string ident)
+        {
+            IdaMap im = new IdaMap(mapFile);
+            DefineRRLogEcu(im.IdaNames, ident);
+        }
+
+        //TODO: Maybe this belongs in IdaMap Class?
+        public static void DefineRRLogEcuFromText(string text, string ident)
+        {
+            Dictionary<string, string> inputMap = new Dictionary<string, string>();
+            using (StringReader reader = new StringReader(text))
+            {
+                string line = string.Empty;
+                do
+                {
+                    string[] l;
+                    line = reader.ReadLine();
+                    int i = 1;
+                    if (line != null)
+                    {
+                       l = line.Split(' ');
+                       string addr;
+                        do{
+                            addr = l[l.Length - i];
+                            i++;
+                        }while(addr.Length < 8 && i < l.Length);
+                        if (addr.Length > 7)
+                            inputMap.Add(l[0], addr);
+                        else
+                            Console.WriteLine("error parsing line: " + line + Environment.NewLine + "Try using a map file");
+                    }
+
+                } while (line != null);
+            }
+            DefineRRLogEcu(inputMap, ident);
+        }
+
+        private static void DefineRRLogEcu(Dictionary<string, string> inputMap, string ident)
+        {
+            foreach (var defFile in GetRRLoggerDefs())
+            {
+                Dictionary<string, string> addMap = new Dictionary<string, string>();
+                string defPath = SharpTuner.RRLoggerDefPath + defFile;
+                Dictionary<string, string> defMap = ReadRRLogDefExtTables(defPath);
+                foreach (KeyValuePair<string, string> def in inputMap)
+                {
+                    foreach (KeyValuePair<string, string> table in defMap)
+                    {
+                        if (def.Key.ContainsCI("Ext_"))
+                        {
+                            string[] a = Regex.Split(def.Key, "Ext_E");
+                            string[] b = Regex.Split(table.Key, "E");
+                            if (a.Length == 2 && b.Length == 2 && a[1].EqualsCI(b[1]))
+                            {
+                                try
+                                {
+                                    addMap.Add(table.Key, def.Value.Replace("FFFF", "FF"));
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.Message);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+                XDocument xmlDoc = XDocument.Load(defPath);//, LoadOptions.PreserveWhitespace);
+                PopulateRRLogDefTables(ref xmlDoc, defPath, addMap, ident);
+            }
+        }
+
+        private static Dictionary<string, string> ReadRRLogDefExtTables()
+        {
+            string ld = SelectRRLogDef();
+            return ReadRRLogDefExtTables(ld);
+        }
+
+        private static Dictionary<string,string> ReadRRLogDefExtTables(string ld)
+        {
+            Dictionary<string, string> ls = new Dictionary<string, string>();
+            XDocument xmlDoc = XDocument.Load(ld);//, LoadOptions.PreserveWhitespace);
+            string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
+            IEnumerable<XElement> xbase = xmlDoc.XPathSelectElements(bxp);
+
+            foreach (XElement xb in xbase)
+            {
+                ls.Add(xb.Attribute("id").Value.ToString(), xb.Attribute("name").Value.ToString());
+            }
+            return ls;
+        }
+
+        private static List<string> GetRRLoggerDefs()
+        {
+            List<string> loggerdefs = new List<string>();
+            List<string> remlist = new List<string>();
+
+            loggerdefs.AddRange(Directory.GetFiles(SharpTuner.RRLoggerDefPath));
+            loggerdefs.FilterOnly(".xml");
+
+            for (int i = 0; i < loggerdefs.Count; i++)
+            {
+                loggerdefs[i] = Path.GetFileName(loggerdefs[i]);
+            }
+            loggerdefs.Sort();
+            loggerdefs.Reverse();
+            return loggerdefs;
+        }
+
+        private static string SelectRRLogDef()
+        {
+            return SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetRRLoggerDefs());
+        }
+
+        private static XDocument SelectGetRRLogDef()
+        {
+            string ld = SelectRRLogDef();
+            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
+            XDocument xmlDoc2 = new XDocument(xmlDoc);
+            return xmlDoc2;
+        }
+
+        private static void AddRRLogDefBase(ref XDocument xmlDoc, string outPath, string templatePath)
+        {
+            XDocument xmlBase = XDocument.Load(templatePath);//, LoadOptions.PreserveWhitespace);
+            string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
+            IEnumerable<XElement> xbase = xmlBase.XPathSelectElements(bxp);
+
+            foreach (XElement xb in xbase)
+            {
+                xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
+            }
+            xmlDoc.SaveToFile(outPath);
+        }
+
+        //TODO: USE table ID instead
+        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, Table> ramTableList, string ident)
+        {
+            foreach (KeyValuePair<string, Table> table in ramTableList)
+            {
+                string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
+                XElement exp = xmlDoc.XPathSelectElement(xp);
+
+                string cxp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']/conversions";
+                XElement cexp = xmlDoc.XPathSelectElement(cxp);
+
+
+                if (exp != null)
+                {
+                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
+                    XElement check = exp.XPathSelectElement(ch);
+                    if (check != null) check.Remove();
+                    cexp.AddBeforeSelf(table.Value.xml);
+                }
+            }
+            xmlDoc.SaveToFile(outPath);
+        }
+
+        //TODO add check for existing def!!
+        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, string> ramTableList, string ident)
+        {
+            foreach (KeyValuePair<string, string> table in ramTableList)
+            {
+                string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@id='" + table.Key.ToString() + "']";
+                XElement exp = xmlDoc.XPathSelectElement(xp);
+
+                string cxp = "./logger/protocols/protocol/ecuparams/ecuparam[@id='" + table.Key.ToString() + "']/conversions";
+                XElement cexp = xmlDoc.XPathSelectElement(cxp);
+
+                if (exp != null)
+                {
+                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
+                    XElement check = exp.XPathSelectElement(ch);
+                    XElement ad;
+                    if (check == null)
+                        ad = new XElement(exp.Descendants("ecu").First());
+                    else
+                    {
+                        ad = new XElement(check);
+                        check.Remove();
+                    }
+                    ad.Attribute("id").Value = ident;
+                    ad.Descendants().First().Value = "0x" + table.Value;
+                    cexp.AddBeforeSelf(ad);
+
+                    //if(exp.Descendants("ecu") != null)
+                    //{
+                    //    if (exp.Descendants("ecu").First().Descendants("address") != null)
+                    //        len = exp.Descendants("ecu").First().Descendants("address").First().Attribute("length").Value.ToString();
+                    //}
+                    //exp.AddFirst("0x" + table.Value);
+                }
+            }
+            xmlDoc.SaveToFile(outPath);
+        }
+
+        private static void InheritRRLogger(ref XDocument xmlDoc, string outPath, string inheritIdent, string newIdent)
+        {
+            //inherit from a base file
+            //todo add list of exemptions to skip???
+            string paramxp = "./logger/protocols/protocol/ecuparams";
+            XElement pexp = xmlDoc.XPathSelectElement(paramxp);
+            try
+            {
+                foreach (XElement xel in pexp.Elements())
+                {
+                    if (xel.Elements("ecu") != null)
+                    {
+
+                        foreach (XElement xecu in xel.Elements("ecu"))
+                        {
+                            string id = xecu.Attribute("id").Value.ToString();
+                            if (id == inheritIdent)//parentMod.InitialEcuId.ToString())
+                            {
+                                //found hit, copy the ecu xel
+                                XElement newxecu = new XElement(xecu);
+                                newxecu.Attribute("id").SetValue(newIdent);///parentMod.FinalEcuId.ToString());
+                                xel.AddFirst(newxecu);
+                            }
+                        }
+                    }
+                }
+                xmlDoc.SaveToFile(outPath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
+        {
+            XElement xel = XElement.Parse(@"
+                <ecu id="""">
+                    <address length=""""></address>
+                </ecu>
+            ");
+
+            xel.Attribute("id").Value = this.parentMod.FinalEcuId;
+            xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
+            xel.Element("address").Attribute("length").Value = length.ToString();
+
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel));
+        }
+        #endregion
+
         #region ECUFlash XML Code
         public static void MapToECUFlash(string filepath,string ident)
         {
