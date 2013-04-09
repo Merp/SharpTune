@@ -22,24 +22,26 @@ namespace SharpTune.GUI
         private void buttonMap_Click(object sender, EventArgs e)
         {
             string ecuid;
-            if (SharpTuner.activeImage != null && SharpTuner.activeImage.Definition.carInfo.ContainsKey("ecuid"))
-                ecuid = SharpTuner.activeImage.Definition.carInfo["ecuid"].ToString();
+            if (SharpTuner.ActiveImage != null && SharpTuner.ActiveImage.Definition.CarInfo.ContainsKey("ecuid"))
+                ecuid = SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString();
             else
                 ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
             ofd.Filter = "MAP Files (*.map)|*.map";
-            if (ofd.ShowDialog() == DialogResult.OK)
+            DialogResult res = Utils.STAShowOFDialog(ofd);
+            if (res == DialogResult.OK)
             {
-                try
-                {
-                    DefCreator.DefineRRLogEcuFromMap(ofd.FileName, ecuid);
+                //try
+                //{
+                    SharpTuner.ActiveImage.Definition.ImportMapFile(ofd.FileName,SharpTuner.ActiveImage);//TODO: clean up creation of XML whitespace sucks ass.
+                    SharpTuner.ActiveImage.Definition.ExportXML();
+                    ModDefinition.DefineRRLogEcuFromMap(ofd.FileName, ecuid);//TODO: import RR stuff to definnition class and deprecate this??
                     MessageBox.Show("Success!");
                     this.Close();
                     return;
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                }
+                //catch (Exception err)
+               // {
+               //     MessageBox.Show(err.Message);
+               // }
             }
             this.Close();
             return;
@@ -53,13 +55,13 @@ namespace SharpTune.GUI
         private void buttonText_Click(object sender, EventArgs e)
         {
             string ecuid;
-          if (SharpTuner.activeImage != null && SharpTuner.activeImage.Definition.carInfo.ContainsKey("ecuid"))
-                ecuid = SharpTuner.activeImage.Definition.carInfo["ecuid"].ToString();
+          if (SharpTuner.ActiveImage != null && SharpTuner.ActiveImage.Definition.CarInfo.ContainsKey("ecuid"))
+                ecuid = SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString();
             else
                 ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
             try
             {
-                DefCreator.DefineRRLogEcuFromText(textBox1.Text, ecuid);
+                ModDefinition.DefineRRLogEcuFromText(textBox1.Text, ecuid);
                 MessageBox.Show("Success!");
                 this.Close();
                 return;

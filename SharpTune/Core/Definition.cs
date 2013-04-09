@@ -23,33 +23,38 @@ using System.Linq;
 using SharpTune;
 using SharpTune.Properties;
 using SharpTune.Core;
+using SharpTune.ConversionTools;
+using SharpTune.RomMod;
+using System.Runtime.Serialization;
 
 namespace SharpTuneCore
 {
     
-    public interface IDeepCloneable
-    {
-        object DeepClone();
-    }
-    public interface IDeepCloneable<T> : IDeepCloneable
-    {
-        T DeepClone();
-    }
-
     /// <summary>
     /// Represents an individual device definition
     /// Includes ALL scalings from base to top
     /// </summary>
-    public class Definition : IDeepCloneable
+    /// 
+    [Serializable]
+    public class Definition
     {
         public bool isBase { get; private set; }
         public string internalId { get; set; }
         public int internalIdAddress { get; private set; }
+
+        private Dictionary<string,string> carInfo;
         /// <summary>
         /// Contains basic info for the definition
         /// Make, Model, etc
         /// </summary>
-        public Dictionary<string, string> carInfo { get; private set; }
+        public Dictionary<string, string> CarInfo {
+            get { return carInfo; } 
+            private set{
+                    carInfo = value;
+                    CreateXRomId();
+           }
+        }
+
         /// <summary>
         /// Contains the file path to the XML definition (top)
         /// </summary>
@@ -71,7 +76,7 @@ namespace SharpTuneCore
 
         public Dictionary<string, Scaling> ScalingList { get; private set; }
 
-        public List<string> inheritList { get; private set; }
+        public List<Definition> inheritList { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -79,11 +84,11 @@ namespace SharpTuneCore
         public Definition()
         {
             isBase = false;
-            carInfo = new Dictionary<string, string>();
+            CarInfo = new Dictionary<string, string>();
             RomTableList = new Dictionary<string, Table>();
             RamTableList = new Dictionary<string, Table>();
             ScalingList = new Dictionary<string,Scaling>();
-            inheritList = new List<string>();
+            inheritList = new List<Definition>();
             include = null;
         }
 
@@ -112,50 +117,80 @@ namespace SharpTuneCore
         {
             //TODO error handling
             include = incl;
-            carInfo = new Dictionary<string,string>(carinfo);
+            CarInfo = new Dictionary<string,string>(carinfo);
             internalId = carinfo["internalidstring"];
             internalIdAddress = int.Parse(carinfo["internalidaddress"], System.Globalization.NumberStyles.AllowHexSpecifier);
             defPath = filepath;
-            createXRomId();
             Inherit();
         }
 
-        public Definition DeepClone()
+        /// <summary>
+        /// Constructor used to create new definitions using existing data
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="carinfo"></param>
+        /// <param name="include"></param>
+        /// <param name="xromt"></param>
+        /// <param name="xramt"></param>
+        public Definition(string filepath, Mod mod) : this()
         {
-            Definition clone = new Definition();
-            clone.isBase = isBase;
-            clone.internalId = internalId;
-            clone.internalIdAddress = internalIdAddress;
-            clone.carInfo = new Dictionary<string,string>(carInfo);
-            clone.defPath = defPath;
-            clone.include = include;
-            clone.xRomId = new XElement(xRomId);
-            clone.RomTableList = new Dictionary<string,Table>(RomTableList);
-            clone.RamTableList = new Dictionary<string,Table>(RamTableList);
-            clone.ScalingList = new Dictionary<string,Scaling>(ScalingList);
-            clone.inheritList = new List<string>(inheritList);
-            return clone;
+            this.include = mod.InitialCalibrationId;
+            defPath = filepath;
+            
+            CloneRomIdFrom(include,true);
+
+            CarInfo["internalidaddress"] = mod.ModIdentAddress.ToString("X");
+            CarInfo["internalidstring"] = mod.ModIdent.ToString();
+            CarInfo["ecuid"] = mod.FinalEcuId.ToString();
+            CarInfo["xmlid"] = mod.ModIdent.ToString();
+            Inherit();
+
+            //TODO: ADD THE TABLES FROM MOD
+            //mod.modDef.
+            foreach (var rt in mod.modDef.RomLutList)
+            {
+                //do something with each lut.
+                ExposeTable(rt.Name, rt); //TODO: Fix this redundancy?
+            }
         }
 
-        object IDeepCloneable.DeepClone()   
+        /// <summary>
+        /// Clones an existing definitions romid
+        /// TODO: make the unknown rom handler use this.
+        /// </summary>
+        /// <param name="inh"></param>
+        /// device identifier to clone from
+        /// <param name="incl"></param>
+        /// include the device (true) or include its base (false)
+        /// <returns></returns>
+        public bool CloneRomIdFrom(string inh, bool incl)
         {
-            return DeepClone();
+            if(!SharpTuner.AvailableDevices.DefDictionary.ContainsKey(inh))
+                return false;
+            Definition d = SharpTuner.AvailableDevices.DefDictionary[inh];
+            CarInfo = new Dictionary<string, string>(d.CarInfo);
+            if (incl)
+                include = d.internalId;
+            else
+                include = d.include;
+            return true;
         }
+
 
         public void ParseRomId()
         {
-            carInfo.Clear();
+            CarInfo.Clear();
             foreach (XElement element in xRomId.Elements())
             {
-                carInfo.Add(element.Name.ToString(), element.Value.ToString());
+                CarInfo.Add(element.Name.ToString(), element.Value.ToString());
             }
-            if (carInfo.ContainsKey("internalidstring"))
-                internalId = carInfo["internalidstring"];
-            if (carInfo.ContainsKey("internalidaddress"))
-                internalIdAddress = int.Parse(carInfo["internalidaddress"], System.Globalization.NumberStyles.AllowHexSpecifier);
-            if (carInfo.ContainsKey("xmlid"))
-                if (carInfo["xmlid"].Contains("BASE"))
-                    internalId = carInfo["xmlid"].ToString();
+            if (CarInfo.ContainsKey("internalidstring"))
+                internalId = CarInfo["internalidstring"];
+            if (CarInfo.ContainsKey("internalidaddress"))
+                internalIdAddress = int.Parse(CarInfo["internalidaddress"], System.Globalization.NumberStyles.AllowHexSpecifier);
+            if (CarInfo.ContainsKey("xmlid"))
+                if (CarInfo["xmlid"].Contains("BASE"))
+                    internalId = CarInfo["xmlid"].ToString();
         }
 
         /// <summary>
@@ -181,21 +216,25 @@ namespace SharpTuneCore
             if (internalId != null && defPath != null)
             {
                 Clear();
-                if (ReadXML(defPath) && include != null)
-                {
+                if (include != null)
                     Inherit();
+                if (ReadXML(defPath) && include != null)
                     return true;
-                }
             }
             return false;
         }
 
         private void Inherit()
         {
-            SharpTuner.availableDevices.LoadFullDef(include);
-            if(SharpTuner.availableDevices.DefDictionary[include].inheritList.Count > 0)
-                inheritList.AddRange(SharpTuner.availableDevices.getDef(include).inheritList);
-            inheritList.Add(include);
+            Dictionary<string, Definition> dd = SharpTuner.AvailableDevices.DefDictionary;
+            if (dd.ContainsKey(include) && dd[include].internalId != null)
+                dd[include].Populate();
+
+            if(SharpTuner.AvailableDevices.DefDictionary[include].inheritList.Count > 0)
+                inheritList.AddRange(SharpTuner.AvailableDevices.getDef(include).inheritList);
+
+            inheritList.Add(SharpTuner.AvailableDevices.DefDictionary[include]);
+            inheritList.Reverse();
         }
 
         private void Clear()
@@ -229,7 +268,7 @@ namespace SharpTuneCore
                     //shouldn't happen!
                     //table already exists add data to existing table
                     //this.RomTableList[tablename].Merge(table);'
-                    Console.WriteLine("DERP");
+                    Console.WriteLine("Warning, duplicate table: " + tablename + ". Please check the definition!!");
                     //Console.WriteLine("table " + tablename + " already exists, merging tables");
                 }
                 else
@@ -238,7 +277,7 @@ namespace SharpTuneCore
                 //else if (!internalId.ContainsCI("base"))
                 //{/
                     //table does not exist call constructor
-                    this.RomTableList.Add(tablename, TableFactory.CreateTable(table));
+                    this.RomTableList.Add(tablename, TableFactory.CreateTable(table,this));
                     //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
                 }
             }
@@ -262,7 +301,7 @@ namespace SharpTuneCore
                 //else if (!internalId.ContainsCI("base"))
                 //{
                     //table does not exist call constructor
-                    this.RamTableList.Add(tablename, TableFactory.CreateTable(table));
+                    this.RamTableList.Add(tablename, TableFactory.CreateTable(table,this));
                 //}
             }
             //Read Scalings
@@ -482,6 +521,11 @@ namespace SharpTuneCore
             }
         }
 
+        public bool ExportXML()
+        {
+            return ExportXML(this.defPath);
+        }
+
         public bool ExportXML(string filepath)
         {
             try
@@ -498,7 +542,7 @@ namespace SharpTuneCore
                     //TODO THIS IS REDUNDANT
                     writer.WriteStartElement("rom");
                     writer.WriteStartElement("romid");
-                    foreach (KeyValuePair<string, string> kvp in this.carInfo)
+                    foreach (KeyValuePair<string, string> kvp in this.CarInfo)
                     {
                         writer.WriteElementString(kvp.Key.ToString(), kvp.Value.ToString());
                     }
@@ -536,24 +580,24 @@ namespace SharpTuneCore
             }
         }
 
-        public void createXRomId()
+        public void CreateXRomId()
         {
             XElement x = new XElement("romid");
-            foreach (KeyValuePair<string, string> kvp in this.carInfo)
+            foreach (KeyValuePair<string, string> kvp in this.CarInfo)
             {
                 x.Add(new XElement(kvp.Key.ToString(), kvp.Value.ToString()));
             }
             xRomId = x;
         }
 
-        private XElement GetTableBase(string name)
+        private Table GetBaseTable(string name)
         {
-            foreach (string id in this.inheritList)
+            foreach (Definition d in this.inheritList)
             {
-                if (SharpTuner.availableDevices.DefDictionary[id].RomTableList.ContainsKey(name))
-                    return SharpTuner.availableDevices.DefDictionary[id].RomTableList[name].xml;
-                else if (SharpTuner.availableDevices.DefDictionary[id].RamTableList.ContainsKey(name))
-                    return SharpTuner.availableDevices.DefDictionary[id].RamTableList[name].xml;
+                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetBaseTables().ContainsKey(name))
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetBaseTables()[name];
+                else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList.ContainsKey(name))//TODO FIX RAMTABLES
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList[name];
             }
             Console.WriteLine("Warning: base table for " + name + "not found");
             return null;
@@ -561,151 +605,156 @@ namespace SharpTuneCore
 
         public void ExposeTable(string name, Lut lut)
         {
-            //TODO: Change from XEL to objects, then produce XEL
-            XElement bt = GetTableBase(name);
-            if (bt == null) return;
-            bt.SetAttributeValue("address", lut.dataAddress.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
-            IEnumerable<XAttribute> tempattr = bt.Attributes();
-            List<String> remattr = new List<String>();
-            foreach (XAttribute attr in tempattr)
-            {
-                if (attr.Name != "address" && attr.Name != "name")
-                {
-                    remattr.Add(attr.Name.ToString());
-                }
-            }
-            foreach (String rem in remattr)
-            {
-                bt.Attribute(rem).Remove();
-            }
-
-            List<String> eleremlist = new List<String>();
-
-            foreach (XElement ele in bt.Elements())
-            {
-                IEnumerable<XAttribute> childtempattr = ele.Attributes();
-                List<String> childremattr = new List<String>();
-
-                if (ele.Name.ToString() != "table")
-                {
-                    eleremlist.Add(ele.Name.ToString());
-                    continue;
-                }
-                if (ele.Attribute("type").Value.ContainsCI("static"))
-                {
-                    eleremlist.Add(ele.Name.ToString());
-                }
-                else if (ele.Attribute("type").Value.ContainsCI("x axis"))
-                {
-                    ele.Attribute("name").Value = "X";
-                }
-                else if (ele.Attribute("type").Value.ContainsCI("y axis"))
-                {
-                    ele.Attribute("name").Value = "Y";
-                }
-                foreach (XAttribute attr in childtempattr)
-                {
-                    if (attr.Name != "address" && attr.Name != "name")
-                    {
-                        childremattr.Add(attr.Name.ToString());
-                    }
-                }
-                foreach (String rem in childremattr)
-                {
-                    ele.Attribute(rem).Remove();
-                }
-            }
-            foreach (String rem in eleremlist)
-            {
-                bt.Element(rem).Remove();
-            }
+            Table baseTable = GetBaseTable(name);
+            Table childTable = baseTable.CreateChild(lut,this);
+            //TODO: HANDLE STATIC AXES!!
             if (lut.dataAddress < 0x400000)
             {
-                RomTableList.Add(name, TableFactory.CreateTable(bt));
+                //TODO: HANDLE UPDATES TO EXISTING TABLES!!??
+                RomTableList.Add(childTable.name,childTable);
             }
             else
             {
-                RamTableList.Add(name, TableFactory.CreateTable(bt));
+                RamTableList.Add(childTable.name,childTable);
             }
+            
+
+            //if (bt == null) return;
+            //bt.SetAttributeValue("address", lut.dataAddress.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+            //IEnumerable<XAttribute> tempattr = bt.Attributes();
+            //List<String> remattr = new List<String>();
+            //foreach (XAttribute attr in tempattr)
+            //{
+            //    if (attr.Name != "address" && attr.Name != "name")
+            //    {
+            //        remattr.Add(attr.Name.ToString());
+            //    }
+            //}
+            //foreach (String rem in remattr)
+            //{
+            //    bt.Attribute(rem).Remove();
+            //}
+
+            //List<String> eleremlist = new List<String>();
+
+            //foreach (XElement ele in bt.Elements())
+            //{
+            //    IEnumerable<XAttribute> childtempattr = ele.Attributes();
+            //    List<String> childremattr = new List<String>();
+
+            //    if (ele.Name.ToString() != "table")
+            //    {
+            //        eleremlist.Add(ele.Name.ToString());
+            //        continue;
+            //    }
+            //    if (ele.Attribute("type").Value.ContainsCI("static"))
+            //    {
+            //        eleremlist.Add(ele.Name.ToString());
+            //    }
+            //    else if (ele.Attribute("type").Value.ContainsCI("x axis"))
+            //    {
+            //        ele.Attribute("name").Value = "X";
+            //    }
+            //    else if (ele.Attribute("type").Value.ContainsCI("y axis"))
+            //    {
+            //        ele.Attribute("name").Value = "Y";
+            //    }
+            //    foreach (XAttribute attr in childtempattr)
+            //    {
+            //        if (attr.Name != "address" && attr.Name != "name")
+            //        {
+            //            childremattr.Add(attr.Name.ToString());
+            //        }
+            //    }
+            //    foreach (String rem in childremattr)
+            //    {
+            //        ele.Attribute(rem).Remove();
+            //    }
+            //}
+            //foreach (String rem in eleremlist)
+            //{
+            //    bt.Element(rem).Remove();
+            //}
+
         }
 
 
-        /// <summary>
-        /// Creates a table XEL from the template file, adding proper addresses
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        public void ExposeTable(string name, Lut3D lut) //int offset)
-        {
-            XElement bt = GetTableBase(name);
-            if (bt == null) return;
-            bt.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-            IEnumerable<XAttribute> tempattr = bt.Attributes();
-            List<String> remattr = new List<String>();
-            foreach (XAttribute attr in tempattr)
-            {
-                if (attr.Name != "address" && attr.Name != "name")
-                {
-                    remattr.Add(attr.Name.ToString());
-                }
-            }
-            foreach (String rem in remattr)
-            {
-                bt.Attribute(rem).Remove();
-            }
+        ///// <summary>
+        ///// Creates a table XEL from the template file, adding proper addresses
+        ///// </summary>
+        ///// <param name="name"></param>
+        ///// <param name="offset"></param>
+        ///// <returns></returns>
+        //public void ExposeTable(string name, Lut3D lut) //int offset)
+        //{
+        //    XElement bt = GetTableBase(name);
+        //    if (bt == null) return;
+        //    bt.SetAttributeValue("address", lut.dataAddress.ToString("X"));
+        //    IEnumerable<XAttribute> tempattr = bt.Attributes();
+        //    List<String> remattr = new List<String>();
+        //    foreach (XAttribute attr in tempattr)
+        //    {
+        //        if (attr.Name != "address" && attr.Name != "name")
+        //        {
+        //            remattr.Add(attr.Name.ToString());
+        //        }
+        //    }
+        //    foreach (String rem in remattr)
+        //    {
+        //        bt.Attribute(rem).Remove();
+        //    }
 
-            List<String> eleremlist = new List<String>();
+        //    List<String> eleremlist = new List<String>();
 
-            foreach (XElement ele in bt.Elements())
-            {
-                IEnumerable<XAttribute> childtempattr = ele.Attributes();
-                List<String> childremattr = new List<String>();
+        //    foreach (XElement ele in bt.Elements())
+        //    {
+        //        IEnumerable<XAttribute> childtempattr = ele.Attributes();
+        //        List<String> childremattr = new List<String>();
 
-                if (ele.Name.ToString() != "table")
-                {
-                    eleremlist.Add(ele.Name.ToString());
-                    continue;
-                }
-                if (ele.Attribute("type").Value.ContainsCI("static"))
-                {
-                    eleremlist.Add(ele.Name.ToString());
-                }
-                else if (ele.Attribute("type").Value.ContainsCI("x axis"))
-                {
-                    ele.Attribute("name").Value = "X";
-                    ele.SetAttributeValue("address", lut.colsAddress.ToString("X"));
-                }
-                else if (ele.Attribute("type").Value.ContainsCI("y axis"))
-                {
-                    ele.Attribute("name").Value = "Y";
-                    ele.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
-                }
-                foreach (XAttribute attr in childtempattr)
-                {
-                    if (attr.Name != "address" && attr.Name != "name")
-                    {
-                        childremattr.Add(attr.Name.ToString());
-                    }
-                }
-                foreach (String rem in childremattr)
-                {
-                    ele.Attribute(rem).Remove();
-                }
-            }
-            foreach (String rem in eleremlist)
-            {
-                bt.Element(rem).Remove();
-            }
-            if (lut.dataAddress < 0x400000)
-            {
-                RomTableList.Add(name, TableFactory.CreateTable(bt));
-            }
-            else
-            {
-                RamTableList.Add(name, TableFactory.CreateTable(bt));
-            }
-        }
+        //        if (ele.Name.ToString() != "table")
+        //        {
+        //            eleremlist.Add(ele.Name.ToString());
+        //            continue;
+        //        }
+        //        if (ele.Attribute("type").Value.ContainsCI("static"))
+        //        {
+        //            eleremlist.Add(ele.Name.ToString());
+        //        }
+        //        else if (ele.Attribute("type").Value.ContainsCI("x axis"))
+        //        {
+        //            ele.Attribute("name").Value = "X";
+        //            ele.SetAttributeValue("address", lut.colsAddress.ToString("X"));
+        //        }
+        //        else if (ele.Attribute("type").Value.ContainsCI("y axis"))
+        //        {
+        //            ele.Attribute("name").Value = "Y";
+        //            ele.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
+        //        }
+        //        foreach (XAttribute attr in childtempattr)
+        //        {
+        //            if (attr.Name != "address" && attr.Name != "name")
+        //            {
+        //                childremattr.Add(attr.Name.ToString());
+        //            }
+        //        }
+        //        foreach (String rem in childremattr)
+        //        {
+        //            ele.Attribute(rem).Remove();
+        //        }
+        //    }
+        //    foreach (String rem in eleremlist)
+        //    {
+        //        bt.Element(rem).Remove();
+        //    }
+        //    if (lut.dataAddress < 0x400000)
+        //    {
+        //        RomTableList.Add(name, TableFactory.CreateTable(bt));
+        //    }
+        //    else
+        //    {
+        //        RamTableList.Add(name, TableFactory.CreateTable(bt));
+        //    }
+        //}
 
         public void CopyTables(Definition d)
         {
@@ -713,5 +762,51 @@ namespace SharpTuneCore
             RamTableList = new Dictionary<string,Table>(d.RamTableList);
             ScalingList = new Dictionary<string, Scaling>(d.ScalingList);
         }
+
+        public Dictionary<string, Table> GetBaseTables()
+        {
+            Dictionary<string, Table> baseTables = new Dictionary<string, Table>();
+
+            foreach (Definition d in inheritList)
+            {
+                foreach (Table t in d.RomTableList.Values)
+                {
+                    if (t.address == null || t.address == 0) //TODO polymorphism????
+                        baseTables.Add(t.name, t);
+                }
+            }
+
+            return baseTables;
+        }
+
+        #region ECUFlash XML Code
+        public void ImportMapFile(string filepath, DeviceImage image)
+        {
+            IdaMap idaMap = new IdaMap(filepath);
+            //loop through base def and search for table names in map
+            foreach (var romtable in GetBaseTables())
+            {
+                foreach (var idan in idaMap.IdaCleanNames)
+                {
+                    if (romtable.Key.EqualsIdaString(idan.Key))
+                    {
+                        ExposeTable(romtable.Key, LutFactory.CreateLut(romtable.Key, uint.Parse(idan.Value.ToString(), NumberStyles.AllowHexSpecifier), image.imageStream));
+                        break;
+                    }
+                }
+            }
+            ////TODO RAMTABLES
+            //foreach (var ramtable in baseDef.RamTableList)
+            //{
+            //    foreach (var idan in idaMap.IdaCleanNames)
+            //    {
+            //        if (ramtable.Key.EqualsIdaString(idan.Key))
+            //        {
+            //            break;
+            //        }
+            //    }
+            //}
+        }
+        #endregion
     }
 }

@@ -33,7 +33,7 @@ namespace SharpTune.GUI
 
         private void UndefinedWindow_Load(object sender, EventArgs e)
         {
-            defList = new List<string>(SharpTuner.availableDevices.IdentList.OrderBy(x => x.ToString()).ToList());
+            defList = new List<string>(SharpTuner.AvailableDevices.IdentList.OrderBy(x => x.ToString()).ToList());
             def = new Definition();
             List<string> dss = new List<string>();
             dss.Add("DEFAULT");
@@ -96,9 +96,8 @@ namespace SharpTune.GUI
                 DialogResult dialogResult = MessageBox.Show("Found Identifier: " + id +". Use this??", "Identifier", MessageBoxButtons.YesNo);
                 if(dialogResult == DialogResult.Yes)
                 {
-                    def.carInfo["internalidstring"] = id;
-                    def.carInfo["xmlid"] = id;
-                    def.createXRomId();
+                    def.CarInfo["internalidstring"] = id;
+                    def.CarInfo["xmlid"] = id;
                     textBoxDefXml.Text = def.xRomId.ToString();
 
                 }
@@ -111,7 +110,7 @@ namespace SharpTune.GUI
 
         private void comboBoxIncludeDef_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (SharpTuner.availableDevices.DefDictionary.ContainsKey(comboBoxIncludeDef.SelectedItem.ToString()))
+            if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxIncludeDef.SelectedItem.ToString()))
                 def.include = comboBoxIncludeDef.SelectedItem.ToString();
             else
                 def.include = null;
@@ -119,10 +118,10 @@ namespace SharpTune.GUI
 
         private void buttonSave_Click(object sender, EventArgs e)
         { 
-            if (checkBox1.Checked && SharpTuner.availableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
+            if (checkBox1.Checked && SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                SharpTuner.availableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].Populate();
-                def.CopyTables(SharpTuner.availableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()]);//copy tables
+                SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].Populate();
+                def.CopyTables(SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()]);//copy tables
             }
             //Save the definition XML
             try
@@ -133,12 +132,12 @@ namespace SharpTune.GUI
             
             StringBuilder path = new StringBuilder();
             path.Append(SharpTuner.EcuFlashDefRepoPath + "/");
-            if (def.carInfo.ContainsKey("model") && def.carInfo["model"] != null)
+            if (def.CarInfo.ContainsKey("model") && def.CarInfo["model"] != null)
             {
-                path.Append(def.carInfo["model"].ToString());
-                if (def.carInfo.ContainsKey("submodel") && def.carInfo["submodel"] != null)
+                path.Append(def.CarInfo["model"].ToString());
+                if (def.CarInfo.ContainsKey("submodel") && def.CarInfo["submodel"] != null)
                 {
-                    string s = " " + def.carInfo["submodel"];
+                    string s = " " + def.CarInfo["submodel"];
                     path.Append(s);
                 }
                 path.Append("/");
@@ -193,9 +192,9 @@ namespace SharpTune.GUI
 
         private void updateXml()
         {
-            if (SharpTuner.availableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
+            if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                textBoxDefXml.Text = SharpTuner.availableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].xRomId.ToString();
+                textBoxDefXml.Text = SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].xRomId.ToString();
                 comboBoxIncludeDef.SelectedItem = comboBoxCopyDef.SelectedItem;
             }
             else

@@ -20,22 +20,19 @@ using System.IO;
 using SharpTune;
 using System.Windows.Forms;
 using System.Drawing;
+using SharpTune.Core;
+using System.Runtime.Serialization;
 
 namespace SharpTuneCore
 {
+
     public class Table1D : Table
     {
 
 
-        public Table1D(XElement xel)
-            : base(xel)
-        {
-
-        }
-
-
-
-
+        public Table1D(XElement xel, Definition d, bool b)
+            : base(xel, d, b)
+        {}
 
         public override Table MergeTables(Table basetable)
         {
@@ -49,6 +46,11 @@ namespace SharpTuneCore
             }
 
             return this;
+        }
+
+        public override Table CreateChild(Lut lut,Definition d)
+        {
+            return base.CreateChild(lut,d);
         }
 
         public override void Read()
@@ -101,8 +103,8 @@ namespace SharpTuneCore
 
     public class RamTable1D : Table1D
     {
-        public RamTable1D(XElement xel, DeviceImage image)
-            : base(xel)
+        public RamTable1D(XElement xel, Definition d, bool b)// DeviceImage image)
+            : base(xel, d, b)
         {
 
         }

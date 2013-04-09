@@ -21,6 +21,8 @@ using System.Data;
 using SharpTune;
 using System.Windows.Forms;
 using System.Drawing;
+using SharpTune.Core;
+using System.Runtime.Serialization;
 
 
 namespace SharpTuneCore
@@ -28,29 +30,38 @@ namespace SharpTuneCore
 
     public class TableFactory
     {
+
         /// <summary>
         /// Handles creation of different table types
         /// Passes XElement to the proper table
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Table CreateTable(XElement xel)
+        public static Table CreateTable(XElement xel, Definition d)
+        {
+            bool b = false;
+            if (xel.Attribute("address") == null)
+                b = true;
+            return CreateTableWithDimension(xel, d, b);
+        }
+
+        public static Table CreateTableWithDimension(XElement xel, Definition d, bool b)
         {
             if (xel.Attribute("type") != null)
             {
                 switch (xel.Attribute("type").Value.ToString())
                 {
                     case "1D":
-                        return new Table1D(xel);
+                        return new Table1D(xel,d,b);
                     case "2D":
-                        return new Table2D(xel);
+                        return new Table2D(xel,d,b);
                     case "3D":
-                        return new Table3D(xel);
+                        return new Table3D(xel,d,b);
                     default:
                         break;
                 }
             }
-            return new Table(xel);
+            return new Table(xel,d,b);
         }
 
         public static Scaling NewScalingHandler(XElement xel)
@@ -64,6 +75,8 @@ namespace SharpTuneCore
     }
 
 
+
+
     public enum TableType
     {
         Float = 0x00,
@@ -75,13 +88,13 @@ namespace SharpTuneCore
 
     public class Table
     {
-        public XElement xml { get; private set; }
+        public XElement xml { get; set; }//TODO WRITE SETTER
         public DataTable dataTable { get; set; }
         public string name { get; set; }
         public string type { get; set; }
         public string Tag { get; set; }
         public string category { get; set; }
-        private string description { get; set; }
+        public string description { get; set; }
         public string tableTypeString { get; set; }
         public TableType tableTypeHex { get; set; }
         //public string scalingName { get; set; }
@@ -102,6 +115,23 @@ namespace SharpTuneCore
         public Scaling scaling { get; set; }
         public DeviceImage parentImage { get; private set; }
         public List<string> Attributes { get; set; }
+        public bool isBase { get; private set; }
+
+        public List<Table> InheritanceList { get; private set; }
+
+        public Table()
+        {
+            //TODO INIT STUFF
+        }
+
+        public virtual Table CreateChild(Lut lut, Definition d)
+        {
+            XElement xml = new XElement("table");
+            xml.SetAttributeValue("name", name);
+            xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
+            return TableFactory.CreateTable(xml, d);
+            //TODO also set attirbutes and split this up!
+        }
 
         /// <summary>
         /// Method to parse XML for adding a table axis
@@ -114,8 +144,27 @@ namespace SharpTuneCore
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
-        public Table(XElement xel)
+        public Table(XElement xel, Definition d, bool b)
         {
+            InheritanceList = new List<Table>();
+            isBase = b;
+            if(xel.Attribute("name") != null)
+                name = xel.Attribute("name").Value.ToString();
+            if (d != null && d.inheritList != null)
+            {
+                foreach (Definition id in d.inheritList)
+                {
+                    if (id.RomTableList.ContainsKey(name))
+                    {
+                        if (id.RomTableList[name].InheritanceList != null)
+                            InheritanceList.AddRange(id.RomTableList[name].InheritanceList);
+
+                        InheritanceList.Add(id.RomTableList[name]);
+                        break;
+                    }
+                }
+                    
+            }
 
             xml = xel;
 
@@ -171,9 +220,9 @@ namespace SharpTuneCore
 
             foreach (XElement child in xel.Elements())
             {
-                string name = child.Name.ToString();
+                string cname = child.Name.ToString();
 
-                switch (name)
+                switch (cname)
                 {
                     case "table":
                         this.AddAxis(child);

@@ -33,7 +33,7 @@ namespace SharpTune
         public CalidUtility(MainWindow window)
         {
             this.mainWindow = window;
-            this.currentImage = SharpTuner.activeImage;
+            this.currentImage = SharpTuner.ActiveImage;
             InitializeComponent();
         }
 
@@ -108,7 +108,7 @@ namespace SharpTune
                 MessageBox.Show("ID is not long enough!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (SharpTuner.availableDevices.IdentList.ContainsCI(newcalidbox.Text.ToString()))
+            if (SharpTuner.AvailableDevices.IdentList.ContainsCI(newcalidbox.Text.ToString()))
             {
                 MessageBox.Show("ID is already defined!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;

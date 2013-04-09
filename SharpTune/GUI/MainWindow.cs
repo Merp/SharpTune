@@ -55,7 +55,7 @@ namespace SharpTune
         public MainWindow()
         {
             InitializeComponent();
-            SharpTuner.mainWindow = this;
+            SharpTuner.Window = this;
         }
 
         public static void debugCheck()
@@ -110,11 +110,12 @@ namespace SharpTune
             //BackgroundWorker bw = new BackgroundWorker();
             // bw.DoWork += (senderr, ee) =>
             //{
-            SharpTuner.populateAvailableDevices();
+            //SharpTuner.populateAvailableDevices();
+            //SharpTuner.LoadMods();
             //backgroundWorker1.ReportProgress(prog);
             // };
             // bw.RunWorkerAsync();
-            SharpTuner.imageList = new List<DeviceImage>();
+            //SharpTuner.ImageList = new List<DeviceImage>();
         }
 
         public void openDeviceImage(string filename)
@@ -127,7 +128,7 @@ namespace SharpTune
                 MessageBox.Show("Unable to idenfity rom at " + newImage.FilePath.ToString());
                 return;
             }
-            foreach (DeviceImage image in SharpTuner.imageList)
+            foreach (DeviceImage image in SharpTuner.ImageList)
             {
                 if (image.FilePath == filename)
                 {
@@ -138,10 +139,9 @@ namespace SharpTune
             this.closeDeviceImageToolStripMenuItem.Enabled = true;
             obfuscateCALIDToolStripMenuItem.Enabled = true;
             SharpTuner.AddImage(newImage);
-            SharpTuner.activeImage = newImage;
-            this.openDeviceListBox.Items.Add(SharpTuner.activeImage.FileName + " CALID: "+SharpTuner.activeImage.CalId);
-            Console.WriteLine("Successfully opened " + SharpTuner.activeImage.CalId + " filename: " + SharpTuner.activeImage.FileName);
-            SharpTuner.activeImage.LoadMods();
+            this.openDeviceListBox.Items.Add(SharpTuner.ActiveImage.FileName);
+            Console.WriteLine("Successfully opened " + SharpTuner.ActiveImage.CalId + " filename: " + SharpTuner.ActiveImage.FileName);
+            Refresh();
         }
 
         private void openDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -168,17 +168,17 @@ namespace SharpTune
         private void closeDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //Prompt to save file!
-            if (SharpTuner.activeImage.isChanged)
+            if (SharpTuner.ActiveImage.isChanged)
             {
                 if (MessageBox.Show("File is changed", "Would you like to save it?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    SharpTuner.activeImage.SaveAs();
+                    SharpTuner.ActiveImage.SaveAs();
                     // a 'DialogResult.Yes' value was returned from the MessageBox
                     // proceed with your deletion
                 }
             }
 
-            if (SharpTuner.imageList.Count == 0)
+            if (SharpTuner.ImageList.Count == 0)
             {
                 closeDeviceImageToolStripMenuItem.Enabled = false;
                 //modUtilityToolStripMenuItem.Enabled = false;
@@ -186,8 +186,8 @@ namespace SharpTune
             }
             else
             {
-                int index = SharpTuner.imageList.FindIndex(f => f.FilePath == SharpTuner.activeImage.FilePath);
-                SharpTuner.imageList.RemoveAt(index);
+                int index = SharpTuner.ImageList.FindIndex(f => f.FilePath == SharpTuner.ActiveImage.FilePath);
+                SharpTuner.ImageList.RemoveAt(index);
                 this.openDeviceListBox.Items.RemoveAt(index);
                 //this.imageTreeView.Nodes.Remove(n => n.Tag = SharpTuner.activeImage.FileName);
                 //foreach (TreeNode node in this.imageTreeView.Nodes)
@@ -197,9 +197,9 @@ namespace SharpTune
                 //        node.Remove();
                 //    }
                 //}
-                if (SharpTuner.imageList.Count != 0)
+                if (SharpTuner.ImageList.Count != 0)
                 {
-                    SharpTuner.activeImage = SharpTuner.imageList[0];
+                    SharpTuner.ActiveImage = SharpTuner.ImageList[0];
                     //ImageTreeRefresh();
                 }
                 else
@@ -209,18 +209,17 @@ namespace SharpTune
                     obfuscateCALIDToolStripMenuItem.Enabled = false;
                 }
             }
-            RefreshModTree();
-            RefreshModInfo();
+            Refresh();
         }
 
         private void saveDeviceImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SharpTuner.activeImage.Save();
+            SharpTuner.ActiveImage.Save();
         }
 
         private void saveDeviceImageAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SharpTuner.activeImage.SaveAs();
+            SharpTuner.ActiveImage.SaveAs();
         }
 
         private void openDeviceListBox_SelectedValueChanged(object sender, EventArgs e)
@@ -230,40 +229,59 @@ namespace SharpTune
                 string s = @" CALID: ";
                 string sim = this.openDeviceListBox.SelectedItem.ToString();
                 string[] im = Regex.Split(sim, s);
-                int index = SharpTuner.imageList.FindIndex(i => i.FileName == im[0]);
-                SharpTuner.activeImage = SharpTuner.imageList[index];
+                int index = SharpTuner.ImageList.FindIndex(i => i.FileName == im[0]);
+                SharpTuner.ActiveImage = SharpTuner.ImageList[index];
             }
+            Refresh();
+        }
+
+        public override void Refresh()
+        {
+            RefreshImageInfo();
             RefreshModTree();
             RefreshModInfo();
+            base.Refresh();
+        }
+
+        private void RefreshImageInfo()
+        {
+            object io = null;
+            foreach (var i in openDeviceListBox.Items)
+            {
+                if (i.ToString() == SharpTuner.ActiveImage.FileName.ToString())
+                {
+                    io = i;
+                    break;
+                }
+            }
+            if (io != null)
+                openDeviceListBox.SelectedItem = io;
         }
 
         public void RefreshModInfo()
         {
             try
             {
+                Mod m = SharpTuner.ActiveImage.ModList[selectedModIndex];
                 selectedModTextBox.Text = "FileName: " +
-                    SharpTuner.activeImage.ModList[selectedModIndex].FileName +
+                    m.FileName +
                     Environment.NewLine;
                 selectedModTextBox.AppendText(
-                    "Mod Name: " +
-                    SharpTuner.activeImage.ModList[selectedModIndex].ModName +
+                    "Mod Identifier: " +
+                    m.ModIdent +
                     Environment.NewLine);
                 selectedModTextBox.AppendText(
                     "Version: " +
-                    SharpTuner.activeImage.ModList[selectedModIndex].ModVersion +
+                    m.ModVersion +
                     Environment.NewLine);
                 selectedModTextBox.AppendText(
                     "Author: " +
-                    SharpTuner.activeImage.ModList[selectedModIndex].ModAuthor +
+                    m.ModAuthor +
                     Environment.NewLine);
-                if (SharpTuner.activeImage.ModList[selectedModIndex].ModInfo != null)
-                {
-                    string t = Regex.Replace(SharpTuner.activeImage.ModList[selectedModIndex].ModInfo, @"""""""""", @"""""");
-                    t = Regex.Replace(t, @"""""", Environment.NewLine);
-                    t = Regex.Replace(t, @"""", "");
-                    selectedModTextBox.AppendText(
-                        "Description: " + t);
-                }
+               selectedModTextBox.AppendText(
+                    "Description: " + 
+                    m.ModInfo + 
+                    Environment.NewLine);
             }
             catch (System.Exception excpt)
             {
@@ -275,10 +293,10 @@ namespace SharpTune
         public void RefreshModTree()
         {
             treeView1.Nodes.Clear();
-            if (SharpTuner.activeImage.ModList.Count > 0)
+            if (SharpTuner.ActiveImage.ModList.Count > 0)
             {
-                treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.activeImage.FileName);
-                foreach (Mod mod in SharpTuner.activeImage.ModList)
+                treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.ActiveImage.FileName);
+                foreach (Mod mod in SharpTuner.ActiveImage.ModList)
                 {
                     Console.WriteLine("Loaded Patch: " + mod.FileName);
                     TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
@@ -288,15 +306,16 @@ namespace SharpTune
                 }
             }
             else
-                treeView1.Nodes.Add("No Mods Found for " + SharpTuner.activeImage.CalId.ToString());
+                treeView1.Nodes.Add("No Mods Found for " + SharpTuner.ActiveImage.CalId.ToString());
         }
 
         private void buttonPatchRom_Click(object sender, EventArgs e)
         {
-            Mod currentmod = SharpTuner.activeImage.ModList[selectedModIndex];
+            Mod currentmod = SharpTuner.ActiveImage.ModList[selectedModIndex];
             SaveFileDialog d = new SaveFileDialog();
-            d.InitialDirectory = SharpTuner.activeImage.FilePath;
+            d.InitialDirectory = SharpTuner.ActiveImage.FilePath;
             d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
+            d.FileName = currentmod.ModIdent.ToString() + "_" + SharpTuner.ActiveImage.FileName;
             //d.ShowDialog();
             DialogResult ret = Utils.STAShowSADialog(d);
 
@@ -304,9 +323,9 @@ namespace SharpTune
             {
                 try
                 {
-                    if (SharpTuner.activeImage.FilePath != d.FileName)
+                    if (SharpTuner.ActiveImage.FilePath != d.FileName)
                     {
-                        System.IO.File.Copy(SharpTuner.activeImage.FilePath, d.FileName, true);
+                        System.IO.File.Copy(SharpTuner.ActiveImage.FilePath, d.FileName, true);
                     }
                 }
                 catch (System.Exception excpt)
@@ -322,7 +341,7 @@ namespace SharpTune
                 MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!currentmod.TryCheckApplyMod(SharpTuner.activeImage.FilePath, d.FileName, 2, true))
+            if (!currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true) || !currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true))
             {
                 MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -341,7 +360,7 @@ namespace SharpTune
             {
                 buttonPatchRom.Enabled = true;
                 //buttonTestPatch.Enabled = true;
-                selectedModIndex = SharpTuner.activeImage.ModList.FindIndex(m => m.FilePath == treeView1.SelectedNode.Tag.ToString());
+                selectedModIndex = SharpTuner.ActiveImage.ModList.FindIndex(m => m.FilePath == treeView1.SelectedNode.Tag.ToString());
                 RefreshModInfo();
             }
             else
@@ -389,14 +408,14 @@ namespace SharpTune
             t2d.Add("16BITBASE", new List<String>());
             t1d.Add("16BITBASE", new List<String>());
 
-            Dictionary<String,String> imap = SharpTuner.availableDevices.BuildInheritanceMap();
+            Dictionary<String,String> imap = SharpTuner.AvailableDevices.BuildInheritanceMap();
             
-			foreach (String deffile in SharpTuner.availableDevices.DefDictionary.Keys) {
+			foreach (String deffile in SharpTuner.AvailableDevices.DefDictionary.Keys) {
 				Definition.pullScalings (deffile, ref xblobscalings, ref xscalings);
 			}
 			Definition.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
 			Definition.pullScalings("rommetadata\\bases\\16BITBASE.xml", ref xblobscalings, ref xscalings);
-            foreach (String deffile in SharpTuner.availableDevices.DefDictionary.Keys)
+            foreach (String deffile in SharpTuner.AvailableDevices.DefDictionary.Keys)
             {
                 Definition.pullScalings(deffile, ref xblobscalings, ref xscalings);
             }
@@ -409,7 +428,7 @@ namespace SharpTune
             Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			
-            foreach (String deffile in SharpTuner.availableDevices.DefDictionary.Keys) {
+            foreach (String deffile in SharpTuner.AvailableDevices.DefDictionary.Keys) {
 				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
 			}
 			
@@ -440,9 +459,9 @@ namespace SharpTune
         private void definitionLocationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog d = new FolderBrowserDialog();
-            if (SharpTuner.activeImage != null)
+            if (SharpTuner.ActiveImage != null)
             {
-                string path = SharpTuner.activeImage.ToString();
+                string path = SharpTuner.ActiveImage.ToString();
                 d.SelectedPath = path;
             }
             DialogResult ret = Utils.STAShowFDialog(d);
@@ -467,7 +486,7 @@ namespace SharpTune
 
         private bool ForceOpenRom()
         {
-            if (SharpTuner.activeImage == null)
+            if (SharpTuner.ActiveImage == null)
             {
                 MessageBox.Show("No ROM selected! Please open and select a ROM first!");
                 ofd.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
@@ -475,7 +494,7 @@ namespace SharpTune
                 {
                     openDeviceImage(ofd.FileName);
                 }
-                if (SharpTuner.activeImage == null)
+                if (SharpTuner.ActiveImage == null)
                 {
                     MessageBox.Show("OPEN A ROM, DUMMY!");
                     this.Close();
@@ -516,7 +535,7 @@ namespace SharpTune
 
             if (ret == DialogResult.OK)
             {
-                SharpTuner.activeImage.LoadMods();//TODO FIX THIS
+                SharpTuner.LoadMods();
                 Settings.Default.PatchPath = d.SelectedPath;
                 SharpTuner.initSettings();
             }
@@ -534,20 +553,6 @@ namespace SharpTune
         private void SpawnMapToDef()
         {
             Application.Run(new MapToDef());
-        }
-
-        private void mAPToECUFlashToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ForceOpenRom())
-            {
-                ofd.Filter = "MAP Files (*.map)|*.map";
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    string ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
-                    //string ecuid = SharpTuner.availableDevices.DefDictionary[calid].carInfo["ecuid"];
-                    DefCreator.MapToECUFlash(ofd.FileName, ecuid);
-                }
-            }
         }
     }
 }
