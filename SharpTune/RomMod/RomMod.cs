@@ -39,31 +39,31 @@ namespace SharpTune.RomMod
             }
             else if (args.Length == 2 && args[0] == "dump")
             {
-                return SharpTune.RomMod.RomMod.TryDumpSRecordFile(args[1]);
+                return RomMod.TryDumpSRecordFile(args[1]);
             }
             else if (args.Length == 3 && args[0] == "test")
             {
-                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 2, false);
+                return RomMod.TryApply(args[1], args[2], true, false) || RomMod.TryApply(args[1], args[2], false, false);
             }
             else if (args.Length == 3 && args[0] == "apply")
             {
-                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 0, true);
+                return RomMod.TryApply(args[1], args[2], true, true);
             }
             else if (args.Length == 3 && args[0] == "applied")
             {
-                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 1, false);//TODO is this deprecated?
+                return RomMod.TryApply(args[1], args[2], false, false);//TODO is this deprecated?
             }
             else if (args.Length == 3 && args[0] == "remove")
             {
-                return SharpTune.RomMod.RomMod.TryApply(args[1], args[2], 1, true);
+                return RomMod.TryApply(args[1], args[2], false, true);
             }
             else if (args.Length == 3 && args[0] == "baseline")
             {
-                return SharpTune.RomMod.RomMod.TryGenerateBaseline(args[1], args[2]);
+                return RomMod.TryGenerateBaseline(args[1], args[2]);
             }
             else if (args.Length == 4 && args[0] == "baselinedefine")
             {
-                return SharpTune.RomMod.RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+                return RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
             }
             PrintHelp();
             return false;
@@ -74,7 +74,7 @@ namespace SharpTune.RomMod
         /// </summary>
         private static void PrintHelp()
         {
-            Console.WriteLine("RomPatch Version {0}.", SharpTune.RomMod.RomMod.Version);
+            Console.WriteLine("RomPatch Version {0}.", RomMod.Version);
             Console.WriteLine("Commands:");
             Console.WriteLine();
             Console.WriteLine("test       - determine whether a patch is suitable for a ROM");
@@ -134,7 +134,7 @@ namespace SharpTune.RomMod
             }
         }
 
-        private static bool TryApply(string patchPath, string romPath, int apply, bool commit)
+        private static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
         {
             Mod currentMod = new Mod(patchPath);
             return currentMod.TryCheckApplyMod(romPath, romPath, apply, commit);

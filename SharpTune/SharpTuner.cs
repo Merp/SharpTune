@@ -29,13 +29,26 @@ namespace SharpTune
     /// </summary>
     public static class SharpTuner
     {
-        public static MainWindow mainWindow { get; set; }
+        public static MainWindow Window { get; set; }
 
-        public static DeviceImage activeImage { get; set; }
+        private static DeviceImage actImg;
 
-        public static List<DeviceImage> imageList { get; set; }
+        public static DeviceImage ActiveImage 
+        {
+            get { return actImg; }
+            set
+            {
+                actImg = value;
+                //TODO update the mainwindow!!!
+                Window.Refresh();
+            }
+        }
 
-        public static AvailableDevices availableDevices { get; set; }
+        public static List<DeviceImage> ImageList { get; set; }
+
+        public static AvailableDevices AvailableDevices { get; set; }
+
+        public static List<Mod> AvailableMods { get; private set; }
 
         public static List<Scaling> DataScalings {get; set; }
         public static List<Scaling> UnitScalings { get; set; }
@@ -46,7 +59,7 @@ namespace SharpTune
         public static string RREcuDefPath;
         public static string RRLoggerDefPath;
 
-        public static string activePort { get; set; }
+        public static string ActivePort { get; set; }
 
         public static SerialPort Port { get; set; }
 
@@ -58,11 +71,12 @@ namespace SharpTune
 
         static SharpTuner()
         {
-            imageList = new List<DeviceImage>();
+            ImageList = new List<DeviceImage>();
             DataScalings = new List<Scaling>();
             UnitScalings = new List<Scaling>();
             initSettings();
             populateAvailableDevices();
+            LoadMods();
         }
 
         public static void initSettings()
@@ -85,7 +99,7 @@ namespace SharpTune
 
         public static void populateAvailableDevices()
         {
-            availableDevices = new AvailableDevices(EcuFlashDefRepoPath.ToString());
+            AvailableDevices = new AvailableDevices(EcuFlashDefRepoPath.ToString());
         }
 
         //public static void setSsmInterface(SsmInterface s)
@@ -95,7 +109,63 @@ namespace SharpTune
 
         public static void AddImage(DeviceImage d)
         {
-            imageList.Add(d);
+            ImageList.Add(d);
+            ActiveImage = d;
+        }
+
+        public static void LoadMods()
+        {
+            AvailableMods = new List<Mod>();
+            LoadResourceMods();
+            LoadExternalMods();
+        }
+
+        private static void LoadResourceMods()
+        {
+            int i = AvailableMods.Count;
+            ResourceSet ress = Resources.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
+            ResourceManager rm = SharpTune.Properties.Resources.ResourceManager;
+            foreach (DictionaryEntry r in ress)
+            {
+                MemoryStream stream = new MemoryStream((byte[])rm.GetObject(r.Key.ToString()));
+                //if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
+                AvailableMods.Add(new Mod(stream, r.Key.ToString()));
+            }
+        }
+
+        private static void LoadExternalMods()
+        {
+            int i = AvailableMods.Count;
+            string[] terms = { ".patch" };
+            List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
+            if (searchresults == null)
+            {
+                Console.WriteLine("No External Mods found");
+            }
+            else
+            {
+                foreach (string modpath in searchresults)
+                {
+                    if (!modpath.ContainsCI("debug") && !modpath.ContainsCI("currentbuild"))
+                    {
+                        AvailableMods.Add(new Mod(modpath));
+                    }
+                }
+            }
+        }
+
+        public static List<Mod> GetValidMods(this DeviceImage d)
+        {
+            List<Mod> tm = new List<Mod>();
+            foreach (Mod m in AvailableMods)
+            {
+                //TODO: When a mod is loaded, detect "FFFFFFF" CALID!!!
+                if (m.InitialCalibrationId == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", true, false))
+                    tm.Add(m);
+                else if (m.FinalCalibrationId == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", false, false))
+                    tm.Add(m);
+            }
+            return tm;
         }
     }
 }

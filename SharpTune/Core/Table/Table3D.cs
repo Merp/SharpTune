@@ -20,21 +20,79 @@ using System.IO;
 using SharpTune;
 using System.Windows.Forms;
 using System.Drawing;
+using SharpTune.Core;
+using System.Runtime.Serialization;
 
 namespace SharpTuneCore
 {
+
     public class Table3D : Table
     {
         private Scaling xAxisScaling { get; set; }
 
-        public Table3D(XElement xel)
-            : base(xel)
+        public Table3D()
+        {
+        }
+
+        public Table3D(XElement xel, Definition d, bool b)
+            : base(xel, d, b)
         {
 
         }
 
 
+        public new Table3D DeepClone()
+        {
+            Table3D clone = new Table3D();
+            clone.xml = new XElement(xml);
+            clone.dataTable = dataTable.Clone();
+            clone.name = name;
+            clone.type = type;
+            clone.Tag = Tag;
+            clone.category = category;
+            clone.description = description;
+            clone.tableTypeString = tableTypeString;
+            clone.tableTypeHex = tableTypeHex;
+            //clone.scalingName { get; set; }
+            //clone.level = level;
+            //clone.address = address;
+            //clone.dataScaling = dataScaling;
+            //clone.colorMin = colorMin;
+            //clone.colorMax = colorMax;
+            //clone.elements = elements;
+            //clone.xAxis
+            //TODO FINISH THESEclone.yAxis { get; set; }
+            //clone.properties = new Dictionary<string, string>(properties);
+            // clone.endian = endian;
+            // clone.byteValues = new List<byte[]>(byteValues);
+            //clone.floatValues = new List<float>(floatValues);
+            //clone.displayValues = new List<string>(displayValues);
+            //clone.defaultScaling 
+            //clone.scaling { get; set; }
+            //clone.parentImage = parentImage;
+            //clone.Attributes = new List<string>(Attributes);
+            return clone;
+        }
 
+        public override Table CreateChild(Lut ilut,Definition d)
+        {
+            Lut3D lut = (Lut3D)ilut;
+            xml = new XElement("table");
+            xml.SetAttributeValue("name", name);
+            xml.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
+            XElement tx = new XElement("table");
+            tx.SetAttributeValue("name", "X");
+            tx.SetAttributeValue("address", lut.colsAddress.ToString("X"));
+            tx.SetAttributeValue("elements", lut.cols);
+            xml.Add(tx);
+            XElement ty = new XElement("table");
+            ty.SetAttributeValue("name", "Y");
+            ty.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
+            ty.SetAttributeValue("elements", lut.rows);
+            xml.Add(ty);
+            return TableFactory.CreateTable(xml, d);
+            //TODO also set attirbutes and split this up! Copy to table2D!!
+        }
 
         public override Table MergeTables(Table basetable)
         {
@@ -114,8 +172,8 @@ namespace SharpTuneCore
     public class RamTable3D : Table3D
     {
 
-        public RamTable3D(XElement xel)
-            : base(xel)
+        public RamTable3D(XElement xel, Definition d, bool b)
+            : base(xel,d,b)
         {
 
         }

@@ -15,7 +15,7 @@ using SharpTune.Core;
 
 namespace SharpTune.RomMod
 {
-    class DefCreator
+    public class ModDefinition
     {
         private const int tableaddresslimit = 1024;
 
@@ -31,8 +31,8 @@ namespace SharpTune.RomMod
         private const uint OpStaticY = 0x43210007;
         private const uint OpRAM = 0x43210008;
 
-        private Dictionary<string,Table> RomTableList {get; set;}
-        private Dictionary<string,Table> RamTableList { get; set; }
+        public List<Lut> RomLutList {get; private set;}
+        public Dictionary<string,Table> RamTableList { get; private set; }
 
         private Mod parentMod { get; set; }
         private Blob defBlob { get; set; }
@@ -44,12 +44,13 @@ namespace SharpTune.RomMod
 
         private string outputPath {get; set;}
 
-        private Definition definition { get; set; }
-        private Definition inheritedDefinition {get; set;}
-        private Definition baseDefinition { get; set; }
-        public DefCreator(Mod parent)
+        public Definition definition { get; private set; }
+
+        public ModDefinition(Mod parent)
         {
             this.parentMod = parent;
+            RomLutList = new List<Lut>();
+            RamTableList = new Dictionary<string, Table>();
         }
 
         #region Patch ReadingCode
@@ -60,10 +61,6 @@ namespace SharpTune.RomMod
         /// <returns></returns>
         public bool TryReadDefs(String defPath)//TODO remove defpath and ref the static global
         {
-
-            RomTableList = new Dictionary<string, Table>();
-            RamTableList = new Dictionary<string, Table>();
-
             List<Blob> blobs = parentMod.blobList.Blobs;
             Blob metadataBlob;
             if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
@@ -74,77 +71,18 @@ namespace SharpTune.RomMod
             this.defBlob = metadataBlob;
             int offs = 0;
 
-            this.baseDefinition = SharpTuner.availableDevices.DefDictionary["32BITBASE"];// new Definition((Utils.DirectorySearch(defPath, "32BITBASE")));
-            this.baseDefinition.Populate(); // ReadXML((Utils.DirectorySearch(defPath, "32BITBASE")));
-            this.inheritedDefinition = SharpTuner.availableDevices.DefDictionary[parentMod.InitialCalibrationId];// new Definition(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
-            this.inheritedDefinition.Populate();// ReadXML(Utils.DirectorySearch(defPath, this.parentMod.InitialCalibrationId));
-
-            if (this.parentMod.buildConfig != null)
-                outputPath = defPath + "/MerpMod/" + this.parentMod.buildConfig + "/";
-            outputPath += this.parentMod.ModIdent.ToString() + ".xml";
-            XElement xci = inheritedDefinition.xRomId;
-            Dictionary<string, string> tci = this.inheritedDefinition.carInfo;
-            tci["internalidaddress"] = this.parentMod.ModIdentAddress.ToString("X");
-            tci["internalidstring"] = this.parentMod.ModIdent.ToString();
-            tci["ecuid"] = this.parentMod.FinalEcuId.ToString();
-            tci["xmlid"] = this.parentMod.ModIdent.ToString();
-            string tincl = this.parentMod.InitialCalibrationId.ToString();
-            //TODO: First create short definition, then add tables 
-            definition = new Definition(outputPath, tci, tincl);
-
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
-            if (!TryCleanDef()) return false;
+            definition = new Definition(defPath, this.parentMod);
 
+            //TODO: move RR stuff into definition?
             //prompt to select logger type
             NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.buildConfig + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(), parentMod.FinalEcuId.ToString());
             return true;
         }
 
-
-        private bool TryCleanDef()
-        {
-            List<string> removelist = new List<string>();
-            foreach (KeyValuePair<string, Table> table in this.definition.RomTableList)
-            {
-                if (table.Value.xml.Attribute("address") != null)
-                {
-                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
-                    {
-                        removelist.Add(table.Key.ToString());
-                        continue;
-                    }
-
-                }
-            }
-            foreach (string table in removelist)
-            {
-                this.definition.RomTableList.Remove(table);
-            }
-
-            //same operation for ramtables
-            removelist.Clear();
-            foreach (KeyValuePair<string, Table> table in this.definition.RamTableList)
-            {
-                if (table.Value.xml.Attribute("address") != null)
-                {
-                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
-                    {
-                        removelist.Add(table.Key.ToString());
-                        continue;
-                    }
-
-                }
-            }
-            foreach (string table in removelist)
-            {
-                this.definition.RamTableList.Remove(table);
-            }
-            return true;
-        }
-
         /// <summary>
-        /// Try to read the Patch metadata from the file.
+        /// Try to read the Patch metadata from the file and add this data to table lists.
         /// </summary>
         private bool TryParseDefs(Blob metadata, ref int offset, String defPath)
         {
@@ -152,38 +90,6 @@ namespace SharpTune.RomMod
             while ((metadata.Content.Count > offset + 8) &&
                 metadata.TryGetUInt32(ref cookie, ref offset))
             {
-                //if (cookie == OpIdent)
-                //{
-                //    string metaString = null;
-                //    string metaString1 = null;
-                //    string metaString2 = null;
-                //    uint metaOffset = 0;
-                //    uint metaOffset1 = 0;
-                //    uint metaOffset2 = 0;
-                //    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
-                //    {
-                //        if (this.TryReadDefData(metadata, out metaString1, out metaOffset1, ref offset))
-                //        {
-                //            if (this.TryReadDefData(metadata, out metaString2, out metaOffset2, ref offset))
-                //            {
-                //                // found modName, output to string!
-                //                this.finalEcuId = metaString;
-                //                this.EcuIdAddress = (int)metaOffset;
-                //                this.inheritedIdentifier = metaString1;
-                //                this.inheritedEcuId = metaString2;
-
-                //                //READ INHERITED DEFINITION
-                //                inheritedDefinition = new Definition((Definition.DirectorySearch(defPath, this.inheritedIdentifier)));
-                //                inheritedDefinition.ReadXML(inheritedDefinition.defPath, false, false);
-                //            }
-                //        }
-                //        else
-                //        {
-                //            Console.WriteLine("Invalid definition found.");
-                //            return false;
-                //        }
-                //    }
-                //}
                 if (cookie == OpTable3d)//TODO CONDITIONALLY READ LUTS!
                 {
                     string metaString = null;
@@ -192,9 +98,8 @@ namespace SharpTune.RomMod
                     {
                         Blob tableBlob;
                         this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        Lut3D lut = new Lut3D(tableBlob, metaOffset);
-                        //KeyValuePair<String, Table> tempTable = CreateTable(metaString, lut);
-                        if (metaString != null) definition.ExposeTable(metaString, lut);// this.RomTableList.Add(tempTable.Key, tempTable.Value);
+                        Lut3D lut = new Lut3D(metaString,tableBlob, metaOffset);
+                        if (metaString != null) RomLutList.Add(lut);
                     }
                     else
                     {
@@ -202,17 +107,31 @@ namespace SharpTune.RomMod
                         return false;
                     }
                 }
-                else if (cookie == OpTable1d)// //TODO!! FIX FOR TABLE2D || cookie == OpTable2d)
+                else if (cookie == OpTable2d)//TODO CONDITIONALLY READ LUTS!
                 {
                     string metaString = null;
                     uint metaOffset = 0;
                     if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
                     {
-                        //Blob tableBlob;
-                        //this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        Lut lut = new Lut(metaOffset);
-                        //KeyValuePair<String,Table> tempTable = CreateTable(metaString, (int)metaOffset);//lut);
-                        if (metaString != null) definition.ExposeTable(metaString, lut); //this.RomTableList.Add(tempTable.Key, tempTable.Value);
+                        Blob tableBlob;
+                        this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
+                        Lut2D lut = new Lut2D(metaString,tableBlob, metaOffset);
+                        if (metaString != null) RomLutList.Add(lut);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid definition found.");
+                        return false;
+                    }
+                }
+                else if (cookie == OpTable1d)
+                {
+                    string metaString = null;
+                    uint metaOffset = 0;
+                    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
+                    {
+                        Lut lut = new Lut(metaString,metaOffset);
+                        if (metaString != null) RomLutList.Add(lut);
                     }
                     else
                     {
@@ -249,7 +168,7 @@ namespace SharpTune.RomMod
 
             return true;
         }
-
+    
         /// <summary>
         /// Read a single string from the metadata blob.
         /// </summary>
@@ -300,195 +219,237 @@ namespace SharpTune.RomMod
             return false;
         }
 
-        /// <summary>
-        /// Prints out an ECUFlash XML definition of the table
-        /// </summary>
-        public bool TryPrintEcuFlashDef()
-        {
-            if (this.definition.ExportXML(outputPath))
-                return true;
-            return false;
-        }
+    #endregion
 
+        #region Deprecated
         /// <summary>
-        /// Creates a table XEL from the template file, adding proper addresses
+        /// TODO: Deprecated
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="offset"></param>
         /// <returns></returns>
-        private KeyValuePair<string, Table> CreateTable(string name, int offset)
+        private bool TryCleanDef()
         {
-            //Dictionary<string, Table> list = 
-
-            foreach (KeyValuePair<string, Table> table in this.baseDefinition.RomTableList)
+            List<string> removelist = new List<string>();
+            foreach (KeyValuePair<string, Table> table in this.definition.RomTableList)
             {
-                if (table.Key == name)
+                if (table.Value.xml.Attribute("address") != null)
                 {
-                    KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
-                    temptable.Value.xml.SetAttributeValue("address", offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
-                    IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
-                    List<String> remattr = new List<String>();
-                    foreach (XAttribute attr in tempattr)
+                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
                     {
-                        if (attr.Name != "address" && attr.Name != "name")
-                        {
-                            remattr.Add(attr.Name.ToString());
-                        }
-                    }
-                    foreach (String rem in remattr)
-                    {
-                        temptable.Value.xml.Attribute(rem).Remove();
+                        removelist.Add(table.Key.ToString());
+                        continue;
                     }
 
-                    List<String> eleremlist = new List<String>();
-
-                    foreach (XElement ele in temptable.Value.xml.Elements())
-                    {
-                        IEnumerable<XAttribute> childtempattr = ele.Attributes();
-                        List<String> childremattr = new List<String>();
-
-                        if (ele.Name.ToString() != "table")
-                        {
-                            eleremlist.Add(ele.Name.ToString());
-                            continue;
-                        }
-                        if (ele.Attribute("type").Value.ContainsCI("static"))
-                        {
-                            eleremlist.Add(ele.Name.ToString());
-                        }
-                        else if (ele.Attribute("type").Value.ContainsCI("x axis"))
-                        {
-                            ele.Attribute("name").Value = "X";
-                        }
-                        else if (ele.Attribute("type").Value.ContainsCI("y axis"))
-                        {
-                            ele.Attribute("name").Value = "Y";
-                        }
-                        foreach (XAttribute attr in childtempattr)
-                        {
-                            if (attr.Name != "address" && attr.Name != "name")
-                            {
-                                childremattr.Add(attr.Name.ToString());
-                            }
-                        }
-                        foreach (String rem in childremattr)
-                        {
-                            ele.Attribute(rem).Remove();
-                        }
-                    }
-                    foreach (String rem in eleremlist)
-                    {
-                        temptable.Value.xml.Element(rem).Remove();
-                    }
-                    return temptable;
                 }
             }
-            if (this.baseDefinition.RamTableList != null)
+            foreach (string table in removelist)
             {
-                foreach (KeyValuePair<string, Table> table in this.baseDefinition.RamTableList)
+                this.definition.RomTableList.Remove(table);
+            }
+
+            //same operation for ramtables
+            removelist.Clear();
+            foreach (KeyValuePair<string, Table> table in this.definition.RamTableList)
+            {
+                if (table.Value.xml.Attribute("address") != null)
                 {
-                    if (table.Key == name)
+                    if (System.Int32.Parse(table.Value.xml.Attribute("address").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) < tableaddresslimit)
                     {
-                        KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
-                        //TABLE WAS FOUND!
-                        return temptable;
+                        removelist.Add(table.Key.ToString());
+                        continue;
                     }
+
                 }
             }
-            return new KeyValuePair<string, Table>();
+            foreach (string table in removelist)
+            {
+                this.definition.RamTableList.Remove(table);
+            }
+            return true;
         }
 
-        /// <summary>
-        /// Creates a table XEL from the template file, adding proper addresses
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        private KeyValuePair<string, Table> CreateTable(string name, Lut3D lut) //int offset)
-        {
-            Dictionary<string, Table> list = this.baseDefinition.RomTableList;
+        //TODO: is this needed anywhere?
+        ///// <summary>
+        ///// Creates a table XEL from the template file, adding proper addresses
+        ///// TODO: Deprecated
+        ///// </summary>
+        ///// <param name="name"></param>
+        ///// <param name="offset"></param>
+        ///// <returns></returns>
+        //private KeyValuePair<string, Table> CreateTable(string name, int offset)
+        //{
+        //    //Dictionary<string, Table> list = 
 
-            foreach (KeyValuePair<string, Table> table in this.baseDefinition.RomTableList)
-            {
-                if (table.Key == name)
-                {
-                    KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
-                    temptable.Value.xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-                    IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
-                    List<String> remattr = new List<String>();
-                    foreach (XAttribute attr in tempattr)
-                    {
-                        if (attr.Name != "address" && attr.Name != "name")
-                        {
-                            remattr.Add(attr.Name.ToString());
-                        }
-                    }
-                    foreach (String rem in remattr)
-                    {
-                        temptable.Value.xml.Attribute(rem).Remove();
-                    }
+        //    foreach (KeyValuePair<string, Table> table in this.baseDefinition.RomTableList)
+        //    {
+        //        if (table.Key == name)
+        //        {
+        //            KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
+        //            temptable.Value.xml.SetAttributeValue("address", offset.ToString("X"));//(System.Int32.Parse(temptable.Value.Attribute("offset").Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier) + offset).ToString("X"));
+        //            IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
+        //            List<String> remattr = new List<String>();
+        //            foreach (XAttribute attr in tempattr)
+        //            {
+        //                if (attr.Name != "address" && attr.Name != "name")
+        //                {
+        //                    remattr.Add(attr.Name.ToString());
+        //                }
+        //            }
+        //            foreach (String rem in remattr)
+        //            {
+        //                temptable.Value.xml.Attribute(rem).Remove();
+        //            }
 
-                    List<String> eleremlist = new List<String>();
+        //            List<String> eleremlist = new List<String>();
 
-                    foreach (XElement ele in temptable.Value.xml.Elements())
-                    {
-                        IEnumerable<XAttribute> childtempattr = ele.Attributes();
-                        List<String> childremattr = new List<String>();
+        //            foreach (XElement ele in temptable.Value.xml.Elements())
+        //            {
+        //                IEnumerable<XAttribute> childtempattr = ele.Attributes();
+        //                List<String> childremattr = new List<String>();
 
-                        if (ele.Name.ToString() != "table")
-                        {
-                            eleremlist.Add(ele.Name.ToString());
-                            continue;
-                        }
-                        if (ele.Attribute("type").Value.ContainsCI("static"))
-                        {
-                            eleremlist.Add(ele.Name.ToString());
-                        }
-                        else if (ele.Attribute("type").Value.ContainsCI("x axis"))
-                        {
-                            ele.Attribute("name").Value = "X";
-                            ele.SetAttributeValue("address", lut.colsAddress.ToString("X"));
-                        }
-                        else if (ele.Attribute("type").Value.ContainsCI("y axis"))
-                        {
-                            ele.Attribute("name").Value = "Y";
-                            ele.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
-                        }
-                        foreach (XAttribute attr in childtempattr)
-                        {
-                            if (attr.Name != "address" && attr.Name != "name")
-                            {
-                                childremattr.Add(attr.Name.ToString());
-                            }
-                        }
-                        foreach (String rem in childremattr)
-                        {
-                            ele.Attribute(rem).Remove();
-                        }
-                    }
-                    foreach (String rem in eleremlist)
-                    {
-                        temptable.Value.xml.Element(rem).Remove();
-                    }
-                    return temptable;
-                }
-            }
-            if (this.baseDefinition.RamTableList != null)
-            {
-                foreach (KeyValuePair<string, Table> table in this.baseDefinition.RamTableList)
-                {
-                    if (table.Key == name)
-                    {
-                        KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
-                        //TABLE WAS FOUND!
-                        return temptable;
-                    }
-                }
-            }
-            return new KeyValuePair<string, Table>();
-        }
+        //                if (ele.Name.ToString() != "table")
+        //                {
+        //                    eleremlist.Add(ele.Name.ToString());
+        //                    continue;
+        //                }
+        //                if (ele.Attribute("type").Value.ContainsCI("static"))
+        //                {
+        //                    eleremlist.Add(ele.Name.ToString());
+        //                }
+        //                else if (ele.Attribute("type").Value.ContainsCI("x axis"))
+        //                {
+        //                    ele.Attribute("name").Value = "X";
+        //                }
+        //                else if (ele.Attribute("type").Value.ContainsCI("y axis"))
+        //                {
+        //                    ele.Attribute("name").Value = "Y";
+        //                }
+        //                foreach (XAttribute attr in childtempattr)
+        //                {
+        //                    if (attr.Name != "address" && attr.Name != "name")
+        //                    {
+        //                        childremattr.Add(attr.Name.ToString());
+        //                    }
+        //                }
+        //                foreach (String rem in childremattr)
+        //                {
+        //                    ele.Attribute(rem).Remove();
+        //                }
+        //            }
+        //            foreach (String rem in eleremlist)
+        //            {
+        //                temptable.Value.xml.Element(rem).Remove();
+        //            }
+        //            return temptable;
+        //        }
+        //    }
+        //    if (this.baseDefinition.RamTableList != null)
+        //    {
+        //        foreach (KeyValuePair<string, Table> table in this.baseDefinition.RamTableList)
+        //        {
+        //            if (table.Key == name)
+        //            {
+        //                KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
+        //                //TABLE WAS FOUND!
+        //                return temptable;
+        //            }
+        //        }
+        //    }
+        //    return new KeyValuePair<string, Table>();
+        //}
 
-        #endregion
+        ///// <summary>
+        ///// Creates a table XEL from the template file, adding proper addresses
+        ///// TODO: Deprecated
+        ///// </summary>
+        ///// <param name="name"></param>
+        ///// <param name="offset"></param>
+        ///// <returns></returns>
+        //private KeyValuePair<string, Table> CreateTable(string name, Lut3D lut) //int offset)
+        //{
+        //    Dictionary<string, Table> list = this.baseDefinition.RomTableList;
+
+        //    foreach (KeyValuePair<string, Table> table in this.baseDefinition.RomTableList)
+        //    {
+        //        if (table.Key == name)
+        //        {
+        //            KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
+        //            temptable.Value.xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
+        //            IEnumerable<XAttribute> tempattr = temptable.Value.xml.Attributes();
+        //            List<String> remattr = new List<String>();
+        //            foreach (XAttribute attr in tempattr)
+        //            {
+        //                if (attr.Name != "address" && attr.Name != "name")
+        //                {
+        //                    remattr.Add(attr.Name.ToString());
+        //                }
+        //            }
+        //            foreach (String rem in remattr)
+        //            {
+        //                temptable.Value.xml.Attribute(rem).Remove();
+        //            }
+
+        //            List<String> eleremlist = new List<String>();
+
+        //            foreach (XElement ele in temptable.Value.xml.Elements())
+        //            {
+        //                IEnumerable<XAttribute> childtempattr = ele.Attributes();
+        //                List<String> childremattr = new List<String>();
+
+        //                if (ele.Name.ToString() != "table")
+        //                {
+        //                    eleremlist.Add(ele.Name.ToString());
+        //                    continue;
+        //                }
+        //                if (ele.Attribute("type").Value.ContainsCI("static"))
+        //                {
+        //                    eleremlist.Add(ele.Name.ToString());
+        //                }
+        //                else if (ele.Attribute("type").Value.ContainsCI("x axis"))
+        //                {
+        //                    ele.Attribute("name").Value = "X";
+        //                    ele.SetAttributeValue("address", lut.colsAddress.ToString("X"));
+        //                }
+        //                else if (ele.Attribute("type").Value.ContainsCI("y axis"))
+        //                {
+        //                    ele.Attribute("name").Value = "Y";
+        //                    ele.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
+        //                }
+        //                foreach (XAttribute attr in childtempattr)
+        //                {
+        //                    if (attr.Name != "address" && attr.Name != "name")
+        //                    {
+        //                        childremattr.Add(attr.Name.ToString());
+        //                    }
+        //                }
+        //                foreach (String rem in childremattr)
+        //                {
+        //                    ele.Attribute(rem).Remove();
+        //                }
+        //            }
+        //            foreach (String rem in eleremlist)
+        //            {
+        //                temptable.Value.xml.Element(rem).Remove();
+        //            }
+        //            return temptable;
+        //        }
+        //    }
+        //    if (this.baseDefinition.RamTableList != null)
+        //    {
+        //        foreach (KeyValuePair<string, Table> table in this.baseDefinition.RamTableList)
+        //        {
+        //            if (table.Key == name)
+        //            {
+        //                KeyValuePair<string, Table> temptable = new KeyValuePair<string, Table>(name, table.Value);
+        //                //TABLE WAS FOUND!
+        //                return temptable;
+        //            }
+        //        }
+        //    }
+        //    return new KeyValuePair<string, Table>();
+        //}
+
+        //#endregion
+#endregion
 
         #region RR XML Code
         
@@ -651,9 +612,15 @@ namespace SharpTune.RomMod
 
                 if (exp != null)
                 {
-                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
+                    string ch = "//ecuparam[@id='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
                     XElement check = exp.XPathSelectElement(ch);
-                    if (check != null) check.Remove();
+                    if (check != null)
+                    {
+                        if (check.Value != table.Value.xml.Value)
+                            check.Remove();
+                        else
+                            continue;
+                    }
                     cexp.AddBeforeSelf(table.Value.xml);
                 }
             }
@@ -673,26 +640,27 @@ namespace SharpTune.RomMod
 
                 if (exp != null)
                 {
-                    string ch = "//ecuparam[@name='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
+                    string ch = "//ecuparam[@id='" + table.Key.ToString() + "']/ecu[@id='" + ident + "']";
                     XElement check = exp.XPathSelectElement(ch);
                     XElement ad;
-                    if (check == null)
-                        ad = new XElement(exp.Descendants("ecu").First());
-                    else
+                    if (check != null)
                     {
                         ad = new XElement(check);
-                        check.Remove();
+                        ad.Attribute("id").Value = ident;
+                        ad.Descendants().First().Value = "0x" + table.Value;
+                        if (check.Value != ad.Value)
+                            check.Remove();
+                        else 
+                            continue;
                     }
-                    ad.Attribute("id").Value = ident;
-                    ad.Descendants().First().Value = "0x" + table.Value;
-                    cexp.AddBeforeSelf(ad);
+                    else
+                    {
+                        ad = new XElement(exp.Descendants("ecu").First());
+                        ad.Attribute("id").Value = ident;
+                        ad.Descendants().First().Value = "0x" + table.Value;
+                    }                   
 
-                    //if(exp.Descendants("ecu") != null)
-                    //{
-                    //    if (exp.Descendants("ecu").First().Descendants("address") != null)
-                    //        len = exp.Descendants("ecu").First().Descendants("address").First().Attribute("length").Value.ToString();
-                    //}
-                    //exp.AddFirst("0x" + table.Value);
+                    cexp.AddBeforeSelf(ad);
                 }
             }
             xmlDoc.SaveToFile(outPath);
@@ -744,45 +712,12 @@ namespace SharpTune.RomMod
             xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
             xel.Element("address").Attribute("length").Value = length.ToString();
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel));
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel,null));
         }
         #endregion
 
-        #region ECUFlash XML Code
-        public static void MapToECUFlash(string filepath,string ident)
-        {
-            IdaMap idaMap = new IdaMap(filepath);
-            //TODO: add ability to select a new base or use multiple inheritance.
-            SharpTuner.availableDevices.DefDictionary["32BITBASE"].Populate();
-            Definition baseDef = SharpTuner.availableDevices.DefDictionary["32BITBASE"].DeepClone();
-            //loop through base def and search for table names in map
-            Dictionary<Table, string> foundRomTables = new Dictionary<Table, string>();
-            Dictionary<Table, string> foundRamTables = new Dictionary<Table, string>();
-            foreach (var romtable in baseDef.RomTableList)
-            {
-                foreach(var idan in idaMap.IdaCleanNames)
-                {
-                    if (romtable.Key.EqualsIdaString(idan.Key))
-                    {
-                        foundRomTables.Add(romtable.Value, idan.Value);
-                        break;
-                    }
-                }
-            }
-            foreach (var ramtable in baseDef.RamTableList)
-            {
-                foreach (var idan in idaMap.IdaCleanNames)
-                {
-                    if (ramtable.Key.EqualsIdaString(idan.Key))
-                    {
-                        foundRomTables.Add(ramtable.Value, idan.Value);
-                        break;
-                    }
-                }
-            }
-        }
-        #endregion
     }
 }
 
 
+        

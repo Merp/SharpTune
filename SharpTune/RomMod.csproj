@@ -142,7 +142,6 @@
     <Compile Include="GUI\XMLtoIDC.Designer.cs">
       <DependentUpon>XMLtoIDC.cs</DependentUpon>
     </Compile>
-    <Compile Include="ModUtils.cs" />
     <Compile Include="RAMDump.cs" />
     <Compile Include="GUI\TableView.cs" />
     <Compile Include="GUI\TableView.Designer.cs">
@@ -150,7 +149,7 @@
     </Compile>
     <Compile Include="RomMod\Blob.cs" />
     <Compile Include="RomMod\BlobList.cs" />
-    <Compile Include="RomMod\DefCreator.cs" />
+    <Compile Include="RomMod\ModDefinition.cs" />
     <Compile Include="Core\Lut.cs" />
     <Compile Include="RomMod\Mod.cs" />
     <Compile Include="RomMod\Patch.cs" />

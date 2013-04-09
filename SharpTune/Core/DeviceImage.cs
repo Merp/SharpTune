@@ -49,8 +49,6 @@ namespace SharpTuneCore
 
         public bool isChanged { get; set; }
 
-        public List<Mod> ModList { get; private set; }
-
         public Definition Definition { get; private set; }
 
         public List<Table> tableList { get; set; }
@@ -58,6 +56,8 @@ namespace SharpTuneCore
         public TreeNode imageTree { get; set; }
 
         public Stream imageStream;
+
+        public List<Mod> ModList { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -70,8 +70,7 @@ namespace SharpTuneCore
             this.FileName = f.Name;
             this.FilePath = fPath;
             this.FileDirectory = fPath.Replace(f.Name, "");
-            ModList = new List<Mod>();
-
+            
             TryOpenRom(fPath);
 
             if (this.CalId == null)
@@ -115,7 +114,7 @@ namespace SharpTuneCore
                 this.imageStream = memStream;
             }
 
-            foreach (KeyValuePair<string, Definition> device in SharpTuner.availableDevices.DefDictionary)
+            foreach (KeyValuePair<string, Definition> device in SharpTuner.AvailableDevices.DefDictionary)
             {
                 this.imageStream.Seek(device.Value.internalIdAddress, SeekOrigin.Begin);
 
@@ -136,6 +135,7 @@ namespace SharpTuneCore
                     //}
                     //this.imageTree = new TableTree(this);
                     this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
+                    ModList = this.GetValidMods();
                     return true;
                 }
             }
@@ -188,7 +188,6 @@ namespace SharpTuneCore
 
         }
 
-
         public bool PredicateFileName(string filename)
         {
 
@@ -201,70 +200,5 @@ namespace SharpTuneCore
             }
 
         }
-
-        public void LoadMods()
-        {
-            ModList.Clear();
-            LoadResourceMods();
-            LoadExternalMods();
-        }
-
-        private void LoadResourceMods()
-        {
-            int i = ModList.Count;
-            string calid = CalId.ToString();
-            ResourceSet ress = Resources.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
-            ResourceManager rm = SharpTune.Properties.Resources.ResourceManager;
-            foreach (DictionaryEntry r in ress)
-            {
-                if (r.Key.ToString().ContainsCI(CalId.ToString()))
-                {
-                    MemoryStream stream = new MemoryStream((byte[])rm.GetObject(r.Key.ToString()));
-                    // assembly.GetManifestResourceStream("SharpTune.Resources." + r.Key.ToString());
-
-                    Mod tempMod = new Mod(stream, r.Key.ToString());
-                    if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
-                        ModList.Add(tempMod);
-                }
-            }
-            if (ModList == null || ModList.Count == i)
-            {
-                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", FileName);
-            }
-            SharpTuner.mainWindow.RefreshModTree();
-            SharpTuner.mainWindow.RefreshModInfo();
-        }
-
-        private void LoadExternalMods()
-        {
-            int i = ModList.Count;
-            string calid = CalId.ToString();
-            string[] terms = { ".patch" };
-            List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
-            if (searchresults == null)
-            {
-                Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", FileName);
-            }
-            else
-            {
-                foreach (string modpath in searchresults)
-                {
-                    if (!modpath.ContainsCI("debug") && !modpath.ContainsCI("currentbuild"))
-                    {
-                        Mod tempMod = new Mod(modpath);
-                        if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
-                            ModList.Add(tempMod);
-                    }
-                }
-                if (ModList == null || ModList.Count == i)
-                {
-                    Console.WriteLine("NO VALID MODS FOR THIS ROM: {0}", FileName);
-                }
-            }
-            SharpTuner.mainWindow.RefreshModTree();
-            SharpTuner.mainWindow.RefreshModInfo();
-        }
-
     }
-
 }

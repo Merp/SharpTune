@@ -90,7 +90,7 @@ namespace SharpTune.RomMod
         public string FinalEcuId { get; private set; }
         public List<Patch> patchList;
         public List<Patch> unPatchList;
-        private DefCreator defCreator { get; set; }
+        public ModDefinition modDef { get; private set; }
         public string buildConfig;
 
         /// <summary>
@@ -163,13 +163,18 @@ namespace SharpTune.RomMod
         
         public bool TryDefinition(string defPath)
         {
-            this.defCreator = new DefCreator(this);
-            if (!defCreator.TryReadDefs(defPath)) return false;
-            if (!defCreator.TryPrintEcuFlashDef()) return false;
+            this.modDef = new ModDefinition(this);
+            if (!modDef.TryReadDefs(defPath)) return false;
+
+            if (buildConfig != null)
+                defPath = defPath + "/MerpMod/" + buildConfig + "/";
+            defPath += ModIdent.ToString() + ".xml";
+
+            modDef.definition.ExportXML(defPath);
             return true;
         }
 
-        public bool TryCheckApplyMod(string romPath, string outPath, int apply, bool commit)
+        public bool TryCheckApplyMod(string romPath, string outPath, bool apply, bool commit)
         {
             if (patchList == null || patchList.Count == 0)
                 return false;
@@ -188,13 +193,13 @@ namespace SharpTune.RomMod
             Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
             Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
 
-            if (apply != 1 && TryValidatePatches(outStream))
+            if (apply && TryValidatePatches(outStream))
             {
                 isApplied = false;
                 isCompat = true;
                 Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
             }
-            else if (apply != 0 && TryValidateUnPatches(outStream))
+            else if (!apply && TryValidateUnPatches(outStream))
             {
                 isApplied = true;
                 isCompat = true;

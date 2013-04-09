@@ -19,14 +19,16 @@ using System.Data;
 using System.IO;
 using SharpTune;
 using SharpTuneCore;
+using SharpTune.Core;
+using System.Runtime.Serialization;
 
 namespace SharpTuneCore
 {
     public class Table2D : Table
     {
 
-        public Table2D(XElement xel)
-            : base(xel)
+        public Table2D(XElement xel,Definition d, bool b)
+            : base(xel, d, b)
         {
 
         }
@@ -45,12 +47,11 @@ namespace SharpTuneCore
             return this;
         }
 
-
-
-
-
-
-
+        public override Table CreateChild(Lut lut,Definition d)
+        {
+            return base.CreateChild(lut,d);
+            //TODO FIX?? AND CHECK FOR STATIC AXES!!
+        }
 
         public override void Read()
         {
@@ -108,8 +109,8 @@ namespace SharpTuneCore
     public class RamTable2D : Table2D
     {
 
-        public RamTable2D(XElement xel)
-            : base(xel)
+        public RamTable2D(XElement xel,Definition d, bool b)
+            : base(xel,d,b)
         {
 
         }

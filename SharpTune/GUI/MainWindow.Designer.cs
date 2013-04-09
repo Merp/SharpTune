@@ -43,7 +43,6 @@
             this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mAPToRRLoggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mAPToECUFlashToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -163,8 +162,7 @@
             this.obfuscateCALIDToolStripMenuItem,
             this.xMLToIDCToolStripMenuItem,
             this.iDAToHEWToolStripMenuItem,
-            this.mAPToRRLoggerToolStripMenuItem,
-            this.mAPToECUFlashToolStripMenuItem});
+            this.mAPToRRLoggerToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
             this.rOMToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.rOMToolStripMenuItem.Text = "Tools";
@@ -197,14 +195,6 @@
             this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to RR Logger";
             this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
-            // 
-            // mAPToECUFlashToolStripMenuItem
-            // 
-            this.mAPToECUFlashToolStripMenuItem.Enabled = false;
-            this.mAPToECUFlashToolStripMenuItem.Name = "mAPToECUFlashToolStripMenuItem";
-            this.mAPToECUFlashToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.mAPToECUFlashToolStripMenuItem.Text = "MAP to ECUFlash";
-            this.mAPToECUFlashToolStripMenuItem.Click += new System.EventHandler(this.mAPToECUFlashToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -462,7 +452,6 @@
         private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mAPToRRLoggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem mAPToECUFlashToolStripMenuItem;
     }
 }
 

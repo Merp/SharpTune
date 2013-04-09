@@ -45,6 +45,7 @@ namespace SharpTuneCore
 
             try
             {
+                //wtf is this TODO
                 List<string> ts = ResourceUtil.directorySearchRecursiveDir(SharpTuner.EcuFlashDefRepoPath,null);
                 if(!GetDevices(ts[0]))
                 {
@@ -108,10 +109,20 @@ namespace SharpTuneCore
                             if (d.isBase)
                                 d.LoadRomId();
                             lock(DefDictionary)
-                                DefDictionary.Add(d.internalId, d);
-                            lock(IdentList)
-                                IdentList.Add(d.internalId);
-                            DeviceCount++;
+                            {
+                                if(DefDictionary.ContainsKey(d.internalId))
+                                    Console.Write("Duplicate definition found for: " + d.internalId + ". Check the definitions!!");
+                                else
+                                {
+                                    DefDictionary.Add(d.internalId, d);
+                            
+                                    lock(IdentList)
+                                    {
+                                        IdentList.Add(d.internalId);
+                                    DeviceCount++;
+                                    }
+                                }
+                            }
                         }
                         catch (System.Exception excpt)
                         {
@@ -156,13 +167,6 @@ namespace SharpTuneCore
                 return DefDictionary[id];
             }
             return null;
-        }
-
-        public bool LoadFullDef(string id)
-        {
-            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
-                DefDictionary[id].Populate();
-            return true;
         }
     }   
 }
