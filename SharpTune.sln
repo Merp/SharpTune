@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RomMod", "SharpTune\RomMod.csproj", "{49D56AC9-4956-4C5A-A17D-E64C32CCE693}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpRaider", "SharpRaider\SharpRaider.csproj", "{A5F8C94E-3202-4797-8807-8926AD18D0FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,20 @@ Global
 		{49D56AC9-4956-4C5A-A17D-E64C32CCE693}.Release|x64.ActiveCfg = Release|x86
 		{49D56AC9-4956-4C5A-A17D-E64C32CCE693}.Release|x86.ActiveCfg = Release|x86
 		{49D56AC9-4956-4C5A-A17D-E64C32CCE693}.Release|x86.Build.0 = Release|x86
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|Itanium.ActiveCfg = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|Itanium.ActiveCfg = Release|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|x64.ActiveCfg = Release|Any CPU
+		{A5F8C94E-3202-4797-8807-8926AD18D0FA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
