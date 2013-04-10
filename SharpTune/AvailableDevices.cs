@@ -110,16 +110,19 @@ namespace SharpTuneCore
                                 d.LoadRomId();
                             lock(DefDictionary)
                             {
-                                if(DefDictionary.ContainsKey(d.internalId))
-                                    Console.Write("Duplicate definition found for: " + d.internalId + ". Check the definitions!!");
+                                if (DefDictionary.ContainsKey(d.internalId))
+                                {
+                                    Console.WriteLine("Duplicate definition found for: " + d.internalId + " in file: " + f + " Check the definitions!!");
+                                    Console.WriteLine("Definition was previously found in file: " + DefDictionary[d.internalId].defPath);
+                                }
                                 else
                                 {
                                     DefDictionary.Add(d.internalId, d);
-                            
-                                    lock(IdentList)
+
+                                    lock (IdentList)
                                     {
                                         IdentList.Add(d.internalId);
-                                    DeviceCount++;
+                                        DeviceCount++;
                                     }
                                 }
                             }

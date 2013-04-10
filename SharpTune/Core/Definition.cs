@@ -599,7 +599,7 @@ namespace SharpTuneCore
                 else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList.ContainsKey(name))//TODO FIX RAMTABLES
                     return SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList[name];
             }
-            Console.WriteLine("Warning: base table for " + name + "not found");
+            Console.WriteLine("Warning: base table for " + name + " not found");
             return null;
         }
 
