@@ -709,7 +709,14 @@ namespace SharpTune.RomMod
             ");
 
             xel.Attribute("id").Value = this.parentMod.FinalEcuId;
-            xel.Element("address").Value = "0x" + offset.ToString("X6").Substring(2, 6);
+            string ts = offset.ToString("X6");
+            ts = ts.Substring(2, ts.Length-2);
+            if (ts.Length < 6 && ts.Substring(0, 2) != "FF")
+            {
+                Console.WriteLine("!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!");
+                Console.WriteLine("WARNING! bad ram table: " + name + " with offset: " + offset.ToString("X"));
+            }
+            xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("length").Value = length.ToString();
 
             return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel,null));
