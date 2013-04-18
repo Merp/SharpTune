@@ -21,6 +21,7 @@ using SharpTune.RomMod;
 using SharpTune.Properties;
 using System.Resources;
 using System.Collections;
+using System.Threading;
 
 namespace SharpTune
 {
@@ -69,14 +70,16 @@ namespace SharpTune
 
         public static string QueuedFilePath { get; set; }
 
-        static SharpTuner()
-        {
+        static SharpTuner(){
+        
+            Console.WriteLine("<--- Initializing SharpTuner --->");
             ImageList = new List<DeviceImage>();
             DataScalings = new List<Scaling>();
             UnitScalings = new List<Scaling>();
             initSettings();
             populateAvailableDevices();
             LoadMods();
+            Console.WriteLine("<--Finished Initializing SharpTuner --->");
         }
 
         public static void initSettings()

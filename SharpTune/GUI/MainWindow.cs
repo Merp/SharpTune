@@ -272,7 +272,7 @@ namespace SharpTune
                     Environment.NewLine);
                 selectedModTextBox.AppendText(
                     "Version: " +
-                    m.ModVersion +
+                    m.ModBuild +
                     Environment.NewLine);
                 selectedModTextBox.AppendText(
                     "Author: " +

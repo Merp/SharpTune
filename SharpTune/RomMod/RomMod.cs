@@ -25,7 +25,7 @@ namespace SharpTune.RomMod
 {
     public class RomMod
     {
-        public const int Version = 8;
+        public const int Version = 9;
 
         /// <summary>
         /// Determines which command to run.
@@ -162,7 +162,7 @@ namespace SharpTune.RomMod
             //    Console.WriteLine("This patch file converts ROM to:  {0}.", currentMod.FinalCalibrationId);
             //    Console.WriteLine("This mod was created by: {0}.", currentMod.ModAuthor);
             //    Console.WriteLine("Mod Information: {0} Version: {1}.", currentMod.ModName, currentMod.ModVersion);
-            //    Console.WriteLine(currentMod.ModInfo);
+            //    Console.WriteLine(currentMod.Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";);
 
             //    if (!apply)
             //    {

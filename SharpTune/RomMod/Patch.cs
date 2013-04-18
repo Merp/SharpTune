@@ -68,11 +68,14 @@ namespace SharpTune.RomMod
 
         public Blob Payload { get; set; }
 
+        public String Name { get; set; }
+
         /// <summary>
         /// Constructor.
         /// </summary>
-        public Patch(uint start, uint end)
+        public Patch(string name, uint start, uint end)
         {
+            this.Name = name;
             this.StartAddress = start;
             this.EndAddress = end;
             this.IsNewPatch = false;
@@ -85,7 +88,7 @@ namespace SharpTune.RomMod
         /// </summary>
         public override string ToString()
         {
-            return string.Format("Patch start: {0:X8}, end: {1:X8}, length: {2:X8}", this.StartAddress, this.EndAddress, this.Length);
+            return string.Format("Patch name: " + this.Name + Environment.NewLine + " start: {0:X8}, end: {1:X8}, length: {2:X8}", this.StartAddress, this.EndAddress, this.Length);
         }
 
         /// <summary>
@@ -114,16 +117,16 @@ namespace SharpTune.RomMod
 
     public class CalidPatch : Patch
     {
-        public CalidPatch(uint start, uint end)
-            : base(start, end)
+        public CalidPatch(string name, uint start, uint end)
+            : base(name, start, end)
         {
         }
     }
 
     public class PullJSRHookPatch : Patch
     {
-        public PullJSRHookPatch(uint start, uint end)
-            : base(start, end)
+        public PullJSRHookPatch(string name, uint start, uint end)
+            : base(name, start, end)
         {
             this.IsMetaChecked = true;
         }

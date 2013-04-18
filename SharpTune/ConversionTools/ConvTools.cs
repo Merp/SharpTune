@@ -53,11 +53,16 @@ namespace SharpTune.ConversionTools
                 else
                     prog.WriteIDC(args[1]);
             }
-            else if (args[0].ContainsCI(".xml") && args.Length == 4)
+            else if (args[0].ContainsCI(".xml") && args.Length > 3)
             {
+                String Build;
+                if (args.Length == 5)
+                    Build = args[4];
+                else
+                    Build = "Unknown";
                 prog.LoadXML(args[0]);
                 idaMap = new IdaMap(args[1]);
-                prog.FindAndWriteDefines(args[2]);
+                prog.FindAndWriteDefines(args[2],Build);
                 prog.FindAndWriteSections(args[3]);
             }
             else
@@ -180,14 +185,16 @@ namespace SharpTune.ConversionTools
             }
         }        
 
-        public void FindAndWriteDefines(string outfilename)
+        public void FindAndWriteDefines(string outfilename, String Build)
         {
             //write date tag!
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
                 writer.WriteLine("#define MOD_DATE " + DateTime.Today.Year.ToString().Substring(2) + "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." + DateTime.Now.Hour.ToString() + DateTime.Now.Minute.ToString() + System.Environment.NewLine);
+                writer.WriteLine("#define MOD_BUILD " + Build);
                 foreach (var category in Defines)
                 {
+                    Console.WriteLine("Defining Category " + category.ToString());
                     writer.WriteLine("/////////////////////");
                     writer.WriteLine("// " + category.Key.ToString());
                     writer.WriteLine("/////////////////////");

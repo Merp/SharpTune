@@ -26,6 +26,25 @@ namespace SharpTune.RomMod
     /// </summary>
     public class Mod
     {
+        public string TestBuildWarning = @"WARNING: This is an experimental TESTING build. "
+            +@"There is a risk that this may brick your ecu! "
+            + @"Please take the proper precautions (arrange alternate transportation, park car in a safe place, and have a SH boot mode cable prepared). " + Environment.NewLine
+            +@"UNAUTHORIZED DISTRIBUTION OR SHARING STRICTLY PROHIBITED. OFFROAD USE ONLY. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS,” "
+            +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
+            + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT." + Environment.NewLine
+            +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
+        public string ReleaseBuildWarning = @"UNAUTHORIZED DISTRIBUTION OR SHARING STRICTLY PROHIBITED. OFFROAD USE ONLY. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS,” "
+            +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
+            + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. " + Environment.NewLine
+            +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
+        public string DefaultBuildWarning = @"WARNING: This is an experimental TESTING build. "
+            +@"There is a risk that this may brick your ecu! "
+            + @"Please take the proper precautions (arrange alternate transportation, park car in a safe place, and have a SH boot mode cable prepared). " + Environment.NewLine
+            +@"UNAUTHORIZED DISTRIBUTION OR SHARING STRICTLY PROHIBITED. OFFROAD USE ONLY. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS, ” "
+            +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
+            +@"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT." + Environment.NewLine
+            +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
+
         public const uint BaselineOffset = 0xFF000000;
         private const uint metadataAddress = 0x80001000;
         private const uint requiredVersionPrefix = 0x12340000;
@@ -37,7 +56,7 @@ namespace SharpTune.RomMod
         private const uint replace4BytesPrefix = 0x12340003;
         private const uint replaceLast2Of4BytesPrefix = 0x12340013;
         private const uint modNamePrefix = 0x12340007;
-        private const uint modVersionPrefix = 0x12340009;
+        private const uint modBuildPrefix = 0x12340009;
         private const uint modAuthorPrefix = 0x12340008;
         public const uint endoffile = 0x00090009;
         private const uint jsrhookPrefix = 0x1234000A;
@@ -72,9 +91,8 @@ namespace SharpTune.RomMod
             }
             private set { }
         }
-        public string ModVersion { get; private set; }
+        public string ModBuild { get; private set; }
         public string ModAuthor { get; private set; }
-        public string ModName { get; private set; }
         public string ModInfo { get; private set; }
 
         public uint ModIdentAddress { get; private set; }
@@ -101,8 +119,7 @@ namespace SharpTune.RomMod
         {
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
-            this.ModName = "Unknown Mod";
-            this.ModVersion = "Unknown Version";
+            this.ModBuild = "Unknown Build";
             //MemoryStream modMemStream = new MemoryStream();
             //using (FileStream fileStream = File.OpenRead(modPath))
             //{
@@ -124,8 +141,7 @@ namespace SharpTune.RomMod
             this.buildConfig = bc;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
-            this.ModName = "Unknown Mod";
-            this.ModVersion = "Unknown Version";
+            this.ModBuild = "Unknown Version";
             //MemoryStream modMemStream = new MemoryStream();
             //using (FileStream fileStream = File.OpenRead(modPath))
             //{
@@ -151,8 +167,7 @@ namespace SharpTune.RomMod
         {
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
-            this.ModName = "Unknown Mod";
-            this.ModVersion = "Unknown Version";
+            this.ModBuild = "Unknown Version";
             reader = new SRecordReader(s, modPath);
             FileName = modPath;
             isResource = true;
@@ -190,8 +205,9 @@ namespace SharpTune.RomMod
 
             Console.WriteLine("This patch file was intended for: {0}.", this.InitialCalibrationId);
             Console.WriteLine("This patch file converts ROM to:  {0}.", this.ModIdent);
+            Console.WriteLine("Build: " + this.ModBuild);
             Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
-            Console.WriteLine("Mod Information: {0} Version: {1}.", this.ModName, this.ModVersion);
+            Console.WriteLine("Mod Info: " + this.ModInfo);
 
             if (apply && TryValidatePatches(outStream))
             {
@@ -260,6 +276,13 @@ namespace SharpTune.RomMod
             }
             else
             {
+                if (ModBuild.ContainsCI("testing"))
+                    MessageBox.Show(TestBuildWarning, "WARNING");
+                else if (ModBuild.ContainsCI("release"))
+                    MessageBox.Show(ReleaseBuildWarning, "WARNING");
+                else
+                    MessageBox.Show(DefaultBuildWarning, "WARNING");
+
                 Console.WriteLine("Applying mod.");
                 if (this.TryApplyMod(outStream))
                 {
@@ -677,7 +700,7 @@ namespace SharpTune.RomMod
             this.FinalCalibrationId = finalCalibrationId;
 
             // Synthesize calibration-change patch and blobs.
-            Patch patch = new Patch(
+            Patch patch = new Patch( "Calibration ID Patch",
                 calibrationAddress, 
                 calibrationAddress + (calibrationLength - 1));
 
@@ -787,7 +810,7 @@ namespace SharpTune.RomMod
 
                     this.FinalCalibrationId = finalCalibrationId;
                     // Synthesize calibration-change patch and blobs.
-                    patch = new Patch(
+                    patch = new Patch( "Calibration ID Patch",
                         CalIdAddress,
                         CalIdAddress + (CalIdLength - 1));
 
@@ -839,20 +862,6 @@ namespace SharpTune.RomMod
                         this.FinalEcuId = metaString;
                     }
                 }
-                else if (cookie == modNamePrefix)
-                {
-                    string metaString = null;
-                    if (this.TryReadMetaString(metadata, out metaString, ref offset))
-                    {
-                        // found modName, output to string!
-                        this.ModName = metaString;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid ModName found." + patch.ToString());
-                        return false;
-                    }
-                }
                 else if (cookie == modAuthorPrefix)
                 {
                     string metaString = null;
@@ -867,13 +876,13 @@ namespace SharpTune.RomMod
                         return false;
                     }
                 }
-                else if (cookie == modVersionPrefix)
+                else if (cookie == modBuildPrefix)
                 {
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
                         // found modName, output to string!
-                        this.ModVersion = metaString;
+                        this.ModBuild = metaString;
                     }
                     else
                     {
@@ -886,12 +895,12 @@ namespace SharpTune.RomMod
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
-                        // found modinfo, output to string!
-                        this.ModInfo = metaString;
+                        // found Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";, output to string!
+                        this.ModInfo = metaString.Replace("__",Environment.NewLine);
                     }
                     else
                     {
-                        Console.WriteLine("Invalid modInfo found." + patch.ToString());
+                        Console.WriteLine("Invalid ModInfo found." + patch.ToString());
                         return false;
                     }
                 }
@@ -912,7 +921,7 @@ namespace SharpTune.RomMod
                     }
                     this.FinalEcuId = feid.ToString();
                 }
-                patch = new Patch(
+                patch = new Patch( "ECU ID Patch",
                     EcuIdAddress,
                     EcuIdAddress + ((EcuIdLength / 2) - 1));
 
@@ -1040,10 +1049,10 @@ namespace SharpTune.RomMod
             UInt32 cookie = 0;
             List<byte> tempbytelist = new List<byte>();
 
-             while ((metadata.Content.Count > offset + 8) &&
+             while ((metadata.Content.Count > offset + 4) &&
                  metadata.TryGetUInt32(ref cookie, ref offset))
              {
-                 if (cookie < 0x12340010 && cookie > 12340000)
+                 if ((cookie < 0x12340010 && cookie > 0x12340000) || cookie == 0x00090009)
                  {
                      offset -= 4;
 
@@ -1083,19 +1092,24 @@ namespace SharpTune.RomMod
         {
             uint start = 0;
             uint end = 0;
+            string name;
                         
             if (!metadata.TryGetUInt32(ref start, ref offset))
             {
-                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no start address).");
+                throw new InvalidDataException("Patch at metadata offset: " + offset + " contains an incomplete patch record (no start address).");
             }
                         
             if (!metadata.TryGetUInt32(ref end, ref offset))
             {
-                throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no end address).");
+                throw new InvalidDataException("Patch at metadata offset: " + offset + " contains an incomplete patch record (no end address).");
             }
-
+            
+            if(!TryReadMetaString(metadata,out name, ref offset))
+            {
+                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+            }
              
-            patch = new Patch(start, end);
+            patch = new Patch(name,start, end);
 
             Blob baselineBlob;
 
@@ -1133,6 +1147,7 @@ namespace SharpTune.RomMod
             uint copystart = 0;
             uint start = 0;
             uint end = 0;
+            string name;
 
             if (!metadata.TryGetUInt32(ref copystart, ref offset))
             {
@@ -1149,8 +1164,12 @@ namespace SharpTune.RomMod
                 throw new InvalidDataException("This patch's metadata contains an incomplete patch record (no end address).");
             }
 
+            if (!TryReadMetaString(metadata, out name, ref offset))
+            {
+                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+            }
 
-            patch = new Patch(start, end);
+            patch = new Patch(name, start, end);
 
             patch.CopyStartAddress = copystart;
 
@@ -1184,17 +1203,23 @@ namespace SharpTune.RomMod
         private bool TrySynthesizePullJsrHookPatch(Blob metadata, out Patch patch, ref int offset, List<Blob> blobs)
         {
             uint address = 0;
+            string name;
 
             if (!metadata.TryGetUInt32(ref address, ref offset))
             {
                 throw new InvalidDataException("This patch's metadata contains an incomplete 4-byte patch record (no address).");
             }
 
+            if (!TryReadMetaString(metadata, out name, ref offset))
+            {
+                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+            }
+
             byte[] jsrbytes = new byte[] {0xF0,0x48,0x00,0x09};
 
 
 
-            patch = new PullJSRHookPatch(address, address + 3);
+            patch = new PullJSRHookPatch(name, address, address + 3);
 
             patch.IsMetaChecked = true;//remove thsi
 
@@ -1213,6 +1238,7 @@ namespace SharpTune.RomMod
             uint address = 0;
             uint oldValue = 0;
             uint newValue = 0;
+            string name;
 
             if (!metadata.TryGetUInt32(ref address, ref offset))
             {
@@ -1229,7 +1255,12 @@ namespace SharpTune.RomMod
                 throw new InvalidDataException("This patch's metadata contains an incomplete 4-byte patch record (no patch value).");
             }
 
-            patch = new Patch(address, address + 3);
+            if (!TryReadMetaString(metadata, out name, ref offset))
+            {
+                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+            }
+
+            patch = new Patch(name, address, address + 3);
             patch.IsMetaChecked = true;
             patch.Baseline = new Blob(address + BaselineOffset, BitConverter.GetBytes(oldValue).Reverse());
             patch.Payload = new Blob(address, BitConverter.GetBytes(newValue).Reverse());
@@ -1247,6 +1278,7 @@ namespace SharpTune.RomMod
             uint address = 0;
             uint oldValue = 0;
             uint newValue = 0;
+            string name;
 
             if (!metadata.TryGetUInt32(ref address, ref offset))
             {
@@ -1263,7 +1295,12 @@ namespace SharpTune.RomMod
                 throw new InvalidDataException("This patch's metadata contains an incomplete l2o4-byte patch record (no patch value).");
             }
 
-            patch = new Patch(address + 2, address + 3);
+            if (!TryReadMetaString(metadata, out name, ref offset))
+            {
+                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+            }
+
+            patch = new Patch(name, address + 2, address + 3);
             patch.IsMetaChecked = true;
             patch.Baseline = new Blob(address + 2 + BaselineOffset, BitConverter.GetBytes(oldValue).Take(2).Reverse());
             patch.Payload = new Blob(address + 2, BitConverter.GetBytes(newValue).Take(2).Reverse());
