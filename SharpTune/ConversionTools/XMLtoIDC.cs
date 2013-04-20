@@ -374,7 +374,7 @@ namespace NSFW
 
                     if (string.IsNullOrEmpty(ecuid))
                     {
-                        Trace.WriteLine("Could not find definition for " + id);
+                        Trace.TraceWarning("Could not find definition for " + id);
                         return null;
                     }
                     if (memmodel.Contains("68HC"))

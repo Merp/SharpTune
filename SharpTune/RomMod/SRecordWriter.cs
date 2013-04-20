@@ -56,7 +56,7 @@ namespace SharpTune.RomMod
                 string dataString = builder.ToString();
 
                 // Adding 5 to the count since the 4 address bytes and checksum are written separately
-                //Console.WriteLine("S3{0:X2}{1:X8}{2}", count + 5, address, dataString);
+                //Trace.WriteLine("S3{0:X2}{1:X8}{2}", count + 5, address, dataString);
                 writer.WriteLine("S3{0:X2}{1:X8}{2}", count + 5, address, dataString);
 
                 bytesWritten += (int)count;

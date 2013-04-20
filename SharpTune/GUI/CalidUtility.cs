@@ -22,6 +22,7 @@ using System.IO;
 using System.Collections;
 using SharpTune.RomMod;
 using SharpTuneCore;
+using System.Diagnostics;
 
 namespace SharpTune
 {
@@ -142,8 +143,8 @@ namespace SharpTune
                     catch (System.Exception excpt)
                     {
                         MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Console.WriteLine("Error accessing file! It is locked!");
-                        Console.WriteLine(excpt.Message);
+                        Trace.WriteLine("Error accessing file! It is locked!");
+                        Trace.WriteLine(excpt.Message);
                         return;
                     }
                 }

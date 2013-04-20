@@ -17,6 +17,7 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using SharpTune;
+using System.Diagnostics;
 
 
 namespace SharpTuneCore
@@ -98,7 +99,7 @@ namespace SharpTuneCore
            }
            catch (System.Exception excpt)
            {
-               Console.WriteLine(excpt.Message);
+               Trace.WriteLine(excpt.Message);
                return null;
            }
 
@@ -147,11 +148,11 @@ namespace SharpTuneCore
             {
                 string derp = excpt.Message;
                 //do nothing
-                //Console.WriteLine(excpt.Message);
+                //Trace.WriteLine(excpt.Message);
             }
             catch (System.Exception excpt)
             {
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine(excpt.Message);
             }
             return dirlist;
         }
@@ -183,7 +184,7 @@ namespace SharpTuneCore
             }
             catch (System.Exception excpt)
             {
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine(excpt.Message);
             }
 
             return null;

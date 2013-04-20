@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -115,7 +116,7 @@ namespace SharpTune.RomMod
                     int i = this.romStream.ReadByte();
                     if (i == -1)
                     {
-                        Console.WriteLine("Reached end of file while trying to verify address {0:X8}", address);
+                        Trace.WriteLine(String.Format("Reached end of file while trying to verify address {0:X8}", address));
                         return false;
                     }
 
@@ -125,7 +126,7 @@ namespace SharpTune.RomMod
                     byte b = record.Payload[payloadIndex];
                     if (i != b)
                     {
-                        Console.WriteLine("Address {0:X8} contains {1:X2}, but should contain {2:X2}", address, b, payloadIndex);
+                        Trace.WriteLine(String.Format("Address {0:X8} contains {1:X2}, but should contain {2:X2}", address, b, payloadIndex));
                         return false;
                     }
                 }

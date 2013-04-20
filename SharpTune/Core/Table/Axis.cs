@@ -196,7 +196,7 @@ namespace SharpTuneCore
             //}
             //catch (System.Exception excpt)
             //{
-            //    Console.WriteLine(excpt.Message);
+            //    Trace.WriteLine(excpt.Message);
             //}
 
         }

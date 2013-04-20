@@ -153,7 +153,7 @@ namespace SharpTune
             List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
             if (searchresults == null)
             {
-                Console.WriteLine("No External Mods found");
+                Trace.WriteLine("No External Mods found");
             }
             else
             {

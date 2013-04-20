@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using SharpTune;
 using System.IO;
+using System.Diagnostics;
 
 namespace SharpTune.ConversionTools
 {
@@ -48,7 +49,7 @@ namespace SharpTune.ConversionTools
         public void print(StreamWriter writer)
         {
             if (offset == null)
-                Console.WriteLine("COULD NOT FIND DEFINE: " + name);
+                Trace.WriteLine("COULD NOT FIND DEFINE: " + name);
             else
                 writer.WriteLine("#define " + name + " (" + this.printType() + "0x" + offset + ")");
         }

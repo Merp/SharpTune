@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.IO;
 using SharpTune;
 using SharpTune.ConversionTools;
+using System.Diagnostics;
 
 namespace SharpTune.GUI
 {
@@ -42,9 +43,9 @@ namespace SharpTune.GUI
             
         }
 
-        //Console.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt>");
-        //        Console.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
-        //        Console.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
+        //Trace.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt>");
+        //        Trace.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
+        //        Trace.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -70,11 +71,11 @@ namespace SharpTune.GUI
                     }
                 default:
                     MessageBox.Show("Error! check your settings & files!!");
-                    Console.WriteLine("Error! check your settings & files!!");
+                    Trace.WriteLine("Error! check your settings & files!!");
                     return;
             }
             MessageBox.Show("Finished Conversion!");
-            Console.WriteLine("Finished Conversion!");
+            Trace.WriteLine("Finished Conversion!");
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)

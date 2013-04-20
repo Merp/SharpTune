@@ -93,10 +93,10 @@
 //            }
 //            catch (System.Exception excpt)
 //            {
-//                Console.WriteLine("Error sending init", excpt.Message);
+//                Trace.WriteLine("Error sending init", excpt.Message);
 //            }
 
-//            Console.WriteLine(ecu.EcuIdentifier);
+//            Trace.WriteLine(ecu.EcuIdentifier);
 //            MessageBox.Show("Init received from " + ecu.EcuIdentifier);
 //        }
 

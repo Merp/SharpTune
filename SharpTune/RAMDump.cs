@@ -53,20 +53,20 @@
                 
 //                portName = inputport;
 
-              
-//                Console.WriteLine("Opening serial port {0}.", portName);
+
+//                Trace.WriteLine(String.Format("Opening serial port {0}.", portName));
 //                SerialPort port = new SerialPort(portName, 4800, Parity.None, 8);
 //                port.Open();
 //                ecu = SsmInterface.GetInstance(port.BaseStream);
 //                //MockEcuStream stream = MockEcuStream.CreateInstance();
 //                //SsmInterface ecu = SsmInterface.GetInstance(stream);
-//                Console.WriteLine("opened.");
+//                Trace.WriteLine("opened.");
 
 //                Console.Write("Getting ECU identifier... ");
 //                IAsyncResult result = ecu.BeginGetEcuIdentifier(null, null);
 //                result.AsyncWaitHandle.WaitOne();
 //                ecu.EndGetEcuIdentifier(result);
-//                Console.WriteLine(ecu.EcuIdentifier);
+//                Trace.WriteLine(ecu.EcuIdentifier);
 //                return true;
 
               
@@ -74,7 +74,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Console.WriteLine(ex.ToString());
+//                Trace.WriteLine(ex.ToString());
 //            }
 
 //            return false;
@@ -115,19 +115,19 @@
 //        //            }
 //        //        }
 
-//        //        Console.WriteLine("Opening serial port {0}.", portName);
+//        //        Trace.WriteLine(String.Format("Opening serial port {0}.", portName));
 //        //        SerialPort port = new SerialPort(portName, 4800, Parity.None, 8);
 //        //        port.Open();
 //        //        ecu = SsmInterface.GetInstance(port.BaseStream);
 //        //        //MockEcuStream stream = MockEcuStream.CreateInstance();
 //        //        //SsmInterface ecu = SsmInterface.GetInstance(stream);
-//        //        Console.WriteLine("opened.");
+//        //        Trace.WriteLine("opened.");
 
 //        //        Console.Write("Getting ECU identifier... ");
 //        //        IAsyncResult result = ecu.BeginGetEcuIdentifier(null, null);
 //        //        result.AsyncWaitHandle.WaitOne();
 //        //        ecu.EndGetEcuIdentifier(result);
-//        //        Console.WriteLine(ecu.EcuIdentifier);
+//        //        Trace.WriteLine(ecu.EcuIdentifier);
 
 //        //        form1.dumpEnable();
 
@@ -137,7 +137,7 @@
 //        //            int bytesPerRow = 16;
 //        //            int length = bytesPerRow * rows;
 //        //            byte[] values = ecu.SyncReadBlock(0, length);
-//        //            Console.WriteLine("Requested {0} bytes, received {1}", length, values.Length);
+//        //            Trace.WriteLine(String.Format("Requested {0} bytes, received {1}", length, values.Length));
 
 //        //            StringBuilder builder = new StringBuilder(100);
 //        //            for (int row = 0; row < rows; row++)
@@ -150,7 +150,7 @@
 
 //        //                    if (i % 16 == 15)
 //        //                    {
-//        //                        Console.WriteLine(builder.ToString());
+//        //                        Trace.WriteLine(builder.ToString());
 //        //                        builder = new StringBuilder(100);
 //        //                    }
 //        //                }
@@ -169,7 +169,7 @@
 //        //    }
 //        //    catch (Exception ex)
 //        //    {
-//        //        Console.WriteLine(ex.ToString());
+//        //        Trace.WriteLine(ex.ToString());
 //        //    }
 //        //}
 
@@ -177,7 +177,7 @@
 //        //{
 //        //    try
 //        //    {
-//        //        Console.WriteLine("Reading data.  This will take a while.");
+//        //        Trace.WriteLine("Reading data.  This will take a while.");
 //        //        string name = fileNamePrefix + ecu.EcuIdentifier;
 //        //        using (Stream fileStream = File.Create(name + ".cs"))
 //        //        {
@@ -203,7 +203,7 @@
 //        //    }
 //        //    catch (Exception ex)
 //        //    {
-//        //        Console.WriteLine(ex.ToString());
+//        //        Trace.WriteLine(ex.ToString());
 //        //    }
 //        //}
 
@@ -215,7 +215,7 @@
 //            try
 //            {
                 
-//                Console.WriteLine("Reading data.  This will take a while.");
+//                Trace.WriteLine("Reading data.  This will take a while.");
 //                string name = fileNamePrefix + ecu.EcuIdentifier;
 //                using (Stream fileStream = File.Create(name + ".cs"))
 //                {
@@ -241,15 +241,15 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Console.WriteLine(ex.ToString());
+//                Trace.WriteLine(ex.ToString());
 //            }
 //        }
 
 
 //        private static void Usage()
 //        {
-//            Console.WriteLine("Usage: EcuDump.exe [COMX]");
-//            Console.WriteLine("Where COMX is COM1, or COM2, or whatever.");
+//            Trace.WriteLine("Usage: EcuDump.exe [COMX]");
+//            Trace.WriteLine("Where COMX is COM1, or COM2, or whatever.");
 //        }
 
 //        internal void InitDump()

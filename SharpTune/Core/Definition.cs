@@ -268,8 +268,8 @@ namespace SharpTuneCore
                     //shouldn't happen!
                     //table already exists add data to existing table
                     //this.RomTableList[tablename].Merge(table);'
-                    Console.WriteLine("Warning, duplicate table: " + tablename + ". Please check the definition!!");
-                    //Console.WriteLine("table " + tablename + " already exists, merging tables");
+                    Trace.WriteLine("Warning, duplicate table: " + tablename + ". Please check the definition!!");
+                    //Trace.WriteLine("table " + tablename + " already exists, merging tables");
                 }
                 else
                 {
@@ -278,7 +278,7 @@ namespace SharpTuneCore
                 //{/
                     //table does not exist call constructor
                     this.RomTableList.Add(tablename, TableFactory.CreateTable(table,this));
-                    //Console.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
+                    //Trace.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
                 }
             }
             // RAM table feteches here!
@@ -575,7 +575,7 @@ namespace SharpTuneCore
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Trace.WriteLine(e.Message);
                 return false;
             }
         }
@@ -599,7 +599,7 @@ namespace SharpTuneCore
                 else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList.ContainsKey(name))//TODO FIX RAMTABLES
                     return SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList[name];
             }
-            Console.WriteLine("Warning: base table for " + name + " not found");
+            Trace.WriteLine("Warning: base table for " + name + " not found");
             return null;
         }
 

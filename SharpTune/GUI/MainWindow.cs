@@ -111,7 +111,7 @@ namespace SharpTune
             DeviceImage newImage = new DeviceImage(filename);
             if (newImage.CalId == null)
             {
-                Console.WriteLine("Unable to identify rom at {0}", newImage.FilePath.ToString());
+                Trace.TraceWarning(String.Format("Unable to identify rom at {0}", newImage.FilePath.ToString()));
                 MessageBox.Show("Unable to idenfity rom at " + newImage.FilePath.ToString());
                 return;
             }
@@ -127,7 +127,7 @@ namespace SharpTune
             obfuscateCALIDToolStripMenuItem.Enabled = true;
             SharpTuner.AddImage(newImage);
             this.openDeviceListBox.Items.Add(SharpTuner.ActiveImage.FileName);
-            Console.WriteLine("Successfully opened " + SharpTuner.ActiveImage.CalId + " filename: " + SharpTuner.ActiveImage.FileName);
+            Trace.WriteLine("Successfully opened " + SharpTuner.ActiveImage.CalId + " filename: " + SharpTuner.ActiveImage.FileName);
             Refresh();
         }
 
@@ -285,7 +285,7 @@ namespace SharpTune
                 treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.ActiveImage.FileName);
                 foreach (Mod mod in SharpTuner.ActiveImage.ModList)
                 {
-                    Console.WriteLine("Loaded Patch: " + mod.FileName);
+                    Trace.WriteLine("Loaded Patch: " + mod.FileName);
                     TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
                     patchTree.Tag = mod.FilePath;
 
@@ -318,8 +318,8 @@ namespace SharpTune
                 catch (System.Exception excpt)
                 {
                     MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Console.WriteLine("Error accessing file! It is locked!");
-                    Console.WriteLine(excpt.Message);
+                    Trace.WriteLine("Error accessing file! It is locked!");
+                    Trace.WriteLine(excpt.Message);
                     return;
                 }
             }

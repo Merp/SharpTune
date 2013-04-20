@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using SharpTune;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 //TODO: Add support for ECUFlash definitions to load ALPHA tables!!
 
@@ -47,7 +48,7 @@ namespace SharpTune.GUI
                 {
                     string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_XmlToIdc.idc";
                     spath.deleteFile();
-                    Console.WriteLine("Writing SSM param IDC file to " + spath);
+                    Trace.WriteLine("Writing SSM param IDC file to " + spath);
                     NSFW.XMLtoIDC.GuiRun(new string[] { "makeall", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                 }
                 else
@@ -56,14 +57,14 @@ namespace SharpTune.GUI
                     {
                         string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_romtables.idc";
                         spath.deleteFile();
-                        Console.WriteLine("Writing Rom Table IDC file to " + spath);
+                        Trace.WriteLine("Writing Rom Table IDC file to " + spath);
                         NSFW.XMLtoIDC.GuiRun(new string[] { "tables", SharpTuner.ActiveImage.CalId }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], null, null);
                     }
                     if (ExtParamsCheckBox.Checked)
                     {
                         string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_extparams.idc";
                         spath.deleteFile();
-                        Console.WriteLine("Writing extended RAM param IDC file to " + spath);
+                        Trace.WriteLine("Writing extended RAM param IDC file to " + spath);
                         NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "ecu", SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString() }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                     }
                     if (ssmParamsCheckBox.Checked)
@@ -72,7 +73,7 @@ namespace SharpTune.GUI
                         {
                             string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_ssmparams.idc";
                             spath.deleteFile();
-                            Console.WriteLine("Writing SSM param IDC file to " + spath);
+                            Trace.WriteLine("Writing SSM param IDC file to " + spath);
                             NSFW.XMLtoIDC.GuiRun(new string[] { "stdparam", "32", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                         }
                         else
@@ -83,7 +84,7 @@ namespace SharpTune.GUI
                     }
                 }
                 MessageBox.Show("Finished Writing IDC Files!");
-                Console.WriteLine("Finished writing IDC Files!");
+                Trace.WriteLine("Finished writing IDC Files!");
             } 
         }
 

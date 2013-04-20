@@ -18,6 +18,7 @@ using System.Text;
 using SharpTune;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace SharpTune.RomMod
 {
@@ -194,48 +195,48 @@ namespace SharpTune.RomMod
                 fileStream.Read(outStream.GetBuffer(), 0, (int)fileStream.Length);
             }
 
-            Console.WriteLine("This patch file was intended for: {0}.", this.InitialCalibrationId);
-            Console.WriteLine("This patch file converts ROM to:  {0}.", this.ModIdent);
-            Console.WriteLine("Build: " + this.ModBuild);
-            Console.WriteLine("This mod was created by: {0}.", this.ModAuthor);
-            Console.WriteLine("Mod Info: " + this.ModInfo);
+            Trace.WriteLine(String.Format("This patch file was intended for: {0}.", this.InitialCalibrationId));
+            Trace.WriteLine(String.Format("This patch file converts ROM to:  {0}.", this.ModIdent));
+            Trace.WriteLine(String.Format("Build: " + this.ModBuild));
+            Trace.WriteLine(String.Format("This mod was created by: {0}.", this.ModAuthor));
+            Trace.WriteLine(String.Format("Mod Info: " + this.ModInfo));
 
             if (apply && TryValidatePatches(outStream))
             {
                 isApplied = false;
                 isCompat = true;
-                Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
+                Trace.WriteLine("This patch file was NOT previously applied to this ROM file.");
             }
             else if (!apply && TryValidateUnPatches(outStream))
             {
                 isApplied = true;
                 isCompat = true;
-                Console.WriteLine("This patch file was previously applied to this ROM file.");
+                Trace.WriteLine("This patch file was previously applied to this ROM file.");
             }
             else
                 isCompat = false;
 
             if (!isCompat)
             {
-                Console.WriteLine(this.FileName + " is mod is NOT compatible with this ROM file.");
+                Trace.WriteLine(this.FileName + " is mod is NOT compatible with this ROM file.");
                 return false;
             }
             if (!commit)
             {
-                Console.WriteLine(this.FileName + " is compatible with this ROM file.");
+                Trace.WriteLine(this.FileName + " is compatible with this ROM file.");
                 return true;
             }
             if (isApplied)
             {
-                Console.WriteLine("Removing patch.");
+                Trace.WriteLine("Removing patch.");
                 if (this.TryRemoveMod(outStream))
                 {
-                    Console.WriteLine("Verifying patch removal.");
+                    Trace.WriteLine("Verifying patch removal.");
                     using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
                     {
                         if (!verifier.TryVerify(this.patchList))
                         {
-                            Console.WriteLine("Verification failed, ROM file not modified.");
+                            Trace.WriteLine("Verification failed, ROM file not modified.");
                             return false;
                         }
                     }
@@ -248,20 +249,20 @@ namespace SharpTune.RomMod
                             outStream.Seek(0, SeekOrigin.Begin);
                             outStream.CopyTo(fileStream);
                         }
-                        Console.WriteLine("ROM file modified successfully, Mod has been removed. Successfully saved image to {0}", outPath);
+                        Trace.WriteLine(String.Format("ROM file modified successfully, Mod has been removed. Successfully saved image to {0}", outPath));
                     }
                     catch (System.Exception excpt)
                     {
                         MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Console.WriteLine("Error accessing file! It is locked!");
-                        Console.WriteLine(excpt.Message);
+                        Trace.WriteLine("Error accessing file! It is locked!");
+                        Trace.WriteLine(excpt.Message);
                         return false;
                     }
                     return true;
                 }
                 else
                 {
-                    Console.WriteLine("The ROM file has not been modified.");
+                    Trace.WriteLine("The ROM file has not been modified.");
                     return false;
                 }
             }
@@ -272,15 +273,15 @@ namespace SharpTune.RomMod
                 else
                     MessageBox.Show(ReleaseBuildWarning, "WARNING");
 
-                Console.WriteLine("Applying mod.");
+                Trace.WriteLine("Applying mod.");
                 if (this.TryApplyMod(outStream))
                 {
-                    Console.WriteLine("Verifying mod.");
+                    Trace.WriteLine("Verifying mod.");
                     using (Verifier verifier = new Verifier(outStream, reader, !isApplied))
                     {
                         if (!verifier.TryVerify(this.patchList))
                         {
-                            Console.WriteLine("Verification failed, ROM file not modified.");
+                            Trace.WriteLine("Verification failed, ROM file not modified.");
                             return false;
                         }
                         try
@@ -290,26 +291,26 @@ namespace SharpTune.RomMod
                                 outStream.Seek(0, SeekOrigin.Begin);
                                 outStream.CopyTo(fileStream);
                             }
-                            Console.WriteLine("ROM file modified successfully, Mod has been applied. Successfully saved image to {0}", outPath);
+                            Trace.WriteLine(String.Format("ROM file modified successfully, Mod has been applied. Successfully saved image to {0}", outPath));
                         }
                         catch (System.Exception excpt)
                         {
                             MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            Console.WriteLine("Error accessing file! It is locked!");
-                            Console.WriteLine(excpt.Message);
+                            Trace.WriteLine("Error accessing file! It is locked!");
+                            Trace.WriteLine(excpt.Message);
                             return false;
                         }
                         outStream.Dispose();
                         //File.Copy(workingPath, outPath, true);
                         //File.Delete(workingPath);
                         //TODO CHECK outstream disposal!!!
-                        Console.WriteLine("ROM file modified successfully, mod has been applied.");
+                        Trace.WriteLine("ROM file modified successfully, mod has been applied.");
                         return true;
                     }
                 }
                 else
                 {
-                    Console.WriteLine("The ROM file has not been modified.");
+                    Trace.WriteLine("The ROM file has not been modified.");
                     return false;
                 }
             }
@@ -332,7 +333,7 @@ namespace SharpTune.RomMod
             Blob metadataBlob;
             if (!this.TryGetMetaBlob(metadataAddress, 10, out metadataBlob, blobs))
             {
-                Console.WriteLine("This patch file does not contain metadata.");
+                Trace.WriteLine("This patch file does not contain metadata.");
                 return false;
             }
 
@@ -356,7 +357,7 @@ namespace SharpTune.RomMod
                     continue;
                 }
 
-                Console.WriteLine(patch.ToString());
+                Trace.WriteLine(patch.ToString());
             }
         }
 
@@ -423,7 +424,7 @@ namespace SharpTune.RomMod
         /// </summary>
         public bool TryValidatePatches(Stream romStream)
         {
-            Console.WriteLine("Attempting to validate patches...");
+            Trace.WriteLine("Attempting to validate patches...");
             bool allPatchesValid = true;
             foreach (Patch patch in this.patchList)
             {
@@ -461,7 +462,7 @@ namespace SharpTune.RomMod
         /// </summary>
         public bool TryValidateUnPatches(Stream romStream)
         {
-            Console.WriteLine("Attempting to validate patch removal...");
+            Trace.WriteLine("Attempting to validate patch removal...");
             bool allPatchesValid = true;
             foreach (Patch patch in this.unPatchList)
             {
@@ -469,7 +470,7 @@ namespace SharpTune.RomMod
 
                 if (patch.IsNewPatch)
                 {
-                    Console.WriteLine("DATA SECTION WILL BE OVERWRITTEN");
+                    Trace.WriteLine("DATA SECTION WILL BE OVERWRITTEN");
                     continue;
                 }
 
@@ -535,7 +536,7 @@ namespace SharpTune.RomMod
                 if (!this.TryCheckPrintBaseline(patch,romStream))
                 {
                     result = false;
-                    Console.WriteLine("ERROR OCCURRED DURING BASELINE PRINT, POSSIBLE MISMATCH BETWEEN METADATA AND ROM!");
+                    Trace.WriteLine("ERROR OCCURRED DURING BASELINE PRINT, POSSIBLE MISMATCH BETWEEN METADATA AND ROM!");
                     break;
                 }
             }
@@ -555,8 +556,8 @@ namespace SharpTune.RomMod
             {
                 if (!record.IsValid)
                 {
-                    Console.WriteLine("The patch file contains garbage - was it corrupted somehow?");
-                    Console.WriteLine("Line {0}: {1}", record.LineNumber, record.RawData);
+                    Trace.WriteLine("The patch file contains garbage - was it corrupted somehow?");
+                    Trace.WriteLine(String.Format("Line {0}: {1}", record.LineNumber, record.RawData));
                     blist = null;
                     return false;
                 }
@@ -595,7 +596,7 @@ namespace SharpTune.RomMod
 
             if (this.patchList.Count < 3)
             {
-                Console.WriteLine("This patch file contains no patches.");
+                Trace.WriteLine("This patch file contains no patches.");
                 return false;
             }
 
@@ -611,26 +612,26 @@ namespace SharpTune.RomMod
 
             if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
             {
-                Console.WriteLine("This patch file's metadata is way too short (no version metadata).");
+                Trace.WriteLine(String.Format("This patch file's metadata is way too short (no version metadata)."));
                 return false;
             }
 
             if (tempUInt32 != requiredVersionPrefix)
             {
-                Console.WriteLine("This patch file's metadata starts with {0}, it should start with {1}", tempUInt32, requiredVersionPrefix);
+                Trace.WriteLine(String.Format("This patch file's metadata starts with {0}, it should start with {1}", tempUInt32, requiredVersionPrefix));
                 return false;
             }
 
             if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
             {
-                Console.WriteLine("This patch file's metadata is way too short (no version).");
+                Trace.WriteLine("This patch file's metadata is way too short (no version).");
                 return false;
             }
 
             if (tempUInt32 != RomMod.Version)
             {
-                Console.WriteLine("This is RomPatch.exe version {0}.", RomMod.Version);
-                Console.WriteLine("This patch file requires version {0}.", tempUInt32);
+                Trace.WriteLine(String.Format("This is RomPatch.exe version {0}.", RomMod.Version));
+                Trace.WriteLine(String.Format("This patch file requires version {0}.", tempUInt32));
                 return false;
             }
 
@@ -646,19 +647,19 @@ namespace SharpTune.RomMod
 
             if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
             {
-                Console.WriteLine("This patch file's metadata is way too short (no calibration metadata).");
+                Trace.WriteLine("This patch file's metadata is way too short (no calibration metadata).");
                 return false;
             }
 
             if (tempUInt32 != calibrationIdPrefix)
             {
-                Console.WriteLine("Expected calibration id prefix {0:X8}, found {1:X8}", calibrationIdPrefix, tempUInt32);
+                Trace.WriteLine(String.Format("Expected calibration id prefix {0:X8}, found {1:X8}", calibrationIdPrefix, tempUInt32));
                 return false;
             }
 
             if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
             {
-                Console.WriteLine("This patch file's metadata is way too short (no calibration address).");
+                Trace.WriteLine("This patch file's metadata is way too short (no calibration address).");
                 return false;
             }
 
@@ -666,7 +667,7 @@ namespace SharpTune.RomMod
 
             if (!blob.TryGetUInt32(ref tempUInt32, ref offset))
             {
-                Console.WriteLine("This patch file's metadata is way too short (no calibration length).");
+                Trace.WriteLine("This patch file's metadata is way too short (no calibration length).");
                 return false;
             }
 
@@ -721,7 +722,7 @@ namespace SharpTune.RomMod
             {
                 if (!blob.TryGetByte(ref tempByte, ref offset))
                 {
-                    Console.WriteLine("This patch file's metadata ran out before the complete calibration ID could be found.");
+                    Trace.WriteLine("This patch file's metadata ran out before the complete calibration ID could be found.");
                     return false;
                 }
 
@@ -740,7 +741,7 @@ namespace SharpTune.RomMod
                 {
                     if (tempByte != 0)
                     {
-                        Console.WriteLine("This patch file's metadata contains garbage after the calibration ID.");
+                        Trace.WriteLine("This patch file's metadata contains garbage after the calibration ID.");
                         return false;
                     }
                 }
@@ -761,7 +762,7 @@ namespace SharpTune.RomMod
                 {
                     if (!metadata.TryGetUInt32(ref tempInt, ref offset))
                     {
-                        Console.WriteLine("This patch file's metadata is way too short (no calibration address).");
+                        Trace.WriteLine("This patch file's metadata is way too short (no calibration address).");
                         return false;
                     }
 
@@ -769,7 +770,7 @@ namespace SharpTune.RomMod
 
                     if (!metadata.TryGetUInt32(ref tempInt, ref offset))
                     {
-                        Console.WriteLine("This patch file's metadata is way too short (no calibration length).");
+                        Trace.WriteLine("This patch file's metadata is way too short (no calibration length).");
                         return false;
                     }
 
@@ -861,7 +862,7 @@ namespace SharpTune.RomMod
                     }
                     else
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
                 }
@@ -875,7 +876,7 @@ namespace SharpTune.RomMod
                     }
                     else
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
                 }
@@ -884,12 +885,12 @@ namespace SharpTune.RomMod
                     string metaString = null;
                     if (this.TryReadMetaString(metadata, out metaString, ref offset))
                     {
-                        // found Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";, output to string!
+                        // found Trace.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";, output to string!
                         this.ModInfo = metaString.Replace("__",Environment.NewLine);
                     }
                     else
                     {
-                        Console.WriteLine("Invalid ModInfo found." + patch.ToString());
+                        Trace.WriteLine("Invalid ModInfo found." + patch.ToString());
                         return false;
                     }
                 }
@@ -928,7 +929,7 @@ namespace SharpTune.RomMod
             }
             if (this.patchList.Count < 2)
             {
-                Console.WriteLine("This patch file's metadata contains no CALID or ECUID patch!!.");
+                Trace.WriteLine("This patch file's metadata contains no CALID or ECUID patch!!.");
                 return false;
             }
             return true;
@@ -948,7 +949,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TryReadPatch(metadata, out patch, ref offset, blobs))
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
                 }
@@ -956,7 +957,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TryReadCopyPatch(metadata, out patch, ref offset, blobs))
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
                 }
@@ -964,7 +965,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TrySynthesize4BytePatch(metadata, out patch, ref offset))
                     {
-                        Console.WriteLine("Invalid 4-byte patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid 4-byte patch found." + patch.ToString());
                         return false;
                     }
 
@@ -973,7 +974,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TrySynthesizeLast2Of4BytePatch(metadata, out patch, ref offset))
                     {
-                        Console.WriteLine("Invalid Last 2 Of 4-byte patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid Last 2 Of 4-byte patch found." + patch.ToString());
                         return false;
                     }
 
@@ -982,7 +983,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TryReadPatch(metadata, out patch, ref offset, blobs))
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
 
@@ -992,7 +993,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TryReadCopyPatch(metadata, out patch, ref offset, blobs))
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
 
@@ -1002,7 +1003,7 @@ namespace SharpTune.RomMod
                 {
                     if (!this.TrySynthesizePullJsrHookPatch(metadata, out patch, ref offset, blobs))
                     {
-                        Console.WriteLine("Invalid patch found." + patch.ToString());
+                        Trace.WriteLine("Invalid patch found." + patch.ToString());
                         return false;
                     }
                 }
@@ -1095,7 +1096,7 @@ namespace SharpTune.RomMod
             
             if(!TryReadMetaString(metadata,out name, ref offset))
             {
-                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+                Trace.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
             }
              
             patch = new Patch(name,start, end);
@@ -1155,7 +1156,7 @@ namespace SharpTune.RomMod
 
             if (!TryReadMetaString(metadata, out name, ref offset))
             {
-                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+                Trace.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
             }
 
             patch = new Patch(name, start, end);
@@ -1201,7 +1202,7 @@ namespace SharpTune.RomMod
 
             if (!TryReadMetaString(metadata, out name, ref offset))
             {
-                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+                Trace.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
             }
 
             byte[] jsrbytes = new byte[] {0xF0,0x48,0x00,0x09};
@@ -1246,7 +1247,7 @@ namespace SharpTune.RomMod
 
             if (!TryReadMetaString(metadata, out name, ref offset))
             {
-                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+                Trace.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
             }
 
             patch = new Patch(name, address, address + 3);
@@ -1286,7 +1287,7 @@ namespace SharpTune.RomMod
 
             if (!TryReadMetaString(metadata, out name, ref offset))
             {
-                Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
+                Trace.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";
             }
 
             patch = new Patch(name, address + 2, address + 3);
@@ -1353,10 +1354,10 @@ namespace SharpTune.RomMod
 
                 if (bytesRead == 0)
                 {
-                    Console.WriteLine(
+                    Trace.WriteLine(String.Format(
                         "Unable to read {0} bytes starting at position {1:X8}",
                         bytesToRead,
-                        startAddress + totalBytesRead);
+                        startAddress + totalBytesRead));
                     return false;
                 }
 
@@ -1393,7 +1394,7 @@ namespace SharpTune.RomMod
                 {
                     if (index >= patch.Baseline.Content.Count)
                     {
-                        Console.WriteLine("Expected data is smaller than patch size.");
+                        Trace.WriteLine("Expected data is smaller than patch size.");
                         return false;
                     }
 
@@ -1410,12 +1411,12 @@ namespace SharpTune.RomMod
 
             if (mismatches == 0)
             {
-                Console.WriteLine("Valid.");
+                Trace.WriteLine("Valid.");
                 return true;
             }
 
-            Console.WriteLine("Invalid.");
-            Console.WriteLine("{0} bytes (of {1}) do not meet expectations.", mismatches, patchLength);
+            Trace.WriteLine("Invalid.");
+            Trace.WriteLine(String.Format("{0} bytes (of {1}) do not meet expectations.", mismatches, patchLength));
             return false;
         }
 
@@ -1443,11 +1444,11 @@ namespace SharpTune.RomMod
 
                 if (!patch.MetaCheck((IEnumerable<byte>)buffer))
                 {
-                    Console.WriteLine("JSR HOOK FAILED");
+                    Trace.WriteLine("JSR HOOK FAILED");
                     return false;
                 }
             }
-            Console.WriteLine("Valid.");
+            Trace.WriteLine("Valid.");
             return true;
         }
 
@@ -1538,16 +1539,16 @@ namespace SharpTune.RomMod
        
             if (patch.Payload == null)
             {
-                Console.WriteLine("No blob found for patch starting at {0:X8}", patch.StartAddress);
+                Trace.WriteLine(String.Format("No blob found for patch starting at {0:X8}", patch.StartAddress));
                 return false;
             }
 
             if (patch.StartAddress + patch.Payload.Content.Count != patch.EndAddress + 1)
                 
             {
-                Console.WriteLine("Payload blob for patch starting at {0:X8} does not contain the entire patch.", patch.StartAddress);
-                Console.WriteLine("Patch start {0:X8}, end {1:X8}, length {2:X8}", patch.StartAddress, patch.EndAddress, patch.Length);
-                Console.WriteLine("Payload blob length {2:X8}", patch.Payload.Content.Count);
+                Trace.WriteLine(String.Format("Payload blob for patch starting at {0:X8} does not contain the entire patch.", patch.StartAddress));
+                Trace.WriteLine(String.Format("Patch start {0:X8}, end {1:X8}, length {2:X8}", patch.StartAddress, patch.EndAddress, patch.Length));
+                Trace.WriteLine(String.Format("Payload blob length {2:X8}", patch.Payload.Content.Count));
                 return false;
             }
 

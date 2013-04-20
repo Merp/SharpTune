@@ -74,17 +74,17 @@ namespace SharpTune.RomMod
         /// </summary>
         private static void PrintHelp()
         {
-            Console.WriteLine("RomPatch Version {0}.", RomMod.Version);
-            Console.WriteLine("Commands:");
-            Console.WriteLine();
-            Console.WriteLine("test       - determine whether a patch is suitable for a ROM");
-            Console.WriteLine("apply      - apply a patch to a ROM file");
-            Console.WriteLine("applied    - determine whether a patch has been applied to a ROM");
-            Console.WriteLine("remove     - remove a patch from a ROM file");
-            Console.WriteLine("dump       - dump the contents of a patch file");
-            Console.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
-            Console.WriteLine();
-            Console.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
+            Trace.WriteLine("RomPatch Version " + RomMod.Version);
+            Trace.WriteLine("Commands:");
+            Trace.WriteLine("");
+            Trace.WriteLine("test       - determine whether a patch is suitable for a ROM");
+            Trace.WriteLine("apply      - apply a patch to a ROM file");
+            Trace.WriteLine("applied    - determine whether a patch has been applied to a ROM");
+            Trace.WriteLine("remove     - remove a patch from a ROM file");
+            Trace.WriteLine("dump       - dump the contents of a patch file");
+            Trace.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
+            Trace.WriteLine("");
+            Trace.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
         }
 
         /// <summary>
@@ -95,41 +95,41 @@ namespace SharpTune.RomMod
             switch (command)
             {
                 case "test":
-                    Console.WriteLine("RomPatch test <patchfilename> <romfilename>");
-                    Console.WriteLine("Determines whether the given patch file matches the given ROM file.");
+                    Trace.WriteLine("RomPatch test <patchfilename> <romfilename>");
+                    Trace.WriteLine("Determines whether the given patch file matches the given ROM file.");
                     break;
 
                 case "apply":
-                    Console.WriteLine("RomPatch apply <patchfilename> <romfilename>");
-                    Console.WriteLine();
-                    Console.WriteLine("Verifies that a patch is suitable for the ROM file, then applies");
-                    Console.WriteLine("the patch to the ROM (or prints an error message).");
+                    Trace.WriteLine("RomPatch apply <patchfilename> <romfilename>");
+                    Trace.WriteLine("");
+                    Trace.WriteLine("Verifies that a patch is suitable for the ROM file, then applies");
+                    Trace.WriteLine("the patch to the ROM (or prints an error message).");
                     break;
 
                 case "applied":
-                    Console.WriteLine("RomPatch applied <patchfilename> <romfilename>");
-                    Console.WriteLine("Determines whether the given patch file was applied to the given ROM file.");
+                    Trace.WriteLine("RomPatch applied <patchfilename> <romfilename>");
+                    Trace.WriteLine("Determines whether the given patch file was applied to the given ROM file.");
                     break;
 
                 case "remove":
-                    Console.WriteLine("RomPatch remove <patchfilename> <romfilename>");
-                    Console.WriteLine();
-                    Console.WriteLine("Verifies that a patch was applied to the ROM file, then removes");
-                    Console.WriteLine("the patch from the ROM (or prints an error message).");
+                    Trace.WriteLine("RomPatch remove <patchfilename> <romfilename>");
+                    Trace.WriteLine("");
+                    Trace.WriteLine("Verifies that a patch was applied to the ROM file, then removes");
+                    Trace.WriteLine("the patch from the ROM (or prints an error message).");
                     break;
 
                 case "dump":
-                    Console.WriteLine("RomPatch dump <filename>");
-                    Console.WriteLine("Dumps the contents of the give patch file.");
+                    Trace.WriteLine("RomPatch dump <filename>");
+                    Trace.WriteLine("Dumps the contents of the give patch file.");
                     break;
 
                 case "baseline":
-                    Console.WriteLine("RomPatch baseline <patchfilename> <romfilename>");
-                    Console.WriteLine("Generates baseline SRecords for the given patch and ROM file.");
+                    Trace.WriteLine("RomPatch baseline <patchfilename> <romfilename>");
+                    Trace.WriteLine("Generates baseline SRecords for the given patch and ROM file.");
                     break;
 
                 case "help":
-                    Console.WriteLine("You just had to try that, didn't you?");
+                    Trace.WriteLine("You just had to try that, didn't you?");
                     break;
             }
         }
@@ -138,105 +138,6 @@ namespace SharpTune.RomMod
         {
             Mod currentMod = new Mod(patchPath);
             return currentMod.TryCheckApplyMod(romPath, romPath, apply, commit);
-
-            //Stream romStream;
-            //string workingPath = romPath + ".temp";
-            //if (commit)
-            //{
-            //    File.Copy(romPath, workingPath, true);
-            //    romStream = File.Open(workingPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            //}
-            //else
-            //{
-            //    romStream = File.OpenRead(romPath);
-            //}
-
-            //using (romStream)
-            //{
-                
-
-            //    if (!currentMod.TryReadPatches())
-            //        return false;
-
-            //    Console.WriteLine("This patch file was intended for: {0}.", currentMod.InitialCalibrationId);
-            //    Console.WriteLine("This patch file converts ROM to:  {0}.", currentMod.FinalCalibrationId);
-            //    Console.WriteLine("This mod was created by: {0}.", currentMod.ModAuthor);
-            //    Console.WriteLine("Mod Information: {0} Version: {1}.", currentMod.ModName, currentMod.ModVersion);
-            //    Console.WriteLine(currentMod.Console.WriteLine("Patch at metadata offset: " + offset + "contains invalid name."); name ="UNKNOWN PATCH";);
-
-            //    if (!apply)
-            //    {
-            //        Console.WriteLine("Preparing to remove patch.");
-            //        currentMod.TryReversePatches();
-
-            //        if (!currentMod.TryValidateUnPatches(romStream))
-            //        {
-            //            Console.WriteLine("This patch file was NOT previously applied to this ROM file.");
-            //            return false;
-            //        }
-
-            //        Console.WriteLine("This patch file was previously applied to this ROM file.");
-
-            //        if (!commit)
-            //            return true;
-
-            //        Console.WriteLine("Removing patch.");
-
-            //        if (currentMod.TryRemoveMod(romStream))
-            //        {
-            //            Console.WriteLine("Verifying patch removal.");
-            //            using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
-            //            {
-            //                if (!verifier.TryVerify(currentMod.patchList))
-            //                {
-            //                    Console.WriteLine("Verification failed, ROM file not modified.");
-            //                    return false;
-            //                }
-            //            }
-            //            File.Copy(workingPath, romPath, true);
-            //            File.Delete(workingPath);
-            //            Console.WriteLine("ROM file modified successfully, Mod has been removed.");
-            //        }
-            //        else
-            //            Console.WriteLine("The ROM file has not been modified.");
-
-            //        return true;
-            //    }
-
-            //    if (!currentMod.TryValidatePatches(romStream))
-            //    {
-            //        Console.WriteLine("This mod can NOT be applied to this ROM file.");
-            //        return false;
-            //    }
-
-            //    Console.WriteLine("This mod can be applied to this ROM file.");
-
-            //    if (!commit)
-            //        return true;
-
-            //    Console.WriteLine("Applying mod.");
-
-            //    if (currentMod.TryApplyMod(romStream))
-            //    {
-            //        Console.WriteLine("Verifying mod.");
-            //        using (Verifier verifier = new Verifier(patchPath, workingPath, apply))
-            //        {
-            //            if (!verifier.TryVerify(currentMod.patchList))
-            //            {
-            //                Console.WriteLine("Verification failed, ROM file not modified.");
-            //                return false;
-            //            }
-            //        }
-            //        File.Copy(workingPath, romPath, true);
-            //        File.Delete(workingPath);
-            //        Console.WriteLine("ROM file modified successfully, mod has been applied.");
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine("The ROM file has not been modified.");
-            //    }
-            //    return true;
-            //}
         }
     
         /// <summary>
@@ -253,20 +154,20 @@ namespace SharpTune.RomMod
             {
                 if (!record.IsValid)
                 {
-                    Console.WriteLine(record.ToString());
+                    Trace.WriteLine(record.ToString());
                     result = false;
                     continue;
                 }
 
                 list.ProcessRecord(record);
 
-                Console.WriteLine(record.ToString());
+                Trace.WriteLine(record.ToString());
             }
 
-            Console.WriteLine("Aggregated:");
+            Trace.WriteLine("Aggregated:");
             foreach (Blob blob in list.Blobs)
             {
-                Console.WriteLine(blob.ToString());
+                Trace.WriteLine(blob.ToString());
             }
 
             return result;
@@ -285,7 +186,7 @@ namespace SharpTune.RomMod
             if (!patcher.TryReadPatches()) return false;
 
             // Handy for manual work, but with this suppressed, you can append-pipe the output to the patch file.
-            // Console.WriteLine("Generating baseline SRecords for:");
+            // Trace.WriteLine("Generating baseline SRecords for:");
             // patcher.PrintPatches();
 
             return patcher.TryPrintBaselines(patchPath,romStream);
@@ -300,7 +201,7 @@ namespace SharpTune.RomMod
             if (!patcher.TryDefinition(defPath)) return false;
 
             // Handy for manual work, but with this suppressed, you can append-pipe the output to the patch file.
-            // Console.WriteLine("Generating baseline SRecords for:");
+            // Trace.WriteLine("Generating baseline SRecords for:");
             // patcher.PrintPatches();
 
             return patcher.TryPrintBaselines(patchPath,romStream);

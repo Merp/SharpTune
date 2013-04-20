@@ -15,6 +15,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace SharpTune.RomMod
 {
@@ -246,7 +247,7 @@ namespace SharpTune.RomMod
         {
             if (record.Length < index + 1)
             {
-                Console.WriteLine("index out of bounds");
+                Trace.WriteLine("index out of bounds");
                 return 0;
             }
 

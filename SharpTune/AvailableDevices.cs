@@ -51,7 +51,7 @@ namespace SharpTuneCore
                 List<string> ts = ResourceUtil.directorySearchRecursiveDir(SharpTuner.EcuFlashDefRepoPath,null);
                 if(!GetDevices(ts[0]))
                 {
-                    Console.WriteLine("XML initialize failed");
+                    Trace.WriteLine("XML initialize failed");
                     DialogResult deferr = MessageBox.Show(
                         "Error initializing definitions! Please point settings to git repo base directory!" + Environment.NewLine +
                         "Would you like to download the latest definitions??",
@@ -72,13 +72,13 @@ namespace SharpTuneCore
                 else
                 {
                     //MessageBox.Show("finished populating available devices");
-                    Console.WriteLine("Successfully loaded {0} XML definitions!", DeviceCount);
+                    Trace.WriteLine("Successfully loaded " + DeviceCount + "XML definitions!");
                 }
                 
             }
             catch (System.Exception excpt)
             {
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine(excpt.Message);
             }
             
         }
@@ -107,7 +107,7 @@ namespace SharpTuneCore
                 {
                     return findInherit(inc.Value.ToString());
                 }catch(System.Exception e){
-                    Console.WriteLine(e.Message);
+                    Trace.WriteLine(e.Message);
                     return null;
                 }
         }  
@@ -130,8 +130,8 @@ namespace SharpTuneCore
                             {
                                 if (DefDictionary.ContainsKey(d.internalId))
                                 {
-                                    Console.WriteLine("Duplicate definition found for: " + d.internalId + " in file: " + f + " Check the definitions!!");
-                                    Console.WriteLine("Definition was previously found in file: " + DefDictionary[d.internalId].defPath);
+                                    Trace.WriteLine("Duplicate definition found for: " + d.internalId + " in file: " + f + " Check the definitions!!");
+                                    Trace.WriteLine("Definition was previously found in file: " + DefDictionary[d.internalId].defPath);
                                 }
                                 else
                                 {
@@ -147,8 +147,8 @@ namespace SharpTuneCore
                         }
                         catch (System.Exception excpt)
                         {
-                            Console.WriteLine("Error reading XML file " + f);
-                            Console.WriteLine(excpt.Message);
+                            Trace.WriteLine("Error reading XML file " + f);
+                            Trace.WriteLine(excpt.Message);
                         }
                     });
 
@@ -167,7 +167,7 @@ namespace SharpTuneCore
             }
             catch (System.Exception excpt)
             {
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine(excpt.Message);
             }
 
             return false;

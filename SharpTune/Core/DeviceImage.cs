@@ -25,6 +25,7 @@ using System.Resources;
 using SharpTune.Properties;
 using System.Collections;
 using SharpTune.GUI;
+using System.Diagnostics;
 
 
 namespace SharpTuneCore
@@ -93,13 +94,13 @@ namespace SharpTuneCore
                     this.imageStream.Seek(0, SeekOrigin.Begin);
                     this.imageStream.CopyTo(fileStream);
                 }
-                Console.WriteLine("Successfully saved image to {0}", this.FilePath);
+                Trace.WriteLine(String.Format("Successfully saved image to {0}", this.FilePath));
             }
             catch (System.Exception excpt)
             {
                 MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Console.WriteLine("Error accessing file! It is locked!");
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine("Error accessing file! It is locked!");
+                Trace.WriteLine(excpt.Message);
                 return;
             }
         }
@@ -139,6 +140,7 @@ namespace SharpTuneCore
                     return true;
                 }
             }
+            Trace.TraceWarning(String.Format("Error opening Rom at {0}, Definition not found!",f));
             MessageBox.Show("Error opening Rom!, Definition not found!");
             return false;
         }
@@ -162,13 +164,13 @@ namespace SharpTuneCore
                         this.imageStream.Seek(0, SeekOrigin.Begin);
                         this.imageStream.CopyTo(fileStream);
                     }
-                    Console.WriteLine("Successfully saved image to {0}", d.FileName);
+                    Trace.WriteLine(String.Format("Successfully saved image to {0}", d.FileName));
                 }
                 catch (System.Exception excpt)
                 {
                     MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Console.WriteLine("Error accessing file! It is locked!");
-                    Console.WriteLine(excpt.Message);
+                    Trace.WriteLine("Error accessing file! It is locked!");
+                    Trace.WriteLine(excpt.Message);
                     return;
                 }
             }

@@ -20,6 +20,7 @@ using System.Collections;
 using System.Globalization;
 using SharpTune;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace SharpTuneCore
 {
@@ -448,7 +449,7 @@ namespace SharpTuneCore
                         break;
 
                     default:
-                        Console.WriteLine("Unknown child encountered in Scaling {0}", xel.Attribute("name").Value.ToString());
+                        Trace.WriteLine(String.Format("Unknown child encountered in Scaling {0}", xel.Attribute("name").Value.ToString()));
                         break;
                 }
             }

@@ -22,6 +22,7 @@ using System.Xml.Linq;
 using System.Xml;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
+using System.Diagnostics;
 
 namespace SharpTune
 {
@@ -293,7 +294,7 @@ namespace SharpTune
 	        }
 	        catch (System.Exception excpt) 
 	        {
-		        Console.WriteLine(excpt.Message);
+		        Trace.WriteLine(excpt.Message);
 	        }
             return null;
         }
@@ -316,7 +317,7 @@ namespace SharpTune
             }
             catch (System.Exception excpt)
             {
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine(excpt.Message);
             }
             return null;
         }
@@ -390,7 +391,7 @@ namespace SharpTune
             }
             catch (System.Exception excpt)
             {
-                Console.WriteLine(excpt.Message);
+                Trace.WriteLine(excpt.Message);
             }
 
             return null;

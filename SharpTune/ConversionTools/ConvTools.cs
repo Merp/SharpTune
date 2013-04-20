@@ -9,6 +9,7 @@ using System.Xml.XPath;
 using System.Xml;
 using System.Text.RegularExpressions;
 using SharpTuneCore;
+using System.Diagnostics;
 
 namespace SharpTune.ConversionTools
 {
@@ -31,11 +32,11 @@ namespace SharpTune.ConversionTools
             
             if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
             {
-                Console.WriteLine("IDAtoHEW CopyRight Merrill A. Myers III 2012");
-                Console.WriteLine("USAGE:");
-                Console.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt>");
-                Console.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
-                Console.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
+                Trace.WriteLine("IDAtoHEW CopyRight Merrill A. Myers III 2012");
+                Trace.WriteLine("USAGE:");
+                Trace.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt>");
+                Trace.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
+                Trace.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
             }
             else if (args[0].ContainsCI(".h"))
             {
@@ -70,7 +71,7 @@ namespace SharpTune.ConversionTools
                 prog.FindAndWriteSections(args[3]);
             }
             else
-                Console.WriteLine("invalid command! Args: " + args.Length );
+                Trace.WriteLine("invalid command! Args: " + args.Length );
         }
 
         public void LoadXML(string file)
@@ -202,7 +203,7 @@ namespace SharpTune.ConversionTools
                 writer.WriteLine("#define ECU_IDENTIFIER " + EcuId);
                 foreach (var category in Defines)
                 {
-                    Console.WriteLine("Defining Category " + category.Key.ToString());
+                    Trace.WriteLine("Defining Category " + category.Key.ToString());
                     writer.WriteLine("/////////////////////");
                     writer.WriteLine("// " + category.Key.ToString());
                     writer.WriteLine("/////////////////////");

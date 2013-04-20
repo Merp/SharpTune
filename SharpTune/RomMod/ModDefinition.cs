@@ -12,6 +12,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using SharpTune.ConversionTools;
 using SharpTune.Core;
+using System.Diagnostics;
 
 namespace SharpTune.RomMod
 {
@@ -65,7 +66,7 @@ namespace SharpTune.RomMod
             Blob metadataBlob;
             if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
             {
-                Console.WriteLine("This patch file does not contain metadata.");
+                Trace.WriteLine("This patch file does not contain metadata.");
                 return false;
             }
             this.defBlob = metadataBlob;
@@ -103,7 +104,7 @@ namespace SharpTune.RomMod
                     }
                     else
                     {
-                        Console.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found.");
                         return false;
                     }
                 }
@@ -120,7 +121,7 @@ namespace SharpTune.RomMod
                     }
                     else
                     {
-                        Console.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found.");
                         return false;
                     }
                 }
@@ -135,7 +136,7 @@ namespace SharpTune.RomMod
                     }
                     else
                     {
-                        Console.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found.");
                         return false;
                     }
                 }
@@ -156,7 +157,7 @@ namespace SharpTune.RomMod
                     }
                     else
                     {
-                        Console.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found.");
                         return false;
                     }
                 }
@@ -491,7 +492,7 @@ namespace SharpTune.RomMod
                         if (addr.Length > 7)
                             inputMap.Add(l[0], addr);
                         else
-                            Console.WriteLine("error parsing line: " + line + Environment.NewLine + "Try using a map file");
+                            Trace.WriteLine("error parsing line: " + line + Environment.NewLine + "Try using a map file");
                     }
 
                 } while (line != null);
@@ -522,7 +523,7 @@ namespace SharpTune.RomMod
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine(e.Message);
+                                    Trace.WriteLine(e.Message);
                                 }
 
                                 break;
@@ -696,7 +697,7 @@ namespace SharpTune.RomMod
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Trace.WriteLine(e.Message);
             }
         }
 
@@ -713,8 +714,8 @@ namespace SharpTune.RomMod
             ts = ts.Substring(2, ts.Length-2);
             if (ts.Length < 6 && ts.Substring(0, 2) != "FF")
             {
-                Console.WriteLine("!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!");
-                Console.WriteLine("WARNING! bad ram table: " + name + " with offset: " + offset.ToString("X"));
+                Trace.WriteLine("!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!");
+                Trace.WriteLine("WARNING! bad ram table: " + name + " with offset: " + offset.ToString("X"));
             }
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("length").Value = length.ToString();

@@ -19,6 +19,7 @@ using System.Diagnostics;
 using SharpTune.RomMod;
 using System.IO;
 using SharpTune.ConversionTools;
+using System.Text;
 
 namespace SharpTune
 {
@@ -46,7 +47,7 @@ namespace SharpTune
                 catch (Exception exception)
                 {
                     // This makes diagnostics much much easier.
-                    Console.WriteLine(exception);
+                    Trace.WriteLine(exception);
                 }
             }
             // For parity with "fc /b" return 0 on success, 1 on failure.
@@ -91,17 +92,17 @@ namespace SharpTune
         /// </summary>
         private static void PrintHelp()
         {
-            Console.WriteLine("RomPatch Version {0}.", SharpTune.RomMod.RomMod.Version);
-            Console.WriteLine("Commands:");
-            Console.WriteLine();
-            Console.WriteLine("test       - determine whether a patch is suitable for a ROM");
-            Console.WriteLine("apply      - apply a patch to a ROM file");
-            Console.WriteLine("applied    - determine whether a patch has been applied to a ROM");
-            Console.WriteLine("remove     - remove a patch from a ROM file");
-            Console.WriteLine("dump       - dump the contents of a patch file");
-            Console.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
-            Console.WriteLine();
-            Console.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
+            Trace.WriteLine("RomPatch Version " + SharpTune.RomMod.RomMod.Version);
+            Trace.WriteLine("Commands:");
+            Trace.WriteLine("");
+            Trace.WriteLine("test       - determine whether a patch is suitable for a ROM");
+            Trace.WriteLine("apply      - apply a patch to a ROM file");
+            Trace.WriteLine("applied    - determine whether a patch has been applied to a ROM");
+            Trace.WriteLine("remove     - remove a patch from a ROM file");
+            Trace.WriteLine("dump       - dump the contents of a patch file");
+            Trace.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
+            Trace.WriteLine("");
+            Trace.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
         }
 
         /// <summary>
@@ -112,12 +113,12 @@ namespace SharpTune
             switch (command)
             {
                 case "test":
-                    Console.WriteLine("RomPatch test <patchfilename> <romfilename>");
-                    Console.WriteLine("Determines whether the given patch file matches the given ROM file.");
+                    Trace.WriteLine("RomPatch test <patchfilename> <romfilename>");
+                    Trace.WriteLine("Determines whether the given patch file matches the given ROM file.");
                     break;
 
                 case "help":
-                    Console.WriteLine("You just had to try that, didn't you?");
+                    Trace.WriteLine("You just had to try that, didn't you?");
                     break;
             }
         }
