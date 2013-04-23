@@ -317,7 +317,7 @@ namespace SharpTune
                 }
                 catch (System.Exception excpt)
                 {
-                    MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error accessing file! It is locked!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Trace.WriteLine("Error accessing file! It is locked!");
                     Trace.WriteLine(excpt.Message);
                     return;
@@ -325,16 +325,16 @@ namespace SharpTune
             }
             else
             {
-                MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No output file specified! Try again!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (!currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true) || !currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true))
             {
-                MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
-                MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 SharpTuner.fileQueued = true;
                 SharpTuner.QueuedFilePath = d.FileName;
@@ -539,6 +539,16 @@ namespace SharpTune
         private void SpawnMapToDef()
         {
             Application.Run(new MapToDef());
+        }
+
+        private void splitContainer2_Panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Process.Start(SharpTuner.DonateUrl);
         }
     }
 }

@@ -253,7 +253,7 @@ namespace SharpTune.RomMod
                     }
                     catch (System.Exception excpt)
                     {
-                        MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error accessing file! It is locked!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Trace.WriteLine("Error accessing file! It is locked!");
                         Trace.WriteLine(excpt.Message);
                         return false;
@@ -295,7 +295,7 @@ namespace SharpTune.RomMod
                         }
                         catch (System.Exception excpt)
                         {
-                            MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Error accessing file! It is locked!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             Trace.WriteLine("Error accessing file! It is locked!");
                             Trace.WriteLine(excpt.Message);
                             return false;

@@ -58,7 +58,6 @@ namespace SharpTune.ConversionTools
         {
             foreach (var entry in map)
             {
-                string tdef = null;
                 for (int i = 0; i < idaDefs.Count; i++)
                 {
                     if (entry.Key.EqualsCI(idaDefs[i].name))

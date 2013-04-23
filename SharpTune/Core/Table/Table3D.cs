@@ -41,7 +41,7 @@ namespace SharpTuneCore
         }
 
 
-        public new Table3D DeepClone()
+        public Table3D DeepClone()
         {
             Table3D clone = new Table3D();
             clone.xml = new XElement(xml);

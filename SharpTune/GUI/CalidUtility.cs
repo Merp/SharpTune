@@ -106,12 +106,12 @@ namespace SharpTune
         {
             if (newcalidbox.Text.Length != this.currentImage.CalId.Length)
             {
-                MessageBox.Show("ID is not long enough!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("ID is not long enough!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (SharpTuner.AvailableDevices.IdentList.ContainsCI(newcalidbox.Text.ToString()))
             {
-                MessageBox.Show("ID is already defined!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("ID is already defined!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             SaveFileDialog d = new SaveFileDialog();
@@ -142,7 +142,7 @@ namespace SharpTune
                     }
                     catch (System.Exception excpt)
                     {
-                        MessageBox.Show("Error accessing file! It is locked!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error accessing file! It is locked!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Trace.WriteLine("Error accessing file! It is locked!");
                         Trace.WriteLine(excpt.Message);
                         return;
@@ -150,7 +150,7 @@ namespace SharpTune
                 }
                 else
                 {
-                    MessageBox.Show("No output file specified! Try again!", "RomMod", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No output file specified! Try again!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             this.Close();
