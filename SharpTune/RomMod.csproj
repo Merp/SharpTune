@@ -225,7 +225,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Resources\Release.A8DH202X.MeRpMoD.SD_v13.3.7.1829.patch" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="dump.xml">
@@ -255,7 +254,9 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>

@@ -58,13 +58,14 @@ namespace SharpTune
         /// </summary>
         private static bool Run(string[] args)
         {
-            SharpTuner.initSettings();
-
             if (args.Length < 1)
             {
                 SharpTune.Program.RomModGui();
+                return true;
             }
-            else if (args[0] == "convtools")
+
+            SharpTuner.InitSettings();
+            if (args[0] == "convtools")
             {
                 ConvTool.Run(Utils.ShiftLeftTruncate(args));
             }

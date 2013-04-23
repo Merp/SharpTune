@@ -22,6 +22,8 @@ using System.Xml.XPath;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SharpTune;
+using System.Diagnostics;
+using System.Threading;
 
 namespace SharpTuneCore
 {
@@ -50,6 +52,22 @@ namespace SharpTuneCore
                 if(!GetDevices(ts[0]))
                 {
                     Console.WriteLine("XML initialize failed");
+                    DialogResult deferr = MessageBox.Show(
+                        "Error initializing definitions! Please point settings to git repo base directory!" + Environment.NewLine +
+                        "Would you like to download the latest definitions??",
+                        "Error loading definitions",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Information,
+                        MessageBoxDefaultButton.Button1,
+                        0);
+
+                    if (deferr == DialogResult.Yes)
+                    {
+                        Process.Start(SharpTuner.GitHelpUrl);
+                        Thread.Sleep(1500);
+                        MessageBox.Show("Click the 'ZIP' button to download.");
+                    }
+                        
                 }
                 else
                 {

@@ -75,7 +75,7 @@ namespace SharpTune
             _writer = new TextBoxStreamWriter(txtConsole);
             // Redirect the out Console stream
             Console.SetOut(_writer);
-            loadDevices();
+            SharpTuner.Init();
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -103,19 +103,6 @@ namespace SharpTune
             System.Security.AccessControl.DirectorySecurity sec = System.IO.Directory.GetAccessControl(directory);
             FileSystemAccessRule accRule = new FileSystemAccessRule(Environment.UserDomainName + "\\" + Environment.UserName, FileSystemRights.FullControl, AccessControlType.Allow);
             sec.AddAccessRule(accRule);
-        }
-
-        public void loadDevices()
-        {
-            //BackgroundWorker bw = new BackgroundWorker();
-            // bw.DoWork += (senderr, ee) =>
-            //{
-            //SharpTuner.populateAvailableDevices();
-            //SharpTuner.LoadMods();
-            //backgroundWorker1.ReportProgress(prog);
-            // };
-            // bw.RunWorkerAsync();
-            //SharpTuner.ImageList = new List<DeviceImage>();
         }
 
         public void openDeviceImage(string filename)
@@ -469,8 +456,7 @@ namespace SharpTune
             if (ret == DialogResult.OK)
             {
                 Settings.Default.SubaruDefsRepoPath = d.SelectedPath.ToString();
-                SharpTuner.initSettings();
-                loadDevices();
+                SharpTuner.Init();
             } 
         }
 
@@ -537,7 +523,7 @@ namespace SharpTune
             {
                 SharpTuner.LoadMods();
                 Settings.Default.PatchPath = d.SelectedPath;
-                SharpTuner.initSettings();
+                SharpTuner.InitSettings();
             }
         }
 

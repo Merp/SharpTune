@@ -160,7 +160,7 @@ namespace SharpTune.GUI
             def.defPath = path.ToString();
             def.ExportXML(def.defPath);
             MessageBox.Show("Successfully saved definition to " + def.defPath);
-            SharpTuner.populateAvailableDevices();
+            SharpTuner.PopulateAvailableDevices();
             this.Dispose();
             }
             catch (Exception er)

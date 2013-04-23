@@ -22,6 +22,7 @@ using SharpTune.Properties;
 using System.Resources;
 using System.Collections;
 using System.Threading;
+using System.Diagnostics;
 
 namespace SharpTune
 {
@@ -30,6 +31,8 @@ namespace SharpTune
     /// </summary>
     public static class SharpTuner
     {
+        public const string GitHelpUrl = "http://github.com/Merp/SubaruDefs/tree/Alpha";
+
         public static MainWindow Window { get; set; }
 
         private static DeviceImage actImg;
@@ -70,19 +73,22 @@ namespace SharpTune
 
         public static string QueuedFilePath { get; set; }
 
-        static SharpTuner(){
-        
-            Console.WriteLine("<--- Initializing SharpTuner --->");
+        static SharpTuner(){}
+
+        public static void Init()
+        {
+            InitSettings();
+            InitTraces();
+            Trace.WriteLine("<--- Initializing SharpTuner --->");
             ImageList = new List<DeviceImage>();
             DataScalings = new List<Scaling>();
             UnitScalings = new List<Scaling>();
-            initSettings();
-            populateAvailableDevices();
+            PopulateAvailableDevices();
             LoadMods();
-            Console.WriteLine("<--Finished Initializing SharpTuner --->");
+            Trace.WriteLine("<--Finished Initializing SharpTuner --->");
         }
 
-        public static void initSettings()
+        public static void InitSettings()
         {
             if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
             {
@@ -92,15 +98,19 @@ namespace SharpTune
             {
                 Settings.Default.PatchPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\MerpMod\MerpMod\TestRom";
             }
+            if (Settings.Default.LogFilePath == null || Settings.Default.LogFilePath == "")
+            {
+                Settings.Default.LogFilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\SharpTune.log";
+            }
 
-            EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";
+            EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
             RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
             RREcuDefPath = RRDefRepoPath + @"\ecu\standard\";
             RRLoggerDefPath = RRDefRepoPath + @"\logger\";
             Settings.Default.Save();
         }
 
-        public static void populateAvailableDevices()
+        public static void PopulateAvailableDevices()
         {
             AvailableDevices = new AvailableDevices(EcuFlashDefRepoPath.ToString());
         }
@@ -169,6 +179,41 @@ namespace SharpTune
                     tm.Add(m);
             }
             return tm;
+        }
+
+        public static void InitTraces(){
+
+        // First step: create the trace source object
+        TraceSource ts = new TraceSource("myTraceSource");
+        ts.Switch = new SourceSwitch("mySwitch", "my switch");
+        ts.Switch.Level = SourceLevels.All; // Enable only warning, error and critical events
+
+        ts.Listeners.Clear();
+        Trace.Listeners.Clear();
+
+        ConsoleTraceListener cl = new ConsoleTraceListener();
+        cl.TraceOutputOptions = TraceOptions.None;
+        cl.Filter = new EventTypeFilter(SourceLevels.Information);
+        ts.Listeners.Add(cl);
+        Trace.Listeners.Add(cl);
+
+        if (Settings.Default.LogFilePath == null)
+            InitSettings();
+
+        TextWriterTraceListener tr = new TextWriterTraceListener(Settings.Default.LogFilePath);
+        tr.TraceOutputOptions = TraceOptions.DateTime | TraceOptions.Timestamp | TraceOptions.Callstack;
+        tr.Filter = new EventTypeFilter(SourceLevels.Warning);
+        ts.Listeners.Add(tr);
+        Trace.Listeners.Add(tr);
+
+        // Setting autoflush to save files automatically
+        Trace.AutoFlush = true;
+
+        // Writing out some events
+        //ts.TraceEvent(TraceEventType.Warning, 0, "warning message");
+        //ts.TraceEvent(TraceEventType.Error, 0, "error message");
+        //ts.TraceEvent(TraceEventType.Information, 0, "information message");
+        //ts.TraceEvent(TraceEventType.Critical, 0, "critical message");
         }
     }
 }
