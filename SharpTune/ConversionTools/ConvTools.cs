@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.Xml;
 using System.Text.RegularExpressions;
+using SharpTuneCore;
 
 namespace SharpTune.ConversionTools
 {
@@ -53,20 +54,23 @@ namespace SharpTune.ConversionTools
                 else
                     prog.WriteIDC(args[1]);
             }
-            else if (args[0].ContainsCI(".xml") && args.Length > 3)
+            else if (args[0].ContainsCI(".xml") && args.Length == 6)
             {
-                String Build;
-                if (args.Length == 5)
-                    Build = args[4];
-                else
-                    Build = "Unknown";
+                String Build = "Debug";
+                String Config = args[5].Split('_')[0];
+                if(args[5].Split('_').Length > 1)
+                    Build = args[5].Split('_')[1];
+                
                 prog.LoadXML(args[0]);
                 idaMap = new IdaMap(args[1]);
-                prog.FindAndWriteDefines(args[2],Build);
+
+                Definition def = SharpTuner.AvailableDevices.DefDictionary[args[4]];
+
+                prog.FindAndWriteDefines(args[2],Build,Config,def.CarInfo["internalidstring"].ToString(),def.CarInfo["ecuid"].ToString()); //TODO: auto load ecuid??
                 prog.FindAndWriteSections(args[3]);
             }
             else
-                Console.WriteLine("invalid command!");
+                Console.WriteLine("invalid command! Args: " + args.Length );
         }
 
         public void LoadXML(string file)
@@ -185,16 +189,20 @@ namespace SharpTune.ConversionTools
             }
         }        
 
-        public void FindAndWriteDefines(string outfilename, String Build)
+        public void FindAndWriteDefines(string outfilename, String Build, String Config, String CalId, String EcuId)
         {
             //write date tag!
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
                 writer.WriteLine("#define MOD_DATE " + DateTime.Today.Year.ToString().Substring(2) + "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." + DateTime.Now.Hour.ToString() + DateTime.Now.Minute.ToString() + System.Environment.NewLine);
+                writer.WriteLine(@"#include """ + Config + @".h""");
+                writer.WriteLine("#define MOD_CONFIG " + Config);
                 writer.WriteLine("#define MOD_BUILD " + Build);
+                writer.WriteLine("#define ECU_CALIBRATION_ID " + CalId);
+                writer.WriteLine("#define ECU_IDENTIFIER " + EcuId);
                 foreach (var category in Defines)
                 {
-                    Console.WriteLine("Defining Category " + category.ToString());
+                    Console.WriteLine("Defining Category " + category.Key.ToString());
                     writer.WriteLine("/////////////////////");
                     writer.WriteLine("// " + category.Key.ToString());
                     writer.WriteLine("/////////////////////");

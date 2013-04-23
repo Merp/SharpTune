@@ -37,13 +37,6 @@ namespace SharpTune.RomMod
             +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
             + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. " + Environment.NewLine
             +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
-        public string DefaultBuildWarning = @"WARNING: This is an experimental TESTING build. "
-            +@"There is a risk that this may brick your ecu! "
-            + @"Please take the proper precautions (arrange alternate transportation, park car in a safe place, and have a SH boot mode cable prepared). " + Environment.NewLine
-            +@"UNAUTHORIZED DISTRIBUTION OR SHARING STRICTLY PROHIBITED. OFFROAD USE ONLY. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS, ” "
-            +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
-            +@"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT." + Environment.NewLine
-            +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
 
         public const uint BaselineOffset = 0xFF000000;
         private const uint metadataAddress = 0x80001000;
@@ -109,7 +102,6 @@ namespace SharpTune.RomMod
         public List<Patch> patchList;
         public List<Patch> unPatchList;
         public ModDefinition modDef { get; private set; }
-        public string buildConfig;
 
         /// <summary>
         /// Constructor for external mods
@@ -138,10 +130,9 @@ namespace SharpTune.RomMod
 
         public Mod(string modPath, string bc)
         {
-            this.buildConfig = bc;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
-            this.ModBuild = "Unknown Version";
+            this.ModBuild = bc;
             //MemoryStream modMemStream = new MemoryStream();
             //using (FileStream fileStream = File.OpenRead(modPath))
             //{
@@ -167,7 +158,7 @@ namespace SharpTune.RomMod
         {
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
-            this.ModBuild = "Unknown Version";
+            this.ModBuild = "Unknown Build";
             reader = new SRecordReader(s, modPath);
             FileName = modPath;
             isResource = true;
@@ -181,8 +172,8 @@ namespace SharpTune.RomMod
             this.modDef = new ModDefinition(this);
             if (!modDef.TryReadDefs(defPath)) return false;
 
-            if (buildConfig != null)
-                defPath = defPath + "/MerpMod/" + buildConfig + "/";
+            if (ModBuild != null)
+                defPath = defPath + "/MerpMod/" + ModBuild + "/";
             defPath += ModIdent.ToString() + ".xml";
 
             modDef.definition.ExportXML(defPath);
@@ -276,12 +267,10 @@ namespace SharpTune.RomMod
             }
             else
             {
-                if (ModBuild.ContainsCI("testing"))
+                if (ModBuild.ContainsCI("debug") || ModBuild.ContainsCI("testing"))
                     MessageBox.Show(TestBuildWarning, "WARNING");
-                else if (ModBuild.ContainsCI("release"))
-                    MessageBox.Show(ReleaseBuildWarning, "WARNING");
                 else
-                    MessageBox.Show(DefaultBuildWarning, "WARNING");
+                    MessageBox.Show(ReleaseBuildWarning, "WARNING");
 
                 Console.WriteLine("Applying mod.");
                 if (this.TryApplyMod(outStream))
@@ -914,7 +903,7 @@ namespace SharpTune.RomMod
                 // Synthesize calibration-change patch and blobs.
                 if (FinalEcuId.ContainsCI("ffffffff"))
                 {
-                    StringBuilder feid = new StringBuilder(Regex.Split(this.ModIdent,"_v")[1].Replace(".", ""));
+                    StringBuilder feid = new StringBuilder(Regex.Split(this.ModIdent,".v")[1].Replace(".", ""));
                     while (feid.Length < this.InitialEcuId.Length)
                     {
                         feid.Append("F");
