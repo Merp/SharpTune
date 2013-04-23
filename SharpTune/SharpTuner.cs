@@ -32,6 +32,7 @@ namespace SharpTune
     public static class SharpTuner
     {
         public const string GitHelpUrl = "http://github.com/Merp/SubaruDefs/tree/Alpha";
+        public const string DonateUrl = "http://sharptuning.com/donate";
 
         public static MainWindow Window { get; set; }
 

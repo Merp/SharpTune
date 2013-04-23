@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.txtConsole = new System.Windows.Forms.TextBox();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -59,6 +60,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.treeView1 = new System.Windows.Forms.TreeView();
+            this.button1 = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
@@ -78,11 +80,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtConsole.BackColor = System.Drawing.Color.Black;
             this.txtConsole.ForeColor = System.Drawing.Color.LawnGreen;
-            this.txtConsole.Location = new System.Drawing.Point(7, 258);
+            this.txtConsole.Location = new System.Drawing.Point(7, 272);
             this.txtConsole.Multiline = true;
             this.txtConsole.Name = "txtConsole";
             this.txtConsole.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtConsole.Size = new System.Drawing.Size(567, 257);
+            this.txtConsole.Size = new System.Drawing.Size(567, 243);
             this.txtConsole.TabIndex = 0;
             // 
             // toolStripStatusLabel1
@@ -248,7 +250,7 @@
             this.romRaiderIRCChannelToolStripMenuItem,
             this.romRaiderForumToolStripMenuItem});
             this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
-            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.onlineHelpToolStripMenuItem.Text = "Online Help";
             // 
             // romRaiderIRCChannelToolStripMenuItem
@@ -268,14 +270,14 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // licensingToolStripMenuItem
             // 
             this.licensingToolStripMenuItem.Name = "licensingToolStripMenuItem";
-            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.licensingToolStripMenuItem.Text = "Licensing";
             this.licensingToolStripMenuItem.Click += new System.EventHandler(this.licensingToolStripMenuItem_Click);
             // 
@@ -297,11 +299,13 @@
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.button1);
             this.splitContainer2.Panel2.Controls.Add(this.label4);
             this.splitContainer2.Panel2.Controls.Add(this.buttonPatchRom);
             this.splitContainer2.Panel2.Controls.Add(this.selectedModTextBox);
             this.splitContainer2.Panel2.Controls.Add(this.txtConsole);
             this.splitContainer2.Panel2.Controls.Add(this.label2);
+            this.splitContainer2.Panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer2_Panel2_Paint);
             this.splitContainer2.Size = new System.Drawing.Size(1125, 520);
             this.splitContainer2.SplitterDistance = 534;
             this.splitContainer2.TabIndex = 12;
@@ -346,10 +350,22 @@
             this.treeView1.TabIndex = 41;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
+            // button1
+            // 
+            this.button1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("button1.BackgroundImage")));
+            this.button1.Location = new System.Drawing.Point(7, 203);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(288, 50);
+            this.button1.TabIndex = 43;
+            this.button1.Text = "Donate a beer!         ";
+            this.button1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(4, 242);
+            this.label4.Location = new System.Drawing.Point(4, 256);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(25, 13);
             this.label4.TabIndex = 3;
@@ -360,9 +376,9 @@
             this.buttonPatchRom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonPatchRom.Enabled = false;
-            this.buttonPatchRom.Location = new System.Drawing.Point(7, 203);
+            this.buttonPatchRom.Location = new System.Drawing.Point(301, 203);
             this.buttonPatchRom.Name = "buttonPatchRom";
-            this.buttonPatchRom.Size = new System.Drawing.Size(569, 36);
+            this.buttonPatchRom.Size = new System.Drawing.Size(275, 50);
             this.buttonPatchRom.TabIndex = 40;
             this.buttonPatchRom.Text = "Patch Rom";
             this.buttonPatchRom.UseVisualStyleBackColor = true;
@@ -398,7 +414,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainWindow";
-            this.Text = "RomMod";
+            this.Text = "SharpTune";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
@@ -452,6 +468,7 @@
         private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mAPToRRLoggerToolStripMenuItem;
+        private System.Windows.Forms.Button button1;
     }
 }
 

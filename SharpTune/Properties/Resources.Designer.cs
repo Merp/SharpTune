@@ -61,12 +61,12 @@ namespace SharpTune.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static byte[] Release_A8DH202X_MeRpMoD_SD_v13_3_7_1829 {
+        internal static System.Drawing.Bitmap beer {
             get {
-                object obj = ResourceManager.GetObject("Release_A8DH202X_MeRpMoD_SD_v13_3_7_1829", resourceCulture);
-                return ((byte[])(obj));
+                object obj = ResourceManager.GetObject("beer", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }
