@@ -130,10 +130,13 @@ namespace SharpTune
         public static void LoadMods()
         {
             AvailableMods = new List<Mod>();
-            LoadResourceMods();
+            //LoadResourceMods();
             LoadExternalMods();
         }
 
+        /// <summary>
+        /// TODO FIX OR REMOVE THIS. Can't really embed mods as resources without source code anyway!!
+        /// </summary>
         private static void LoadResourceMods()
         {
             int i = AvailableMods.Count;
