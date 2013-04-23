@@ -490,7 +490,7 @@ namespace SharpTune.RomMod
                             i++;
                         }while(addr.Length < 8 && i < l.Length);
                         if (addr.Length > 7)
-                            inputMap.Add(l[0], addr);
+                            inputMap.Add(l[0], addr.Substring(addr.Length-6));
                         else
                             Trace.WriteLine("error parsing line: " + line + Environment.NewLine + "Try using a map file");
                     }
