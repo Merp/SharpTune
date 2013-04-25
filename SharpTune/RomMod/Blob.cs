@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SharpTune.RomMod
 {
@@ -68,7 +69,12 @@ namespace SharpTune.RomMod
         /// </summary>
         public override string ToString()
         {
-            return string.Format("Start: {0:X8}, Length: {1:X8}", this.StartAddress, this.Content.Count);
+            return string.Format("Start: {0:X8}, Length: {1:X8}, Data: {2:X}", this.StartAddress, this.Content.Count, BitConverter.ToString(this.Content.ToArray()));
+        }
+
+        public string GetDataString()
+        {
+            return Regex.Replace(BitConverter.ToString(this.Content.ToArray()),"-","");
         }
 
         /// <summary>

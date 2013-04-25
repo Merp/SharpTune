@@ -88,7 +88,11 @@ namespace SharpTune.RomMod
         /// </summary>
         public override string ToString()
         {
-            return string.Format("Patch name: " + this.Name + Environment.NewLine + " start: {0:X8}, end: {1:X8}, length: {2:X8}", this.StartAddress, this.EndAddress, this.Length);
+            StringBuilder sb = new StringBuilder("Patch name: " + this.Name + Environment.NewLine);
+            sb.AppendLine(String.Format(" start: {0:X8}, end: {1:X8}, length: {2:X8}", this.StartAddress, this.EndAddress, this.Length));
+            if(this.Length < 9)
+                sb.AppendLine(String.Format(" baseline: {0:X}, payload: {1:X}",this.Baseline.GetDataString(),this.Payload.GetDataString()));
+            return sb.ToString();
         }
 
         /// <summary>
