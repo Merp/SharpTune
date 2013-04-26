@@ -65,6 +65,7 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.sharpTuningForumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -90,13 +91,14 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(60, 17);
-            this.toolStripStatusLabel1.Text = "RomMod!";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(109, 17);
+            this.toolStripStatusLabel1.Text = "SharpTune Version ";
+            this.toolStripStatusLabel1.Click += new System.EventHandler(this.toolStripStatusLabel1_Click);
             // 
             // StatusLabel
             // 
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(948, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(868, 17);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Idle";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -248,7 +250,8 @@
             // 
             this.onlineHelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.romRaiderIRCChannelToolStripMenuItem,
-            this.romRaiderForumToolStripMenuItem});
+            this.romRaiderForumToolStripMenuItem,
+            this.sharpTuningForumToolStripMenuItem});
             this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
             this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.onlineHelpToolStripMenuItem.Text = "Online Help";
@@ -270,14 +273,14 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // licensingToolStripMenuItem
             // 
             this.licensingToolStripMenuItem.Name = "licensingToolStripMenuItem";
-            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.licensingToolStripMenuItem.Text = "Licensing";
             this.licensingToolStripMenuItem.Click += new System.EventHandler(this.licensingToolStripMenuItem_Click);
             // 
@@ -404,6 +407,13 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
             // 
+            // sharpTuningForumToolStripMenuItem
+            // 
+            this.sharpTuningForumToolStripMenuItem.Name = "sharpTuningForumToolStripMenuItem";
+            this.sharpTuningForumToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.sharpTuningForumToolStripMenuItem.Text = "SharpTuning Forum";
+            this.sharpTuningForumToolStripMenuItem.Click += new System.EventHandler(this.sharpTuningForumToolStripMenuItem_Click);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -469,6 +479,7 @@
         private System.Windows.Forms.ToolStripMenuItem manuallySelectPatchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mAPToRRLoggerToolStripMenuItem;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ToolStripMenuItem sharpTuningForumToolStripMenuItem;
     }
 }
 

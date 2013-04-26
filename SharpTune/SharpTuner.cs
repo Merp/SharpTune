@@ -23,6 +23,7 @@ using System.Resources;
 using System.Collections;
 using System.Threading;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace SharpTune
 {
@@ -33,6 +34,8 @@ namespace SharpTune
     {
         public const string GitHelpUrl = "http://github.com/Merp/SubaruDefs/tree/Alpha";
         public const string DonateUrl = "http://sharptuning.com/donate";
+        public const string HomeUrl = "http://sharptuning.com";
+        public const string ForumUrl = "http://discourse.sharptuning.com";
 
         public static MainWindow Window { get; set; }
 
@@ -74,6 +77,8 @@ namespace SharpTune
 
         public static string QueuedFilePath { get; set; }
 
+        public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
         static SharpTuner(){}
 
         public static void Init()
@@ -81,6 +86,7 @@ namespace SharpTune
             InitSettings();
             InitTraces();
             Trace.WriteLine("<--- Initializing SharpTuner --->");
+            Trace.WriteLine("SharpTune Assembly Version: " + Version);
             ImageList = new List<DeviceImage>();
             DataScalings = new List<Scaling>();
             UnitScalings = new List<Scaling>();
