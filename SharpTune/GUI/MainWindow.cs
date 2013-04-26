@@ -69,7 +69,8 @@ namespace SharpTune
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MessageBox.Show("THIS SOFTWARE IS PROVIDED 'AS IS' AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.","SharpTune");
+            this.toolStripStatusLabel1.Text = "SharpTune Version " + SharpTuner.Version;
+            MessageBox.Show("THIS SOFTWARE IS PROVIDED 'AS IS' AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.", "SharpTune");
             // Instantiate the writer
             //TODO switch to traces instead of console redirection.
             _writer = new TextBoxStreamWriter(txtConsole);
@@ -549,6 +550,16 @@ namespace SharpTune
         private void button1_Click(object sender, EventArgs e)
         {
             Process.Start(SharpTuner.DonateUrl);
+        }
+
+        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void sharpTuningForumToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Process.Start(SharpTuner.ForumUrl);
         }
     }
 }

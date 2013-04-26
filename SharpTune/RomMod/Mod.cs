@@ -27,16 +27,16 @@ namespace SharpTune.RomMod
     /// </summary>
     public class Mod
     {
-        public string TestBuildWarning = @"WARNING: This is an experimental TESTING build. "
-            +@"There is a risk that this may brick your ecu! "
-            + @"Please take the proper precautions (arrange alternate transportation, park car in a safe place, and have a SH boot mode cable prepared). " + Environment.NewLine
+        public string TestBuildWarning = @"WARNING: This is an EXPERIMENTAL TESTING build. "
+            +@"There is a RISK that this may BRICK YOUR ECU AND RENDER YOUR CAR UNDRIVEABLE! "
+            + @"Please take the proper precautions (arrange alternate transportation, park car in a safe place, and have a SH boot mode cable prepared). " + Environment.NewLine + Environment.NewLine
             +@"UNAUTHORIZED DISTRIBUTION OR SHARING STRICTLY PROHIBITED. OFFROAD USE ONLY. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS,” "
             +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
-            + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT." + Environment.NewLine
+            + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT." + Environment.NewLine + Environment.NewLine
             +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
         public string ReleaseBuildWarning = @"UNAUTHORIZED DISTRIBUTION OR SHARING STRICTLY PROHIBITED. OFFROAD USE ONLY. NO WARRANTY. THIS SOFTWARE IS LICENSED TO YOU “AS IS,” "
             +@"AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, "
-            + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. " + Environment.NewLine
+            + @"INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. " + Environment.NewLine + Environment.NewLine
             +@"BY CLICKING OK, YOU AGREE TO THE ABOVE TERMS.";
 
         public const uint BaselineOffset = 0xFF000000;
@@ -268,10 +268,14 @@ namespace SharpTune.RomMod
             }
             else
             {
+                DialogResult res;
                 if (ModBuild.ContainsCI("debug") || ModBuild.ContainsCI("testing"))
-                    MessageBox.Show(TestBuildWarning, "WARNING");
+                    res = MessageBox.Show(TestBuildWarning, "WARNING",MessageBoxButtons.OKCancel,MessageBoxIcon.Hand);
                 else
-                    MessageBox.Show(ReleaseBuildWarning, "WARNING");
+                    res = MessageBox.Show(ReleaseBuildWarning, "WARNING",MessageBoxButtons.OKCancel,MessageBoxIcon.Warning);
+                
+                if (res != DialogResult.OK)
+                    return false;
 
                 Trace.WriteLine("Applying mod.");
                 if (this.TryApplyMod(outStream))
