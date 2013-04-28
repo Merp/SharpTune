@@ -32,7 +32,7 @@ namespace SharpTune
     /// </summary>
     public static class SharpTuner
     {
-        public const string GitHelpUrl = "http://github.com/Merp/SubaruDefs/tree/Alpha";
+        public const string GitHelpUrl = "http://sharptuning.com/definitions";
         public const string DonateUrl = "http://sharptuning.com/donate";
         public const string HomeUrl = "http://sharptuning.com";
         public const string ForumUrl = "http://discourse.sharptuning.com";
@@ -185,7 +185,7 @@ namespace SharpTune
                 //TODO: When a mod is loaded, detect "FFFFFFF" CALID!!!
                 if (m.InitialCalibrationId == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", true, false))
                     tm.Add(m);
-                else if (m.FinalCalibrationId == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", false, false))
+                else if (m.ModIdent == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", false, false))
                     tm.Add(m);
             }
             return tm;

@@ -329,16 +329,23 @@ namespace SharpTune
                 MessageBox.Show("No output file specified! Try again!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true) || !currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true))
-            {
-                MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
+            if (!currentmod.isApplied && currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, true, true))
             {
                 MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 SharpTuner.fileQueued = true;
                 SharpTuner.QueuedFilePath = d.FileName;
+            }
+            else if(currentmod.isApplied && currentmod.TryCheckApplyMod(SharpTuner.ActiveImage.FilePath, d.FileName, false, true))
+            {
+                MessageBox.Show("MOD SUCCESSFULLY REMOVED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                SharpTuner.fileQueued = true;
+                SharpTuner.QueuedFilePath = d.FileName;
+            }              
+            else
+            {
+                MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -484,7 +491,6 @@ namespace SharpTune
                 if (SharpTuner.ActiveImage == null)
                 {
                     MessageBox.Show("OPEN A ROM, DUMMY!");
-                    this.Close();
                     return false;
                 }
             }

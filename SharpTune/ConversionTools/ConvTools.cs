@@ -199,6 +199,10 @@ namespace SharpTune.ConversionTools
                 writer.WriteLine(@"#include """ + Config + @".h""");
                 writer.WriteLine("#define MOD_CONFIG " + Config);
                 writer.WriteLine("#define MOD_BUILD " + Build);
+                if (Build.ContainsCI("release"))
+                    writer.WriteLine("#define MOD_RELEASE 1");
+                else
+                    writer.WriteLine("#define MOD_RELEASE 0");
                 writer.WriteLine("#define ECU_CALIBRATION_ID " + CalId);
                 writer.WriteLine("#define ECU_IDENTIFIER " + EcuId);
                 foreach (var category in Defines)

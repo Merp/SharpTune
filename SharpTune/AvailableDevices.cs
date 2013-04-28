@@ -53,7 +53,7 @@ namespace SharpTuneCore
                 {
                     Trace.WriteLine("XML initialize failed");
                     DialogResult deferr = MessageBox.Show(
-                        "Error initializing definitions! Please point settings to git repo base directory!" + Environment.NewLine +
+                        "Error initializing definitions! Please download the appropriate definitions and point the settings to the git repo base directory!" + Environment.NewLine +
                         "Would you like to download the latest definitions??",
                         "Error loading definitions",
                         MessageBoxButtons.YesNo,
@@ -62,11 +62,7 @@ namespace SharpTuneCore
                         0);
 
                     if (deferr == DialogResult.Yes)
-                    {
                         Process.Start(SharpTuner.GitHelpUrl);
-                        Thread.Sleep(1500);
-                        MessageBox.Show("Click the 'ZIP' button to download.");
-                    }
                         
                 }
                 else
