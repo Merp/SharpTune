@@ -29,9 +29,7 @@ namespace NSFW
 
         public static void GuiRun(string[] args, string outpath, string def, string loggerdef, string loggerdtd)
         {
-
-            Trace.Listeners.Clear();
-
+            
             using(TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
@@ -140,6 +138,7 @@ namespace NSFW
                     }
                 }
             }
+            Trace.Listeners.Remove("TextLogger");
         }
 
         //static void Run(string[] args)

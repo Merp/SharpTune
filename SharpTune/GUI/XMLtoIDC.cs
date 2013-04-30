@@ -79,7 +79,7 @@ namespace SharpTune.GUI
                         else
                         {
                             MessageBox.Show("Invalid SSM base address! IDC write aborted!");
-                            Console.Write("Invalid SSM base address! IDC write aborted!");
+                            Trace.WriteLine("Invalid SSM base address! IDC write aborted!");
                         }
                     }
                 }
