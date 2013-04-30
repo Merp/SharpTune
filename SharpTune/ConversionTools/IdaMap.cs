@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,8 +18,16 @@ namespace SharpTune.ConversionTools
             IdaCleanNames = new Dictionary<List<string>, string>();
         }
 
-        public IdaMap(string filename) 
+        public IdaMap(string fileOrText)
             : this()
+        {
+            if (File.Exists(fileOrText))
+                LoadFromFile(fileOrText);
+            else
+                LoadFromString(fileOrText);
+        }
+
+        public void LoadFromFile(string filename)
         {
             using (StreamReader reader = new StreamReader(filename))
             {
@@ -56,6 +65,36 @@ namespace SharpTune.ConversionTools
                         }
                     }
                 }
+            }
+            CleanNames();
+        }   
+
+        public void LoadFromString(string str)
+        {
+            Dictionary<string, string> inputMap = new Dictionary<string, string>();
+            using (StringReader reader = new StringReader(str))
+            {
+                string line = string.Empty;
+                do
+                {
+                    string[] l;
+                    line = reader.ReadLine();
+                    int i = 1;
+                    if (line != null)
+                    {
+                       l = line.Split(' ');
+                       string addr;
+                        do{
+                            addr = l[l.Length - i];
+                            i++;
+                        }while(addr.Length < 8 && i < l.Length);
+                        if (addr.Length > 7)
+                            IdaNames.Add(l[0], addr.Substring(addr.Length-6));
+                        else
+                            Trace.WriteLine("error parsing line: " + line + Environment.NewLine + "Try using a map file");
+                    }
+
+                } while (line != null);
             }
             CleanNames();
         }

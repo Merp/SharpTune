@@ -150,6 +150,7 @@ namespace SharpTune
             source = Regex.Replace(source, @"\(", "");
             source = Regex.Replace(source, @"\)", "");
             source = Regex.Replace(source, @"\.", "");
+            source = Regex.Replace(source, @"\-", " ");
             
             if(endscore)
                 source += "_";

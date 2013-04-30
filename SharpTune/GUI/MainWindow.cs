@@ -536,11 +536,11 @@ namespace SharpTune
 
         private void mAPToRRLoggerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //if (ForceOpenRom()) //TODO IMPLEMENT LATER
-            //{
+            if (ForceOpenRom())
+            {
                 this.workerThread = new Thread(new ThreadStart(this.SpawnMapToDef));
                 this.workerThread.Start();
-            //}
+            }
         }
 
         private void SpawnMapToDef()

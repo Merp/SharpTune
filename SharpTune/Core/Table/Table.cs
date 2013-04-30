@@ -163,7 +163,15 @@ namespace SharpTuneCore
                         break;
                     }
                 }
-                    
+
+                foreach (Table t in InheritanceList)
+                {
+                    if (t.category != null)
+                    {
+                        category = t.category;
+                        break;
+                    }
+                }
             }
 
             xml = xel;
@@ -211,6 +219,10 @@ namespace SharpTuneCore
 
                     case "type":
                         this.type = property.Value.ToString();
+                        continue;
+
+                    case "category":
+                        this.category = property.Value.ToString();
                         continue;
 
                     default:

@@ -61,6 +61,8 @@ namespace SharpTune.GUI
                 ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
             try
             {
+                SharpTuner.ActiveImage.Definition.ImportMapText(textBox1.Text, SharpTuner.ActiveImage);//TODO: clean up creation of XML whitespace sucks ass.
+                SharpTuner.ActiveImage.Definition.ExportXML();
                 ModDefinition.DefineRRLogEcuFromText(textBox1.Text, ecuid);
                 MessageBox.Show("Success!");
                 this.Close();

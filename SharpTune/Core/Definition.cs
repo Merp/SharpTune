@@ -564,9 +564,13 @@ namespace SharpTuneCore
                     //Write ROM tables
                     if (this.RomTableList != null)
                     {
-                        foreach (KeyValuePair<string, Table> table in this.RomTableList)
+                        //TODO: more research on this!
+                        List<Table> romExportList = (from entry in RomTableList orderby entry.Value.category ascending select entry.Value)
+                            .ToList();
+
+                        foreach (Table table in romExportList)
                         {
-                            table.Value.xml.WriteTo(writer);
+                            table.xml.WriteTo(writer);
                         }
                     }
                     writer.WriteEndDocument();
@@ -592,10 +596,10 @@ namespace SharpTuneCore
 
         private Table GetBaseTable(string name)
         {
-            foreach (Definition d in this.inheritList)
+            foreach (Definition d in inheritList)
             {
-                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetBaseTables().ContainsKey(name))
-                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetBaseTables()[name];
+                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetInheritedBaseTables().ContainsKey(name))
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetInheritedBaseTables()[name];
                 else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList.ContainsKey(name))//TODO FIX RAMTABLES
                     return SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList[name];
             }
@@ -614,10 +618,14 @@ namespace SharpTuneCore
                 if (lut.dataAddress < 0x400000)
                 {
                     //TODO: HANDLE UPDATES TO EXISTING TABLES!!??
+                    if (RomTableList.ContainsKey(childTable.name))
+                        RomTableList.Remove(childTable.name);
                     RomTableList.Add(childTable.name, childTable);
                 }
                 else
                 {
+                    if (RamTableList.ContainsKey(childTable.name))
+                        RamTableList.Remove(childTable.name);
                     RamTableList.Add(childTable.name, childTable);
                 }
             }
@@ -766,19 +774,22 @@ namespace SharpTuneCore
             ScalingList = new Dictionary<string, Scaling>(d.ScalingList);
         }
 
-        public Dictionary<string, Table> GetBaseTables()
+        public Dictionary<string, Table> GetInheritedBaseTables()
         {
             Dictionary<string, Table> baseTables = new Dictionary<string, Table>();
-
+            foreach (Table t in RomTableList.Values)
+            {
+                if (t.address == null || t.address == 0) //TODO polymorphism???? YES
+                    baseTables.Add(t.name, t);
+            }
             foreach (Definition d in inheritList)
             {
                 foreach (Table t in d.RomTableList.Values)
                 {
-                    if (t.address == null || t.address == 0) //TODO polymorphism????
+                    if (t.address == null || t.address == 0) //TODO polymorphism???? YES
                         baseTables.Add(t.name, t);
                 }
             }
-
             return baseTables;
         }
 
@@ -786,8 +797,19 @@ namespace SharpTuneCore
         public void ImportMapFile(string filepath, DeviceImage image)
         {
             IdaMap idaMap = new IdaMap(filepath);
+            ReadMap(idaMap,image);
+        }
+
+        public void ImportMapText(string text, DeviceImage image)
+        {
+            IdaMap idaMap = new IdaMap(text);
+            ReadMap(idaMap,image);
+        }
+
+        public void ReadMap(IdaMap idaMap,DeviceImage image)
+        {
             //loop through base def and search for table names in map
-            foreach (var romtable in GetBaseTables())
+            foreach (var romtable in GetInheritedBaseTables())
             {
                 foreach (var idan in idaMap.IdaCleanNames)
                 {
@@ -810,6 +832,7 @@ namespace SharpTuneCore
             //    }
             //}
         }
+
         #endregion
     }
 }

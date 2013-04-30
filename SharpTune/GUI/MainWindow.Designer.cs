@@ -52,6 +52,7 @@
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.romRaiderIRCChannelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.romRaiderForumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sharpTuningForumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.licensingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
@@ -65,7 +66,6 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.sharpTuningForumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -98,7 +98,7 @@
             // StatusLabel
             // 
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(868, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(899, 17);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Idle";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -196,8 +196,8 @@
             // mAPToRRLoggerToolStripMenuItem
             // 
             this.mAPToRRLoggerToolStripMenuItem.Name = "mAPToRRLoggerToolStripMenuItem";
-            this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to RR Logger";
+            this.mAPToRRLoggerToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+            this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to Definition";
             this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
             // 
             // menuStrip1
@@ -253,7 +253,7 @@
             this.romRaiderForumToolStripMenuItem,
             this.sharpTuningForumToolStripMenuItem});
             this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
-            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.onlineHelpToolStripMenuItem.Text = "Online Help";
             // 
             // romRaiderIRCChannelToolStripMenuItem
@@ -269,6 +269,13 @@
             this.romRaiderForumToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.romRaiderForumToolStripMenuItem.Text = "RomRaider Forum";
             this.romRaiderForumToolStripMenuItem.Click += new System.EventHandler(this.romRaiderForumToolStripMenuItem_Click);
+            // 
+            // sharpTuningForumToolStripMenuItem
+            // 
+            this.sharpTuningForumToolStripMenuItem.Name = "sharpTuningForumToolStripMenuItem";
+            this.sharpTuningForumToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.sharpTuningForumToolStripMenuItem.Text = "SharpTuning Forum";
+            this.sharpTuningForumToolStripMenuItem.Click += new System.EventHandler(this.sharpTuningForumToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -406,13 +413,6 @@
             this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
-            // 
-            // sharpTuningForumToolStripMenuItem
-            // 
-            this.sharpTuningForumToolStripMenuItem.Name = "sharpTuningForumToolStripMenuItem";
-            this.sharpTuningForumToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.sharpTuningForumToolStripMenuItem.Text = "SharpTuning Forum";
-            this.sharpTuningForumToolStripMenuItem.Click += new System.EventHandler(this.sharpTuningForumToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
