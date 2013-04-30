@@ -567,5 +567,19 @@ namespace SharpTune
         {
             Process.Start(SharpTuner.ForumUrl);
         }
+
+        private void definitionEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ForceOpenRom())
+            {
+                this.workerThread = new Thread(new ThreadStart(this.SpawnDefEditor));
+                this.workerThread.Start();
+            }
+        }
+
+        private void SpawnDefEditor()
+        {
+            Application.Run(new DefinitionEditor());
+        }
     }
 }

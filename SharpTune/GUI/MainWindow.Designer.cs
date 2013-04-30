@@ -66,6 +66,7 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.definitionEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -166,7 +167,8 @@
             this.obfuscateCALIDToolStripMenuItem,
             this.xMLToIDCToolStripMenuItem,
             this.iDAToHEWToolStripMenuItem,
-            this.mAPToRRLoggerToolStripMenuItem});
+            this.mAPToRRLoggerToolStripMenuItem,
+            this.definitionEditorToolStripMenuItem});
             this.rOMToolStripMenuItem.Name = "rOMToolStripMenuItem";
             this.rOMToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.rOMToolStripMenuItem.Text = "Tools";
@@ -175,21 +177,21 @@
             // 
             this.obfuscateCALIDToolStripMenuItem.Enabled = false;
             this.obfuscateCALIDToolStripMenuItem.Name = "obfuscateCALIDToolStripMenuItem";
-            this.obfuscateCALIDToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.obfuscateCALIDToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.obfuscateCALIDToolStripMenuItem.Text = "Obfuscate CALID";
             this.obfuscateCALIDToolStripMenuItem.Click += new System.EventHandler(this.obfuscateCALIDToolStripMenuItem_Click);
             // 
             // xMLToIDCToolStripMenuItem
             // 
             this.xMLToIDCToolStripMenuItem.Name = "xMLToIDCToolStripMenuItem";
-            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.xMLToIDCToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.xMLToIDCToolStripMenuItem.Text = "XML to IDC";
             this.xMLToIDCToolStripMenuItem.Click += new System.EventHandler(this.xMLToIDCToolStripMenuItem_Click);
             // 
             // iDAToHEWToolStripMenuItem
             // 
             this.iDAToHEWToolStripMenuItem.Name = "iDAToHEWToolStripMenuItem";
-            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.iDAToHEWToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
             this.iDAToHEWToolStripMenuItem.Text = "IDA to HEW";
             this.iDAToHEWToolStripMenuItem.Click += new System.EventHandler(this.iDAToHEWToolStripMenuItem_Click);
             // 
@@ -253,7 +255,7 @@
             this.romRaiderForumToolStripMenuItem,
             this.sharpTuningForumToolStripMenuItem});
             this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
-            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.onlineHelpToolStripMenuItem.Text = "Online Help";
             // 
             // romRaiderIRCChannelToolStripMenuItem
@@ -280,14 +282,14 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // licensingToolStripMenuItem
             // 
             this.licensingToolStripMenuItem.Name = "licensingToolStripMenuItem";
-            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.licensingToolStripMenuItem.Text = "Licensing";
             this.licensingToolStripMenuItem.Click += new System.EventHandler(this.licensingToolStripMenuItem_Click);
             // 
@@ -414,6 +416,13 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
             // 
+            // definitionEditorToolStripMenuItem
+            // 
+            this.definitionEditorToolStripMenuItem.Name = "definitionEditorToolStripMenuItem";
+            this.definitionEditorToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+            this.definitionEditorToolStripMenuItem.Text = "Definition Editor";
+            this.definitionEditorToolStripMenuItem.Click += new System.EventHandler(this.definitionEditorToolStripMenuItem_Click);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -480,6 +489,7 @@
         private System.Windows.Forms.ToolStripMenuItem mAPToRRLoggerToolStripMenuItem;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ToolStripMenuItem sharpTuningForumToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem definitionEditorToolStripMenuItem;
     }
 }
 

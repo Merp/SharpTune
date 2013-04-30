@@ -19,9 +19,11 @@ namespace SharpTune.Core
                 return lut3d;
             Lut2D lut2d;
             if (Lut2D.TrySynthesizeLut2D(out lut2d,name,tb,address))
-                return new Lut2D(name,tb, address);
-            else
-                return new Lut(name,address);
+                return lut2d;
+            Lut lut;
+            if (Lut.TrySynthesizeLut(out lut, name, address))
+                return lut;
+            throw new Exception("Bad lut address!!");
         }
     }
 
@@ -30,7 +32,7 @@ namespace SharpTune.Core
         public readonly UInt16 rowColLimit = 35;
         public readonly UInt32 romLimit = 0x00018000;
         public readonly UInt32 ramStart = 0xFFFF0000;
-        public readonly UInt32 ramLimit = 0x0000FFFF;
+        public readonly UInt32 ramLimit = 0xFFFFFFFF;
         public readonly List<uint> tableTypes = new List<uint>() { 0x08000000, 0x04000000 };
         //TODO: pull this info from each device image?
 
@@ -52,6 +54,20 @@ namespace SharpTune.Core
             Name = name;
             dataAddress = da;
         }
+
+        public static bool TrySynthesizeLut(out Lut lut, string name, uint da)
+        {
+            lut = new Lut(name, da);
+            return lut.CheckData();
+        }            
+
+        public virtual bool CheckData()
+        {
+            if ( (dataAddress > 0 && dataAddress < romLimit) || (dataAddress > ramStart && dataAddress < ramLimit) ) 
+                return false;
+            return true;
+        }
+
     }
 
     public class Lut2D : Lut
@@ -67,8 +83,7 @@ namespace SharpTune.Core
         }
 
         /// <summary>
-        /// WARNING ONLY USE FOR 3d TABLES
-        /// TODO arrange classes as 2D/3D and base
+        /// TODO: do 2d tables have grad/offs??
         /// </summary>
         /// <param name="blob"></param>
         /// <param name="address"></param>
@@ -91,13 +106,15 @@ namespace SharpTune.Core
             return false;
         }
 
-
-        public virtual bool CheckData()
+        public override bool CheckData()
         {
-            if( cols > rowColLimit &&
-                ( (colsAddress > 0 && colsAddress < romLimit) || (colsAddress > ramStart && colsAddress < ramLimit) ) &&
-                ( (dataAddress > 0 && dataAddress < romLimit) || (dataAddress > ramStart && dataAddress < ramLimit) ) )
-                return true;
+            if (base.CheckData())
+            {
+                if (cols > rowColLimit &&
+                    ((colsAddress > 0 && colsAddress < romLimit) || (colsAddress > ramStart && colsAddress < ramLimit)))
+                    return true;
+                return false;
+            }
             return false;
         }
     }
@@ -145,11 +162,15 @@ namespace SharpTune.Core
 
         public override bool CheckData()
         {
-            if ( CheckType(tableType) &&
-                base.CheckData() &&
-                ( (rowsAddress > 0 && rowsAddress < romLimit) || (rowsAddress > ramStart && rowsAddress < ramLimit) ) &&
-                CheckFloat(gradient) && CheckFloat(offset) )
-                return true;
+            if (base.CheckData())
+            {
+                if (CheckType(tableType) &&
+                    base.CheckData() &&
+                    ((rowsAddress > 0 && rowsAddress < romLimit) || (rowsAddress > ramStart && rowsAddress < ramLimit)) &&
+                    CheckFloat(gradient) && CheckFloat(offset))
+                    return true;
+                return false;
+            }
             return false;
         }
 

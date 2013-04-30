@@ -114,6 +114,7 @@ namespace SharpTuneCore
         public Scaling defaultScaling { get; set; }
         public Scaling scaling { get; set; }
         public DeviceImage parentImage { get; private set; }
+        public Definition parentDef { get; private set; }
         public List<string> Attributes { get; set; }
         public bool isBase { get; private set; }
 
@@ -146,6 +147,7 @@ namespace SharpTuneCore
         /// <param name="xel"></param>
         public Table(XElement xel, Definition d, bool b)
         {
+            parentDef = d;
             InheritanceList = new List<Table>();
             isBase = b;
             if(xel.Attribute("name") != null)
@@ -154,12 +156,11 @@ namespace SharpTuneCore
             {
                 foreach (Definition id in d.inheritList)
                 {
-                    if (id.RomTableList.ContainsKey(name))
+                    if (id.BaseRomTables.ContainsKey(name)) //TOOD THIS IS INCOMPATIBLE WITH RAM TABLES
                     {
-                        if (id.RomTableList[name].InheritanceList != null)
-                            InheritanceList.AddRange(id.RomTableList[name].InheritanceList);
-
-                        InheritanceList.Add(id.RomTableList[name]);
+                        if (id.BaseRomTables[name].InheritanceList != null)
+                            InheritanceList.AddRange(id.BaseRomTables[name].InheritanceList);
+                        InheritanceList.Add(id.BaseRomTables[name]);
                         break;
                     }
                 }

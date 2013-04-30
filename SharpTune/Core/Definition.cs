@@ -67,12 +67,120 @@ namespace SharpTuneCore
         /// </summary>
         public XElement xRomId { get; set; }
 
-        public Dictionary<string, Table> RomTableList { get; private set; }
-        /// <summary>
-        /// Holds all Xelements pulled form XML for RAM tables
-        /// Includes inherited XML
-        /// </summary>
-        public Dictionary<string, Table> RamTableList { get; private set; }
+        public Dictionary<string,Table> ExposedRomTables { get; private set;}
+        public Dictionary<string,Table> ExposedRamTables { get; private set;}
+        
+        public Dictionary<string,Table> InheritedExposedRomTables { 
+            get{
+                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                foreach(Definition d in inheritList)
+                {
+                    foreach(Table t in d.ExposedRomTables.Values)
+                    {
+                        if(!ret.ContainsKey(t.name))
+                            ret.Add(t.name,t);
+                    }
+                }
+                return ret;
+            }
+            private set{}
+        }
+
+        public Dictionary<string,Table> InheritedExposedRamTables { 
+            get{
+                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                foreach(Definition d in inheritList)
+                {
+                    foreach(Table t in d.ExposedRamTables.Values)
+                    {
+                        if(!ret.ContainsKey(t.name))
+                            ret.Add(t.name,t);
+                    }
+                }
+                return ret;
+            }
+            private set{}
+        }
+
+        public Dictionary<string, Table> AggregateExposedRomTables { 
+            get{
+                return Utils.AggregateDictionary(ExposedRomTables,InheritedExposedRomTables);
+            }
+            private set{}
+        }
+        public Dictionary<string, Table> AggregateExposedRamTables { 
+            get{
+                return Utils.AggregateDictionary(ExposedRamTables,InheritedExposedRamTables);
+            }
+            private set{}
+        }
+        public Dictionary<string,Table> BaseRomTables { get; private set;}
+        public Dictionary<string,Table> BaseRamTables { get; private set;}
+
+        public Dictionary<string,Table> InheritedBaseRomTables { 
+            get{
+                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                foreach(Definition d in inheritList)
+                {
+                    foreach(Table t in d.BaseRomTables.Values)
+                    {
+                        if(!ret.ContainsKey(t.name))
+                            ret.Add(t.name,t);
+                    }
+                }
+                return ret;
+            }
+            private set{}
+        }
+
+        public Dictionary<string,Table> InheritedBaseRamTables { 
+            get{
+                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                foreach(Definition d in inheritList)
+                {
+                    foreach(Table t in d.BaseRamTables.Values)
+                    {
+                        if(!ret.ContainsKey(t.name))
+                            ret.Add(t.name,t);
+                    }
+                }
+                return ret;
+            }
+            private set{}
+        }
+
+        public Dictionary<string, Table> AggregateBaseRomTables { 
+            get{
+                return Utils.AggregateDictionary(BaseRomTables,InheritedBaseRomTables);
+            }
+            private set{}
+        }
+        public Dictionary<string, Table> AggregateBaseRamTables { 
+            get{
+                return Utils.AggregateDictionary(BaseRamTables,InheritedBaseRamTables);
+            }
+            private set{}
+        }
+
+        public List<Table> RomTables{
+            get{
+                List<Table> tlist = new List<Table>();
+                tlist.AddRange(ExposedRomTables.Values);
+                tlist.AddRange(BaseRomTables.Values);
+                return tlist;
+            }
+            private set{}
+        }
+
+        public List<Table> RamTables{
+            get{
+                List<Table> tlist = new List<Table>();
+                tlist.AddRange(ExposedRomTables.Values);
+                tlist.AddRange(BaseRomTables.Values);
+                return tlist;
+            }
+            private set{}
+        }
 
         public Dictionary<string, Scaling> ScalingList { get; private set; }
 
@@ -85,8 +193,10 @@ namespace SharpTuneCore
         {
             isBase = false;
             CarInfo = new Dictionary<string, string>();
-            RomTableList = new Dictionary<string, Table>();
-            RamTableList = new Dictionary<string, Table>();
+            ExposedRomTables = new Dictionary<string, Table>();
+            ExposedRamTables = new Dictionary<string, Table>();
+            BaseRomTables = new Dictionary<string, Table>();
+            BaseRamTables = new Dictionary<string, Table>();
             ScalingList = new Dictionary<string,Scaling>();
             inheritList = new List<Definition>();
             include = null;
@@ -239,8 +349,10 @@ namespace SharpTuneCore
 
         private void Clear()
         {
-            RomTableList.Clear();
-            RamTableList.Clear();
+            ExposedRomTables.Clear();
+            ExposedRamTables.Clear();
+            BaseRomTables.Clear();
+            BaseRamTables.Clear();
             ScalingList.Clear();
             inheritList.Clear();
         }
@@ -254,55 +366,24 @@ namespace SharpTuneCore
             XDocument xmlDoc = XDocument.Load(path, LoadOptions.PreserveWhitespace);
             // ROM table fetches here!
             var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
-                             //where table.Ancestors("table").First().IsEmpty
                              select t;
             foreach (XElement table in tableQuery)
             {
-                //skip tables with no name
-                if (table.Attribute("name") == null) continue;
-
+                if (table.Attribute("name") == null) 
+                    continue;
                 string tablename = table.Attribute("name").Value.ToString();
-
-                if (this.RomTableList.ContainsKey(tablename))
-                {
-                    //shouldn't happen!
-                    //table already exists add data to existing table
-                    //this.RomTableList[tablename].Merge(table);'
-                    Trace.WriteLine("Warning, duplicate table: " + tablename + ". Please check the definition!!");
-                    //Trace.WriteLine("table " + tablename + " already exists, merging tables");
-                }
-                else
-                {
-
-                //else if (!internalId.ContainsCI("base"))
-                //{/
-                    //table does not exist call constructor
-                    this.RomTableList.Add(tablename, TableFactory.CreateTable(table,this));
-                    //Trace.WriteLine("added new table from " + fetchCalID + " with name " + tablename);
-                }
+                AddRomTable(TableFactory.CreateTable(table,this));
             }
             // RAM table feteches here!
             var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
-                                //where table.Ancestors("table").First().IsEmpty
                                 select t;
             foreach (XElement table in ramtableQuery)
             {
-                //skip tables with no name
-                if (table.Attribute("name") == null) continue;
-
+                if (table.Attribute("name") == null) 
+                    continue;
                 string tablename = table.Attribute("name").Value.ToString();
 
-                if (this.RomTableList.ContainsKey(tablename))
-                {
-                    //table already exists add data to existing table
-                   // this.RamTableList[tablename].Merge(table);
-                }
-
-                //else if (!internalId.ContainsCI("base"))
-                //{
-                    //table does not exist call constructor
-                    this.RamTableList.Add(tablename, TableFactory.CreateTable(table,this));
-                //}
+                AddRamTable(TableFactory.CreateTable(table,this));
             }
             //Read Scalings
             var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
@@ -319,6 +400,43 @@ namespace SharpTuneCore
                 }
             }
             return true;
+        }
+
+        private void AddRomTable(Table table)
+        {
+            if (table.isBase)
+            {
+                if (!BaseRomTables.ContainsKey(table.name))
+                    BaseRomTables.Add(table.name, table);
+                else
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+            }
+            else
+            {
+                if (!ExposedRomTables.ContainsKey(table.name))
+                    ExposedRomTables.Add(table.name, table);
+                else
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+            }
+        }
+
+        private void AddRamTable(Table table)
+        {
+            if (table.isBase)
+            {
+                if (!BaseRamTables.ContainsKey(table.name))
+                    BaseRamTables.Add(table.name, table);
+                else
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+            }
+            else
+            {
+                if (!ExposedRamTables.ContainsKey(table.name))
+                    ExposedRamTables.Add(table.name, table);
+                else
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+                    
+            }
         }
 
         /// <summary>
@@ -562,10 +680,9 @@ namespace SharpTuneCore
                         }
                     }
                     //Write ROM tables
-                    if (this.RomTableList != null)
+                    if (RomTables != null)
                     {
-                        //TODO: more research on this!
-                        List<Table> romExportList = (from entry in RomTableList orderby entry.Value.category ascending select entry.Value)
+                        List<Table> romExportList = (from entry in RomTables orderby entry.category ascending select entry)
                             .ToList();
 
                         foreach (Table table in romExportList)
@@ -598,10 +715,10 @@ namespace SharpTuneCore
         {
             foreach (Definition d in inheritList)
             {
-                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetInheritedBaseTables().ContainsKey(name))
-                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].GetInheritedBaseTables()[name];
-                else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList.ContainsKey(name))//TODO FIX RAMTABLES
-                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].RamTableList[name];
+                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRomTables.ContainsKey(name))
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRomTables[name];
+                else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRamTables.ContainsKey(name))//TODO FIX RAMTABLES
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRamTables[name];
             }
             Trace.WriteLine("Warning: base table for " + name + " not found");
             return null;
@@ -618,15 +735,15 @@ namespace SharpTuneCore
                 if (lut.dataAddress < 0x400000)
                 {
                     //TODO: HANDLE UPDATES TO EXISTING TABLES!!??
-                    if (RomTableList.ContainsKey(childTable.name))
-                        RomTableList.Remove(childTable.name);
-                    RomTableList.Add(childTable.name, childTable);
+                    if (ExposedRomTables.ContainsKey(childTable.name))
+                        ExposedRomTables.Remove(childTable.name);
+                    ExposedRomTables.Add(childTable.name, childTable);
                 }
                 else
                 {
-                    if (RamTableList.ContainsKey(childTable.name))
-                        RamTableList.Remove(childTable.name);
-                    RamTableList.Add(childTable.name, childTable);
+                    if (ExposedRamTables.ContainsKey(childTable.name))
+                        ExposedRamTables.Remove(childTable.name);
+                    ExposedRamTables.Add(childTable.name, childTable);
                 }
             }
 
@@ -769,28 +886,11 @@ namespace SharpTuneCore
 
         public void CopyTables(Definition d)
         {
-            RomTableList = new Dictionary<string,Table>(d.RomTableList);
-            RamTableList = new Dictionary<string,Table>(d.RamTableList);
+            ExposedRomTables = new Dictionary<string,Table>(d.ExposedRomTables);
+            ExposedRamTables = new Dictionary<string,Table>(d.ExposedRamTables);
+            BaseRomTables = new Dictionary<string, Table>(d.BaseRomTables);
+            BaseRamTables = new Dictionary<string, Table>(d.BaseRamTables);
             ScalingList = new Dictionary<string, Scaling>(d.ScalingList);
-        }
-
-        public Dictionary<string, Table> GetInheritedBaseTables()
-        {
-            Dictionary<string, Table> baseTables = new Dictionary<string, Table>();
-            foreach (Table t in RomTableList.Values)
-            {
-                if (t.address == null || t.address == 0) //TODO polymorphism???? YES
-                    baseTables.Add(t.name, t);
-            }
-            foreach (Definition d in inheritList)
-            {
-                foreach (Table t in d.RomTableList.Values)
-                {
-                    if (t.address == null || t.address == 0) //TODO polymorphism???? YES
-                        baseTables.Add(t.name, t);
-                }
-            }
-            return baseTables;
         }
 
         #region ECUFlash XML Code
@@ -809,7 +909,7 @@ namespace SharpTuneCore
         public void ReadMap(IdaMap idaMap,DeviceImage image)
         {
             //loop through base def and search for table names in map
-            foreach (var romtable in GetInheritedBaseTables())
+            foreach (var romtable in AggregateBaseRomTables)
             {
                 foreach (var idan in idaMap.IdaCleanNames)
                 {

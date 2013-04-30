@@ -452,5 +452,26 @@ namespace SharpTune
             }
             return false;
         }
-    }
+
+        public static Dictionary<TKey,TValue> AggregateDictionary<TKey,TValue>(Dictionary<TKey, TValue> overrideDict, Dictionary<TKey, TValue> baseDict)
+        {
+            Dictionary<TKey,TValue> rtd = new Dictionary<TKey,TValue>();
+                try{
+                    foreach(var t in overrideDict)
+                        rtd.Add(t.Key,t.Value);
+                    foreach(var t in baseDict)
+                    {
+                        if(!overrideDict.ContainsKey(t.Key))
+                        {
+                            rtd.Add(t.Key,t.Value);
+                        }
+                    }
+                }catch (Exception E){
+                    Trace.WriteLine(E.Message);
+                }
+                return rtd;
+            }
+        }
+    
 }
+

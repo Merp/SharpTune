@@ -230,7 +230,7 @@ namespace SharpTune.RomMod
         private bool TryCleanDef()
         {
             List<string> removelist = new List<string>();
-            foreach (KeyValuePair<string, Table> table in this.definition.RomTableList)
+            foreach (KeyValuePair<string, Table> table in this.definition.ExposedRomTables)
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
@@ -244,12 +244,12 @@ namespace SharpTune.RomMod
             }
             foreach (string table in removelist)
             {
-                this.definition.RomTableList.Remove(table);
+                this.definition.ExposedRomTables.Remove(table);
             }
 
             //same operation for ramtables
             removelist.Clear();
-            foreach (KeyValuePair<string, Table> table in this.definition.RamTableList)
+            foreach (KeyValuePair<string, Table> table in this.definition.AggregateExposedRamTables)
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
@@ -263,7 +263,7 @@ namespace SharpTune.RomMod
             }
             foreach (string table in removelist)
             {
-                this.definition.RamTableList.Remove(table);
+                this.definition.AggregateExposedRamTables.Remove(table);
             }
             return true;
         }
