@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SharpTune
+namespace SharpTune.GUI
 {
     public static class SimplePrompt
     {

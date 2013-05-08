@@ -75,6 +75,7 @@
     <Compile Include="ConversionTools\XMLtoIDC.cs" />
     <Compile Include="Core\Definition.cs" />
     <Compile Include="Core\DeviceImage.cs" />
+    <Compile Include="Core\Plugin.cs" />
     <Compile Include="Core\ResourceUtil.cs" />
     <Compile Include="Core\TableTree.cs" />
     <Compile Include="Core\Table\Axis.cs" />

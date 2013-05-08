@@ -24,6 +24,7 @@ using System.Collections;
 using System.Threading;
 using System.Diagnostics;
 using System.Reflection;
+using SharpTune.Core;
 
 namespace SharpTune
 {
@@ -40,6 +41,9 @@ namespace SharpTune
         public static MainWindow Window { get; set; }
 
         private static DeviceImage actImg;
+
+        private static IPlugin[] Plugins;
+        private static PluginContainer PluginHost = new PluginContainer();
 
         public static DeviceImage ActiveImage 
         {
@@ -92,22 +96,31 @@ namespace SharpTune
             UnitScalings = new List<Scaling>();
             PopulateAvailableDevices();
             LoadMods();
+            LoadPlugins();
             Trace.WriteLine("<--Finished Initializing SharpTuner --->");
         }
 
         public static void InitSettings()
         {
+            string userdir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (Settings.Default.PluginPath == null | Settings.Default.PluginPath == "")
+            {
+                string pp = userdir + @"\SharpTune\Plugins\";
+                if(!Directory.Exists(pp))
+                    Directory.CreateDirectory(pp);
+                 Settings.Default.PluginPath = pp;
+            }
             if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
             {
-                Settings.Default.SubaruDefsRepoPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\SubaruDefs";
+                Settings.Default.SubaruDefsRepoPath = userdir + @"\Dev\SubaruDefs";
             }
             if (Settings.Default.PatchPath == null || Settings.Default.PatchPath == "")
             {
-                Settings.Default.PatchPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Dev\MerpMod\MerpMod\TestRom";
+                Settings.Default.PatchPath = userdir + @"\Dev\MerpMod\MerpMod\TestRom";
             }
             if (Settings.Default.LogFilePath == null || Settings.Default.LogFilePath == "")
             {
-                Settings.Default.LogFilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\SharpTune.log";
+                Settings.Default.LogFilePath = userdir + @"\SharpTune\SharpTune.log";
             }
 
             EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
@@ -138,6 +151,78 @@ namespace SharpTune
             AvailableMods = new List<Mod>();
             //LoadResourceMods();
             LoadExternalMods();
+        }
+
+        public static void LoadPlugins()
+        {
+            string[] pluginFiles = Directory.GetFiles(Settings.Default.PluginPath, "*.DLL");
+            Plugins = new IPlugin[pluginFiles.Length];
+            for (int i = 0; i < pluginFiles.Length; i++)
+            {
+                string args = pluginFiles[i].Substring(
+                    pluginFiles[i].LastIndexOf("\\") + 1,
+                    pluginFiles[i].IndexOf(".dll") -
+                    pluginFiles[i].LastIndexOf("\\") - 1);
+
+                Type ObjType = null;
+                try
+                {
+
+                    //Plugins = (
+                    // From each file in the files.
+                    //from file in pluginFiles
+                    // Load the assembly.
+                    //let asm = Assembly.LoadFile(file)
+                    // For every type in the assembly that is visible outside of
+                    // the assembly.
+                    //from type in asm.GetExportedTypes()
+                    // Where the type implements the interface.
+                    //where typeof(IPlugin).IsAssignableFrom(type)
+                    // Create the instance.
+                    //select (IPlugin)Activator.CreateInstance(type)
+                    // Materialize to an array.
+                    //).ToArray();
+
+                    //foreach (IPlugin ip in Plugins)
+                    //{
+                    //    Trace.WriteLine("Loaded Plugin " + ip.Name);
+                    //}
+                    // load it
+                    Assembly ass = null;
+                    ass = Assembly.LoadFile(pluginFiles[i]);
+                    if (ass != null)
+                    {
+                        ObjType = ass.GetType(args + ".PlugIn");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                try
+                {
+                    // OK Lets create the object as we have the Report Type
+                    if (ObjType != null)
+                    {
+                        Plugins[i] = (IPlugin)Activator.CreateInstance(ObjType);
+                        Plugins[i].Host = (IPluginHost)SharpTuner.PluginHost;
+                        Trace.WriteLine("Loaded Plugin " + args);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+        public static void AuthenticateVin()
+        {
+            foreach (IPlugin i in Plugins)
+            {
+                if (i.Name == "SharpTune Vin Authentication")
+                    i.Run();
+            }
         }
 
         /// <summary>
