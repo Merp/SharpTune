@@ -82,6 +82,12 @@ namespace SharpTuneCore
             }
         }
 
+        public void Refresh()
+        {
+            this.ModList.Clear();
+            TryOpenRom(FilePath);
+        }
+
         /// <summary>
         /// Memory Stream "Save" -> disk
         /// </summary>

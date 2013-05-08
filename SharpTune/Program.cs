@@ -70,11 +70,11 @@ namespace SharpTune
             SharpTuner.InitSettings();
             if (args[0] == "convtools")
             {
-                ConvTool.Run(Utils.ShiftLeftTruncate(args));
+                return ConvTool.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {
-                SharpTune.RomMod.RomMod.Run(Utils.ShiftLeftTruncate(args));
+                return SharpTune.RomMod.RomMod.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "xmltoidc")
             {

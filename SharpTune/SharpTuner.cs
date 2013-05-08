@@ -184,14 +184,28 @@ namespace SharpTune
             {
                 //TODO: When a mod is loaded, detect "FFFFFFF" CALID!!!
                 if (m.InitialCalibrationId == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", true, false))
+                {
                     tm.Add(m);
+                    Trace.WriteLine("Loaded Mod: " + m.FileName);
+                }
                 else if (m.ModIdent == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", false, false))
+                {
                     tm.Add(m);
+                    Trace.WriteLine("Loaded Mod: " + m.FileName);
+                }
             }
             return tm;
         }
 
-        public static void InitTraces(){
+        public static void RefreshImages()
+        {
+            foreach (DeviceImage d in ImageList)
+            {
+                d.Refresh();
+            }
+            Window.Refresh();
+        }
+                    public static void InitTraces(){
 
         // First step: create the trace source object
         TraceSource ts = new TraceSource("myTraceSource");

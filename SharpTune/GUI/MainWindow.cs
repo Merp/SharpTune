@@ -193,7 +193,7 @@ namespace SharpTune
                 else
                 {
                     closeDeviceImageToolStripMenuItem.Enabled = false;
-                    //modUtilityToolStripMenuItem.Enabled = false;
+                    SharpTuner.ActiveImage = null;
                     obfuscateCALIDToolStripMenuItem.Enabled = false;
                 }
             }
@@ -233,6 +233,9 @@ namespace SharpTune
 
         private void RefreshImageInfo()
         {
+            if (SharpTuner.ActiveImage == null)
+                return;
+
             object io = null;
             foreach (var i in openDeviceListBox.Items)
             {
@@ -251,6 +254,12 @@ namespace SharpTune
             try
             {
                 Mod m = SharpTuner.ActiveImage.ModList[selectedModIndex];
+                
+                if (!SharpTuner.ActiveImage.ModList[selectedModIndex].isApplied)
+                    buttonPatchRom.Text = "Apply Mod";
+                else
+                    buttonPatchRom.Text = "Remove Mod";
+
                 selectedModTextBox.Text = "FileName: " +
                     m.FileName +
                     Environment.NewLine;
@@ -275,18 +284,26 @@ namespace SharpTune
             {
                 string derp = excpt.Message;
                 selectedModTextBox.Clear();
+                buttonPatchRom.Enabled = false;
+                buttonPatchRom.Text = "Select a patch";
             }
+            
         }
 
         public void RefreshModTree()
         {
             treeView1.Nodes.Clear();
+            if (SharpTuner.ActiveImage == null)
+            {
+                treeView1.Nodes.Add("");
+                return;
+            }
+
             if (SharpTuner.ActiveImage.ModList.Count > 0)
             {
                 treeView1.Nodes.Add("Compatible MODs for " + SharpTuner.ActiveImage.FileName);
                 foreach (Mod mod in SharpTuner.ActiveImage.ModList)
                 {
-                    Trace.WriteLine("Loaded Patch: " + mod.FileName);
                     TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
                     patchTree.Tag = mod.FilePath;
 
@@ -347,6 +364,7 @@ namespace SharpTune
             {
                 MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            Refresh();
         }
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
@@ -356,12 +374,13 @@ namespace SharpTune
                 buttonPatchRom.Enabled = true;
                 //buttonTestPatch.Enabled = true;
                 selectedModIndex = SharpTuner.ActiveImage.ModList.FindIndex(m => m.FilePath == treeView1.SelectedNode.Tag.ToString());
+                
                 RefreshModInfo();
             }
             else
             {
                 buttonPatchRom.Enabled = false;
-                //buttonTestPatch.Enabled = false;
+                buttonPatchRom.Text = "Select a patch";
             }
         }
 
@@ -465,6 +484,7 @@ namespace SharpTune
             {
                 Settings.Default.SubaruDefsRepoPath = d.SelectedPath.ToString();
                 SharpTuner.Init();
+                SharpTuner.RefreshImages();
             } 
         }
 
@@ -528,9 +548,10 @@ namespace SharpTune
 
             if (ret == DialogResult.OK)
             {
-                SharpTuner.LoadMods();
                 Settings.Default.PatchPath = d.SelectedPath;
+                SharpTuner.LoadMods();
                 SharpTuner.InitSettings();
+                SharpTuner.RefreshImages();
             }
         }
 

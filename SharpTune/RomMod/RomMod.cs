@@ -57,13 +57,21 @@ namespace SharpTune.RomMod
             {
                 return RomMod.TryApply(args[1], args[2], false, true);
             }
-            else if (args.Length == 3 && args[0] == "baseline")
+            else if (args.Length == 4 && args[0] == "baseline")
             {
-                return RomMod.TryGenerateBaseline(args[1], args[2]);
+                return RomMod.TryGenerateBaseline(args[1], args[2], args[3]);
             }
             else if (args.Length == 4 && args[0] == "baselinedefine")
             {
                 return RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+            }
+            else if (args.Length == 4 && args[0] == "define")
+            {
+                return RomMod.TryDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+            }
+            else if (args.Length == 4 && args[0] == "hewbuild")
+            {
+                return RomMod.TryHewBuild(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
             }
             PrintHelp();
             return false;
@@ -83,6 +91,8 @@ namespace SharpTune.RomMod
             Trace.WriteLine("remove     - remove a patch from a ROM file");
             Trace.WriteLine("dump       - dump the contents of a patch file");
             Trace.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
+            Trace.WriteLine("define     - define a patched rom");
+            Trace.WriteLine("hewbuild   - perform hew build (baseline -> patch -> define)");
             Trace.WriteLine("");
             Trace.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
         }
@@ -172,39 +182,105 @@ namespace SharpTune.RomMod
 
             return result;
         }
-
-
         
         /// <summary>
         /// Extract data from an unpatched ROM file, for inclusion in a patch file.
         /// </summary>
-        private static bool TryGenerateBaseline(string patchPath, string romPath)
+        private static bool TryGenerateBaseline(string patchPath, string romPath, string build)
         {
-            Stream romStream = File.OpenRead(romPath);
-            Mod patcher = new Mod(patchPath);
+            using (Stream romStream = File.OpenRead(romPath))
+            {
+                Mod patcher = new Mod(patchPath, build);
 
-            if (!patcher.TryReadPatches()) return false;
-
-            // Handy for manual work, but with this suppressed, you can append-pipe the output to the patch file.
-            // Trace.WriteLine("Generating baseline SRecords for:");
-            // patcher.PrintPatches();
-
-            return patcher.TryPrintBaselines(patchPath,romStream);
+                if (!patcher.TryReadPatches())
+                    return false;
+                return patcher.TryPrintBaselines(patchPath, romStream);
+            }
         }
 
-        private static bool TryBaselineAndDefine(string patchPath, string romPath, string bc, string defPath)
+        private static bool TryBaselineAndDefine(string patchPath, string romPath, string build, string defPath)
         {
-            Stream romStream = File.OpenRead(romPath);
-            Mod patcher = new Mod(patchPath, bc);
+            using (Stream romStream = File.OpenRead(romPath))
+            {
+                Mod patcher = new Mod(patchPath, build);
 
-            if (!patcher.TryReadPatches()) return false;
-            if (!patcher.TryDefinition(defPath)) return false;
+                if (!patcher.TryReadPatches()) 
+                    return false;
+                if (!patcher.TryDefinition(defPath)) 
+                    return false;
+                return patcher.TryPrintBaselines(patchPath,romStream);
+            }
+        }
 
-            // Handy for manual work, but with this suppressed, you can append-pipe the output to the patch file.
-            // Trace.WriteLine("Generating baseline SRecords for:");
-            // patcher.PrintPatches();
+        public static bool TryDefine(string patchPath, string romPath, string bc, string defPath)
+        {
+            using (Stream romStream = File.OpenRead(romPath))
+            {
+                Mod mod = new Mod(patchPath, bc);
+                return mod.TryDefinition(defPath);
+            }
+        }
 
-            return patcher.TryPrintBaselines(patchPath,romStream);
+        public static bool TryHewBuild(string patchPath, string romPath, string bc, string defPath)
+        {
+            Mod mod = new Mod(patchPath, bc);
+            using (Stream romStream = File.OpenRead(romPath))
+            {
+                Trace.WriteLine("Attempting to read patches");
+                if (!mod.TryReadPatches())
+                {
+                    PrintError("READING PATCH");
+                    return false;
+                }
+                Trace.WriteLine("Attempting to baseline patches");
+                if (!mod.TryPrintBaselines(patchPath, romStream))
+                {
+                    PrintError("GENERATING BASELINES");
+                    return false;
+                }
+            }
+            File.Copy(romPath, "oem.bin", true);
+            Trace.WriteLine("Attempting to test patches");
+            if (!mod.TryCheckApplyMod(romPath, romPath, true, false)) //&& !mod.TryCheckApplyMod(romPath, romPath, false, false)) ;
+            {
+                PrintError("TESTING PATCH");
+                return false;
+            }
+            Trace.WriteLine("Attempting to apply patches");
+            if (!mod.TryCheckApplyMod(romPath, romPath, true, true))
+            {
+                PrintError("APPLYING PATCH");
+                return false;
+            }
+            Trace.WriteLine("Attempting to remove patches");
+            File.Copy(romPath, "reverted.bin", true);
+            if (!mod.TryCheckApplyMod("reverted.bin", "reverted.bin", false, true))
+            {
+                PrintError("REMOVING PATCH");
+                return false;
+            }
+            Trace.WriteLine("Attempting to verify patch removal");
+            if (!Utils.FileCompare("reverted.bin", "oem.bin"))
+            {
+                PrintError("VERIFYING REMOVED PATCH");
+                return false;
+            }
+            Trace.WriteLine("Attempting to define patch");
+            if (!mod.TryDefinition(defPath))
+            {
+                PrintError("WRITING DEFINITIONS");
+                return false;
+            }
+            Trace.WriteLine("Attempting to copy patch to: "+ bc + "\\" + mod.InitialCalibrationId + "\\" + mod.FileName);
+            File.Copy(mod.FilePath,bc+"\\"+mod.InitialCalibrationId+"\\"+mod.FileName,true);
+            Trace.WriteLine("HEW BUILD SUCCESS!!");
+            return true;
+        }
+
+        public static void PrintError(string mess)
+        {
+            for (int i = 0; i < 5; i++)
+                Trace.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ERROR " + mess + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
     }
 }

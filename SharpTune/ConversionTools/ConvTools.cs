@@ -26,7 +26,7 @@ namespace SharpTune.ConversionTools
             Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
         }
 
-        public static void Run(string[] args)
+        public static bool Run(string[] args)
         {
             ConvTool prog = new ConvTool();
             
@@ -72,6 +72,7 @@ namespace SharpTune.ConversionTools
             }
             else
                 Trace.WriteLine("invalid command! Args: " + args.Length );
+            return true; //TODO FIX!!
         }
 
         public void LoadXML(string file)

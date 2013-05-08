@@ -44,6 +44,7 @@
             this.xMLToIDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iDAToHEWToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mAPToRRLoggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.definitionEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.xMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.definitionLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,7 +67,6 @@
             this.buttonPatchRom = new System.Windows.Forms.Button();
             this.selectedModTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.definitionEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -202,6 +202,13 @@
             this.mAPToRRLoggerToolStripMenuItem.Text = "MAP to Definition";
             this.mAPToRRLoggerToolStripMenuItem.Click += new System.EventHandler(this.mAPToRRLoggerToolStripMenuItem_Click);
             // 
+            // definitionEditorToolStripMenuItem
+            // 
+            this.definitionEditorToolStripMenuItem.Name = "definitionEditorToolStripMenuItem";
+            this.definitionEditorToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+            this.definitionEditorToolStripMenuItem.Text = "Definition Editor";
+            this.definitionEditorToolStripMenuItem.Click += new System.EventHandler(this.definitionEditorToolStripMenuItem_Click);
+            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -226,16 +233,20 @@
             // 
             // definitionLocationToolStripMenuItem
             // 
+            this.definitionLocationToolStripMenuItem.AutoToolTip = true;
             this.definitionLocationToolStripMenuItem.Name = "definitionLocationToolStripMenuItem";
-            this.definitionLocationToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            this.definitionLocationToolStripMenuItem.Text = "Definition Location";
+            this.definitionLocationToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.definitionLocationToolStripMenuItem.Text = "Definition Repo Location";
+            this.definitionLocationToolStripMenuItem.ToolTipText = "Set this to the Git Repository base directory. (Should contain \'.git\' directory)";
             this.definitionLocationToolStripMenuItem.Click += new System.EventHandler(this.definitionLocationToolStripMenuItem_Click);
             // 
             // manuallySelectPatchToolStripMenuItem
             // 
+            this.manuallySelectPatchToolStripMenuItem.AutoToolTip = true;
             this.manuallySelectPatchToolStripMenuItem.Name = "manuallySelectPatchToolStripMenuItem";
-            this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            this.manuallySelectPatchToolStripMenuItem.Text = "Patch Location";
+            this.manuallySelectPatchToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.manuallySelectPatchToolStripMenuItem.Text = "Mod Location";
+            this.manuallySelectPatchToolStripMenuItem.ToolTipText = "Set this to the mod \'.patch\' file location.";
             this.manuallySelectPatchToolStripMenuItem.Click += new System.EventHandler(this.manuallySelectPatchToolStripMenuItem_Click_1);
             // 
             // helpToolStripMenuItem
@@ -392,7 +403,7 @@
             this.buttonPatchRom.Name = "buttonPatchRom";
             this.buttonPatchRom.Size = new System.Drawing.Size(275, 50);
             this.buttonPatchRom.TabIndex = 40;
-            this.buttonPatchRom.Text = "Patch Rom";
+            this.buttonPatchRom.Text = "Select A Patch";
             this.buttonPatchRom.UseVisualStyleBackColor = true;
             this.buttonPatchRom.Click += new System.EventHandler(this.buttonPatchRom_Click);
             // 
@@ -415,13 +426,6 @@
             this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Mod Info";
-            // 
-            // definitionEditorToolStripMenuItem
-            // 
-            this.definitionEditorToolStripMenuItem.Name = "definitionEditorToolStripMenuItem";
-            this.definitionEditorToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
-            this.definitionEditorToolStripMenuItem.Text = "Definition Editor";
-            this.definitionEditorToolStripMenuItem.Click += new System.EventHandler(this.definitionEditorToolStripMenuItem_Click);
             // 
             // MainWindow
             // 

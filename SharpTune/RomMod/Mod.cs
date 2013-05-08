@@ -129,11 +129,11 @@ namespace SharpTune.RomMod
             TryReversePatches();
         }
 
-        public Mod(string modPath, string bc)
+        public Mod(string modPath, string build)
         {
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
-            this.ModBuild = bc;
+            this.ModBuild = build;
             //MemoryStream modMemStream = new MemoryStream();
             //using (FileStream fileStream = File.OpenRead(modPath))
             //{
@@ -455,9 +455,10 @@ namespace SharpTune.RomMod
 
             if (!allPatchesValid)
             {
+                Trace.WriteLine("Invalid patches found!!");
                 return false;
             }
-
+            Trace.WriteLine("All patches validated!!");
             return true;
         }
 
@@ -532,8 +533,10 @@ namespace SharpTune.RomMod
         public bool TryPrintBaselines(string patchPath, Stream romStream)
         {
             string p = this.ModIdent.ToString() + ".patch";
+            Trace.WriteLine("Copying Patch to " + p);
             File.Copy(patchPath, p , true);
-
+            this.FilePath = p;
+            this.FileName = p;
             bool result = true;
             foreach (Patch patch in this.patchList)
             {
@@ -544,7 +547,8 @@ namespace SharpTune.RomMod
                     break;
                 }
             }
-
+            if (result)
+                Trace.WriteLine("BASELINE SUCCESSFUL");
             return result;
         }
 
@@ -708,7 +712,7 @@ namespace SharpTune.RomMod
                 calibrationAddress, 
                 Encoding.ASCII.GetBytes(finalCalibrationId));
             
-            this.patchList.Add(patch);
+            this.patchList.AddPatch(patch);
             
             return true;
         }
@@ -818,7 +822,7 @@ namespace SharpTune.RomMod
                         CalIdAddress,
                         Encoding.ASCII.GetBytes(finalCalibrationId));
 
-                    this.patchList.Add(patch);
+                    this.patchList.AddPatch(patch);
                 }
                 else if (cookie == modIdPrefix)
                 {
@@ -929,7 +933,7 @@ namespace SharpTune.RomMod
                     EcuIdAddress,
                     FinalEcuId.ToByteArray());
 
-                this.patchList.Add(patch);
+                this.patchList.AddPatch(patch);
             }
             if (this.patchList.Count < 2)
             {
@@ -1015,16 +1019,7 @@ namespace SharpTune.RomMod
                 {
                     break;
                 }
-
-                //if (patch == null && !isInfo)
-                //{
-                //    throw new Exception("Internal error in TryReadPatches: Patch is null. cookie: " + cookie.ToString()
-                //        + "offset: " + offset.ToString());
-                //}
-                if (patch != null)
-                {
-                    this.patchList.Add(patch);
-                }
+                this.patchList.AddPatch(patch);
             }
             return true;
         }
