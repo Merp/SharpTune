@@ -216,13 +216,14 @@ namespace SharpTune
             }
         }
 
-        public static void AuthenticateVin()
+        public static bool AuthenticateMod(Stream outStream)
         {
             foreach (IPlugin i in Plugins)
             {
                 if (i.Name == "SharpTune Vin Authentication")
-                    i.Run();
+                    return i.Run(outStream);
             }
+            return false;
         }
 
         /// <summary>

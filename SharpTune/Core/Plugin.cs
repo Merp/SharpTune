@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -16,7 +17,7 @@ namespace SharpTune.Core
     {
         string Name { get; set; }
         IPluginHost Host { get; set; }
-        void Run();
+        bool Run(Stream stream);
     }
     
     class PluginContainer : IPluginHost
@@ -34,23 +35,23 @@ namespace SharpTune.Core
             return true;
         }  
 
-        private void NewLoad(object sender, System.EventArgs e)
-        {
-            //MenuItem mn = (MenuItem)sender; 
-            for (int i = 0; i < ipis.Length; i++)
-            {
-                foreach (string strType in SupportedPlugins)
-                {
-                    if (ipis[i] != null)
-                    {
-                        if (ipis[i].Name == strType)
-                        {
-                            ipis[i].Run();
-                            break;
-                        }
-                    }
-                }
-            }
-        }    
+        //private void NewLoad(object sender, System.EventArgs e)
+        //{
+        //    //MenuItem mn = (MenuItem)sender; 
+        //    for (int i = 0; i < ipis.Length; i++)
+        //    {
+        //        foreach (string strType in SupportedPlugins)
+        //        {
+        //            if (ipis[i] != null)
+        //            {
+        //                if (ipis[i].Name == strType)
+        //                {
+        //                    ipis[i].Run();
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}    
     }
 }

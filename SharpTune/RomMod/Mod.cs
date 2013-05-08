@@ -58,6 +58,7 @@ namespace SharpTune.RomMod
         private const uint newEcuIdPrefix = 0x1234000C;
         private const uint modInfoPrefix = 0x1234000D;
         private const uint modIdPrefix = 0x1234000F;
+        private const uint modAuthPrefix = 0x1234000E;
         private const string delim = "\0\0\0\0\0";
 
         public long FileSize { get; private set; }
@@ -72,6 +73,16 @@ namespace SharpTune.RomMod
             //IDEA: set this based on calid match to activeimage
         public bool isResource { get; private set; }
         public bool isCompat { get; private set; }
+        public int AuthInt { get; private set; }
+        public int AuthLicensee { get; private set; }
+        public bool isAuthd {
+            get{
+                if (AuthInt == 0)
+                    return false;
+                return true;
+            }
+            set { }
+        }
         public string info { get; private set; }
         public Stream modStream { get; private set; }
         public string direction
@@ -226,6 +237,8 @@ namespace SharpTune.RomMod
                 Trace.WriteLine(this.FileName + " is compatible with this ROM file.");
                 return true;
             }
+            if(isAuthd)
+                Console.WriteLine("VIN Auth detected in patch: " + this.FileName);
             if (isApplied)
             {
                 Trace.WriteLine("Removing patch.");
@@ -288,29 +301,42 @@ namespace SharpTune.RomMod
                             Trace.WriteLine("Verification failed, ROM file not modified.");
                             return false;
                         }
-                        try
+                    }
+                    if (isAuthd)
+                    {
+                        if (!SharpTuner.AuthenticateMod(outStream))
                         {
-                            using (FileStream fileStream = File.OpenWrite(outPath))
-                            {
-                                outStream.Seek(0, SeekOrigin.Begin);
-                                outStream.CopyTo(fileStream);
-                            }
-                            Trace.WriteLine(String.Format("ROM file modified successfully, Mod has been applied. Successfully saved image to {0}", outPath));
-                        }
-                        catch (System.Exception excpt)
-                        {
-                            MessageBox.Show("Error accessing file! It is locked!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            Trace.WriteLine("Error accessing file! It is locked!");
-                            Trace.WriteLine(excpt.Message);
+                            outStream.Dispose();
+                            Console.WriteLine("Authentication Failed!! Please Contact Support");
+                            MessageBox.Show("Authentication Failed!! Please Contact Support");
                             return false;
                         }
+                        Console.WriteLine("Auth Success");
+                    }
+                    try
+                    {
+                        using (FileStream fileStream = File.OpenWrite(outPath))
+                        {
+                            outStream.Seek(0, SeekOrigin.Begin);
+                            outStream.CopyTo(fileStream);
+                        }
+                            Trace.WriteLine(String.Format("ROM file modified successfully, Mod has been applied. Successfully saved image to {0}", outPath));
                         outStream.Dispose();
                         //File.Copy(workingPath, outPath, true);
                         //File.Delete(workingPath);
                         //TODO CHECK outstream disposal!!!
-                        Trace.WriteLine("ROM file modified successfully, mod has been applied.");
+                        Console.WriteLine("ROM file modified successfully, mod has been applied.");
                         return true;
                     }
+                    catch (System.Exception excpt)
+                    {
+                            MessageBox.Show("Error accessing file! It is locked!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Trace.WriteLine("Error accessing file! It is locked!");
+                            Trace.WriteLine(excpt.Message);
+                        return false;
+                    }
+                        Trace.WriteLine("ROM file modified successfully, mod has been applied.");
+                    return true;
                 }
                 else
                 {
@@ -635,6 +661,11 @@ namespace SharpTune.RomMod
                 Trace.WriteLine("This patch file's metadata is way too short (no version).");
                 return false;
             }
+            if (tempUInt32 == RomMod.AuthVersion)
+            {
+                isAuthd = true;
+                return true;
+            }
 
             if (tempUInt32 != RomMod.Version)
             {
@@ -885,6 +916,30 @@ namespace SharpTune.RomMod
                     else
                     {
                         Trace.WriteLine("Invalid patch found." + patch.ToString());
+                        return false;
+                    }
+                }
+
+                else if (cookie == modAuthPrefix)
+                {
+                    tempInt = 0;
+                    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        AuthInt = (int)tempInt;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid modAuth found." + patch.ToString());
+                        return false;
+                    }
+
+                    if (metadata.TryGetUInt32(ref tempInt, ref offset))
+                    {
+                        AuthLicensee = (int)tempInt;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid modAuth found." + patch.ToString());
                         return false;
                     }
                 }
