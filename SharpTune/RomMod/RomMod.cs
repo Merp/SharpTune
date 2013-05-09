@@ -26,6 +26,7 @@ namespace SharpTune.RomMod
     public class RomMod
     {
         public const int Version = 9;
+        public const int AuthVersion = 10000 + Version;
 
         /// <summary>
         /// Determines which command to run.

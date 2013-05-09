@@ -103,25 +103,35 @@ namespace SharpTune
         public static void InitSettings()
         {
             string userdir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (Settings.Default.SettingsPath == null | Settings.Default.SettingsPath == "")
+                Settings.Default.LogFilePath = userdir + @"\.SharpTune";
+
+            if (!Directory.Exists(Settings.Default.LogFilePath))
+                Directory.CreateDirectory(Settings.Default.LogFilePath);
+
             if (Settings.Default.PluginPath == null | Settings.Default.PluginPath == "")
-            {
-                string pp = userdir + @"\SharpTune\Plugins\";
-                if(!Directory.Exists(pp))
-                    Directory.CreateDirectory(pp);
-                 Settings.Default.PluginPath = pp;
-            }
-            if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
-            {
-                Settings.Default.SubaruDefsRepoPath = userdir + @"\Dev\SubaruDefs";
-            }
+                 Settings.Default.PluginPath = Settings.Default.SettingsPath + @"\Plugins";
+
+            if (!Directory.Exists(Settings.Default.PluginPath))
+                Directory.CreateDirectory(Settings.Default.PluginPath);
+
+            if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "") 
+                Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
+
+            //if (!Directory.Exists(Settings.Default.SubaruDefsRepoPath))
+            //       Directory.CreateDirectory(Settings.Default.SubaruDefsRepoPath);
+
             if (Settings.Default.PatchPath == null || Settings.Default.PatchPath == "")
-            {
-                Settings.Default.PatchPath = userdir + @"\Dev\MerpMod\MerpMod\TestRom";
-            }
+                Settings.Default.PatchPath = Settings.Default.SettingsPath + @"\Mods";
+
+            if (!Directory.Exists(Settings.Default.PatchPath))
+                    Directory.CreateDirectory(Settings.Default.PatchPath);
+
             if (Settings.Default.LogFilePath == null || Settings.Default.LogFilePath == "")
-            {
-                Settings.Default.LogFilePath = userdir + @"\SharpTune\SharpTune.log";
-            }
+                Settings.Default.LogFilePath = Settings.Default.SettingsPath + @"\SharpTune.log";
+
+             if (!Directory.Exists(Settings.Default.LogFilePath))
+                    Directory.CreateDirectory(Settings.Default.LogFilePath);
 
             EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
             RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
@@ -216,13 +226,14 @@ namespace SharpTune
             }
         }
 
-        public static void AuthenticateVin()
+        public static bool AuthenticateMod(Stream outStream)
         {
             foreach (IPlugin i in Plugins)
             {
                 if (i.Name == "SharpTune Vin Authentication")
-                    i.Run();
+                    return i.Run(outStream);
             }
+            return false;
         }
 
         /// <summary>

@@ -59,7 +59,7 @@ namespace SharpTune
         /// </summary>
         private static bool Run(string[] args)
         {
-            SharpTuner.Init();
+            
             
             if (args.Length < 1)
             {
@@ -67,7 +67,8 @@ namespace SharpTune
                 return true;
             }
 
-            SharpTuner.InitSettings();
+            SharpTuner.Init();
+
             if (args[0] == "convtools")
             {
                 return ConvTool.Run(Utils.ShiftLeftTruncate(args));

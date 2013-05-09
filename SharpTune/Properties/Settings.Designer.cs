@@ -70,5 +70,17 @@ namespace SharpTune.Properties {
                 this["PluginPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SettingsPath {
+            get {
+                return ((string)(this["SettingsPath"]));
+            }
+            set {
+                this["SettingsPath"] = value;
+            }
+        }
     }
 }
