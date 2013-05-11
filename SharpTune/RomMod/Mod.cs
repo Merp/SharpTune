@@ -72,14 +72,7 @@ namespace SharpTune.RomMod
             //IDEA: set this based on calid match to activeimage
         public bool isResource { get; private set; }
         public bool isCompat { get; private set; }
-        public bool isAuthd {
-            get{
-                if (AuthInt == 0)
-                    return false;
-                return true;
-            }
-            set { }
-        }
+        public bool isAuthd { get; private set; }
         public string info { get; private set; }
         public Stream modStream { get; private set; }
         public string direction
@@ -118,6 +111,7 @@ namespace SharpTune.RomMod
         /// <param name="modPath"></param>
         public Mod(string modPath)
         {
+            isAuthd = false;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
             this.ModBuild = "Unknown Build";
@@ -139,6 +133,7 @@ namespace SharpTune.RomMod
 
         public Mod(string modPath, string build)
         {
+            isAuthd = false;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
             this.ModBuild = build;
@@ -165,6 +160,7 @@ namespace SharpTune.RomMod
         /// <param name="modPath"></param>
         public Mod(Stream s, string modPath)
         {
+            isAuthd = false;
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
             this.ModBuild = "Unknown Build";
@@ -286,6 +282,12 @@ namespace SharpTune.RomMod
                 
                 if (res != DialogResult.OK)
                     return false;
+
+                if (!isAuthd)
+                {
+                    Process.Start(SharpTuner.DonateUrl);
+                    MessageBox.Show("Please consider donating, this work has been provided to you for free after years of hard work. Professional Tuners: distributing this work, including flashing a customer's car, is a violation of the license terms. Professional Tuners must obtain authorization to distribute this work by donation on a per-vehicle basis.", "Please Donate");
+                }
 
                 Trace.WriteLine("Applying mod.");
                 if (this.TryApplyMod(outStream))
