@@ -103,8 +103,12 @@ namespace SharpTune
         public static void InitSettings()
         {
             string userdir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (Settings.Default.SettingsPath == null | Settings.Default.SettingsPath == "")
-                Settings.Default.LogFilePath = userdir + @"\.SharpTune";
+            Console.WriteLine("Found user directory: " + userdir);
+
+            Settings.Default.SettingsPath = userdir + @"\.SharpTune"; ;
+
+            if (Settings.Default.LogFilePath == null | Settings.Default.LogFilePath == "")
+                Settings.Default.LogFilePath = Settings.Default.SettingsPath;
 
             if (!Directory.Exists(Settings.Default.LogFilePath))
                 Directory.CreateDirectory(Settings.Default.LogFilePath);
@@ -165,6 +169,8 @@ namespace SharpTune
 
         public static void LoadPlugins()
         {
+            Trace.WriteLine("Settings dir: " + Settings.Default.SettingsPath);
+            Trace.WriteLine("Loading plugins from " + Settings.Default.PluginPath);
             string[] pluginFiles = Directory.GetFiles(Settings.Default.PluginPath, "*.DLL");
             Plugins = new IPlugin[pluginFiles.Length];
             for (int i = 0; i < pluginFiles.Length; i++)
@@ -173,7 +179,6 @@ namespace SharpTune
                     pluginFiles[i].LastIndexOf("\\") + 1,
                     pluginFiles[i].IndexOf(".dll") -
                     pluginFiles[i].LastIndexOf("\\") - 1);
-
                 Type ObjType = null;
                 try
                 {
@@ -230,7 +235,7 @@ namespace SharpTune
         {
             foreach (IPlugin i in Plugins)
             {
-                if (i.Name == "SharpTune Vin Authentication")
+                if (i != null && i.Name != null && i.Name == "SharpTune Vin Authentication")
                     return i.Run(outStream);
             }
             return false;

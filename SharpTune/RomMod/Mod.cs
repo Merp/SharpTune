@@ -283,7 +283,7 @@ namespace SharpTune.RomMod
                 if (res != DialogResult.OK)
                     return false;
 
-                if (!isAuthd)
+                if (!isAuthd && !ModBuild.ContainsCI("debug"))//todo field 'isdebug'
                 {
                     Process.Start(SharpTuner.DonateUrl);
                     MessageBox.Show("Please consider donating, this work has been provided to you for free after years of hard work. Professional Tuners: distributing this work, including flashing a customer's car, is a violation of the license terms. Professional Tuners must obtain authorization to distribute this work by donation on a per-vehicle basis.", "Please Donate");
