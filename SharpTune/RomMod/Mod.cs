@@ -179,6 +179,7 @@ namespace SharpTune.RomMod
 
             if (ModBuild != null)
                 defPath = defPath + "/MerpMod/" + ModBuild + "/";
+            Directory.CreateDirectory(defPath);
             defPath += ModIdent.ToString() + ".xml";
 
             modDef.definition.ExportXML(defPath);

@@ -25,6 +25,9 @@ using System.Threading;
 using System.Diagnostics;
 using System.Reflection;
 using SharpTune.Core;
+using System.Net;
+using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace SharpTune
 {
@@ -105,7 +108,7 @@ namespace SharpTune
             string userdir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             Console.WriteLine("Found user directory: " + userdir);
 
-            Settings.Default.SettingsPath = userdir + @"\.SharpTune"; ;
+            Settings.Default.SettingsPath = userdir + @"\.SharpTune";
 
             if (Settings.Default.LogFilePath == null | Settings.Default.LogFilePath == "")
                 Settings.Default.LogFilePath = Settings.Default.SettingsPath;
@@ -119,8 +122,11 @@ namespace SharpTune
             if (!Directory.Exists(Settings.Default.PluginPath))
                 Directory.CreateDirectory(Settings.Default.PluginPath);
 
-            if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "") 
-                Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
+            if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
+                if (Directory.Exists(userdir + @"\Dev\SubaruDefs"))
+                    Settings.Default.SubaruDefsRepoPath = userdir + @"\Dev\SubaruDefs";
+                else
+                    Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
 
             //if (!Directory.Exists(Settings.Default.SubaruDefsRepoPath))
             //       Directory.CreateDirectory(Settings.Default.SubaruDefsRepoPath);
@@ -238,9 +244,38 @@ namespace SharpTune
                 if (i != null && i.Name != null && i.Name == "SharpTune Vin Authentication")
                     return i.Run(outStream);
             }
+            DialogResult res;
+            res = MessageBox.Show("Auth Plugin not found! Download?", "Plugin Missing!", MessageBoxButtons.YesNo);
+            if (res == DialogResult.Yes)
+            {
+                if (InstallAuth())
+                {
+                    SharpTuner.LoadPlugins();
+                    return AuthenticateMod(outStream);
+                }
+            }
             return false;
         }
 
+        private static Uri AuthDownloadUri = new Uri("http://sharptuning.com/wp-content/uploads/edd/2013/05/SharpTuneAuth.dll");
+        private static bool InstallAuth()
+        {
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    webClient.DownloadFile(AuthDownloadUri, Settings.Default.PluginPath + @"\SharpTuneAuth.dll");
+                    webClient.Dispose();
+                }
+                return true;
+            }
+            catch (Exception E)
+            {
+                Trace.WriteLine(E.Message);
+                MessageBox.Show("Error downloading auth plugin!");
+                return false;
+            }
+        }
         /// <summary>
         /// TODO FIX OR REMOVE THIS. Can't really embed mods as resources without source code anyway!!
         /// </summary>

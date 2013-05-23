@@ -273,8 +273,9 @@ namespace SharpTune.RomMod
                 return false;
             }
             Trace.WriteLine("Attempting to copy patch to: "+ bc + "\\" + mod.InitialCalibrationId + "\\" + mod.FileName);
-            string c = bc + "\\" + mod.InitialCalibrationId + "\\" + mod.FileName;
-            Directory.CreateDirectory(c);
+            string d = bc + "\\" + mod.InitialCalibrationId + "\\";
+            Directory.CreateDirectory(d);
+            string c = d + mod.FileName;
             File.Copy(mod.FilePath,c,true);
             Trace.WriteLine("HEW BUILD SUCCESS!!");
             return true;

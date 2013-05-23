@@ -256,10 +256,11 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot</PreBuildEvent>
+    <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot
+Copy ..\..\..\..\MerpMod\MerpMod\TestRom\oem.bin oem.bin
+Copy oem.bin patched.bin</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TestRom\SharpTune.exe"
