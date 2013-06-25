@@ -366,12 +366,10 @@ namespace SharpTune.RomMod
                 Trace.WriteLine("This patch file does not contain metadata.");
                 return false;
             }
-
             if (!this.TryReadMetadata(metadataBlob, blobs))
             {
                 return false;
             }
-
             return true;
         }
 

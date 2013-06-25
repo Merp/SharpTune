@@ -44,8 +44,8 @@ namespace SharpTune.GUI
         private void DefinitionEditor_Load(object sender, EventArgs e)
         {
             Def = SharpTuner.ActiveImage.Definition;
-            Exposed = Def.AggregateExposedRomTables;
-            BaseTables = Def.AggregateBaseRomTables;
+            Exposed = Def.ExposedRomTables;
+            BaseTables = Def.ExposedBaseRomTables;
 
             TreeNode unexp = new TreeNode("Unexposed Rom Tables");
             TreeNode exp = new TreeNode("Exposed Rom Tables"); //TODO SORT BY CATEGORY!! (ROUTINE IN DEFINITION)
@@ -78,14 +78,14 @@ namespace SharpTune.GUI
             DialogResult overWrite;
             if(!defTreeView.SelectedNode.FullPath.ToString().ContainsCI("unexposed"))
             {
-                overWrite = MessageBox.Show("Are you sure you want to overwrite " + t.name + "??", "Warning", MessageBoxButtons.YesNo,MessageBoxIcon.Warning);
+                overWrite = MessageBox.Show("Are you sure you want to overwrite " + t.Name + "??", "Warning", MessageBoxButtons.YesNo,MessageBoxIcon.Warning);
                 if (overWrite != DialogResult.Yes)
                     return;
             }
             try
             {
-                uint address = uint.Parse(SimplePrompt.ShowDialog("Enter Hex Address of Lookup Table for " + t.name, "Enter Address"), System.Globalization.NumberStyles.AllowHexSpecifier);
-                Def.ExposeTable(t.name, new Core.Lut(t.name, address));
+                uint address = uint.Parse(SimplePrompt.ShowDialog("Enter Hex Address of Lookup Table for " + t.Name, "Enter Address"), System.Globalization.NumberStyles.AllowHexSpecifier);
+                Def.ExposeTable(t.Name, new Core.Lut(t.Name, address));
                 Unsaved = true;
             }
             catch (Exception E)
@@ -118,7 +118,7 @@ namespace SharpTune.GUI
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Table XML exposed in " + t.parentDef.internalId.ToString());
             sb.AppendLine(t.xml.ToString());
-            if (!t.isBase)
+            if (!t.IsBase)
             {
                 foreach(var i in t.InheritanceList)
                 {

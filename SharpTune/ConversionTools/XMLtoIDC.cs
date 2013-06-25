@@ -18,6 +18,8 @@ using System.Text;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Diagnostics;
+using SharpTune;
+using SharpTuneCore;
 
 namespace NSFW
 {
@@ -69,8 +71,8 @@ namespace NSFW
                     {
                         string calId = args[1].ToUpper();
                         string functionName = "Tables_" + calId;
-                        WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
-                        DefineTables(functionName, calId, def);
+                        WriteMainHeader(functionName, string.Format("Table definitions for {0}", calId));
+                        DefineRRTables(functionName, calId, def);
                     }
                 }
                 else if (CategoryIs(args, "stdparam"))
@@ -87,7 +89,7 @@ namespace NSFW
                         string ssmBaseString = args[4].ToUpper();
                         string functionName = "StdParams_" + calId;
                         uint ssmBase = ConvertBaseString(ssmBaseString);
-                        WriteHeader1(functionName,
+                        WriteMainHeader(functionName,
                                      string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
                                       cpu, target, calId, ssmBase.ToString("X")));
                         DefineStandardParameters(functionName, target, calId, ssmBase, cpu, loggerdef, loggerdtd);
@@ -106,7 +108,7 @@ namespace NSFW
                         string target = args[2].ToUpper();
                         string ecuId = args[3].ToUpper();
                         string functionName = "ExtParams_" + ecuId;
-                        WriteHeader1(functionName,
+                        WriteMainHeader(functionName,
                                      string.Format("Extended parameter definitions for {0} bit {1}: {2}",
                                       cpu, target, ecuId));
                         DefineExtendedParameters(functionName, target, ecuId, cpu, loggerdef, loggerdtd);
@@ -127,11 +129,11 @@ namespace NSFW
                         string functionName1 = "Tables";
                         string functionName2 = "StdParams";
                         string functionName3 = "ExtParams";
-                        WriteHeader3(functionName1, functionName2, functionName3,
+                        WriteMakeAllMainHeader(functionName1, functionName2, functionName3,
                                      string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
                                       target, calId, ssmBaseString));
                         string[] results = new string[2];
-                        results = DefineTables(functionName1, calId, def);
+                        results = DefineRRTables(functionName1, calId, def);
                         uint ssmBase = ConvertBaseString(ssmBaseString);
                         DefineStandardParameters(functionName2, target, calId, ssmBase, results[1], loggerdef, loggerdtd);
                         DefineExtendedParameters(functionName3, target, results[0], results[1], loggerdef, loggerdtd);
@@ -239,20 +241,35 @@ namespace NSFW
 
         #region DefineXxxx functions
 
-        private static string[] DefineTables(string functionName, string calId, string def)
+        private static string[] DefineSTTables(string functionName, string calId)
         {
+            WriteMainHeader(functionName, string.Format("Table definitions for {0}", calId));
+            string[] results = new string[2];
+            WriteFunctionHeader(functionName);
+            results = WriteSTTables(calId);
+            WriteFooter(functionName);
+            return results;
+        }
+
+        private static string[] DefineRRTables(string functionName, string calId, string def)
+        {
+            if(def.ContainsCI("SharpTune parsed ECUFlash definition"))
+                return DefineSTTables(functionName, calId);
+
             if (!File.Exists(def))
             {
                 MessageBox.Show("ecu_defs.xml must be in the current directory.",
-                                "Error - ECU Definitions File Missing",
+                                "Error - ECU Definitions File Missing, attempting to use ECUFlash/SharpTune definition!",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Exclamation,
                                 MessageBoxDefaultButton.Button1);
-                return null;
+                return DefineSTTables(functionName, calId);
             }
+
+            WriteMainHeader(functionName, string.Format("Table definitions for {0}", calId));
             string[] results = new string[2];
-            WriteHeader2(functionName);
-            results = WriteTableNames(calId,def);
+            WriteFunctionHeader(functionName);
+            results = WriteRRTables(calId,def);
             WriteFooter(functionName);
             return results;
         }
@@ -282,7 +299,7 @@ namespace NSFW
             File.Delete("logger.dtd");
             File.Copy(loggerdtd, Environment.CurrentDirectory + "/logger.dtd");
 
-            WriteHeader2(functionName);
+            WriteFunctionHeader(functionName);
             WriteStandardParameters(target, calId, ssmBase, cpu, loggerdef);
             WriteFooter(functionName);
         }
@@ -313,14 +330,34 @@ namespace NSFW
             File.Delete("logger.dtd");
             File.Copy(loggerdtd, Environment.CurrentDirectory + "/logger.dtd");
 
-            WriteHeader2(functionName);
+            WriteFunctionHeader(functionName);
             WriteExtendedParameters(target, ecuId, cpu, loggerdef);
             WriteFooter(functionName);
         }
 
         #endregion
 
-        private static string[] WriteTableNames(string xmlId, string def)
+        private static string[] WriteSTTables(string xmlId)
+        {
+            Trace.WriteLine("auto referenceAddress;");
+
+            Definition def = SharpTuner.AvailableDevices.getDef(xmlId);
+            if(def == null)
+            {
+                Trace.TraceWarning("Could not find definition for " + xmlId);
+                return null;
+            }
+
+            foreach (Table table in def.ExposedRomTables.Values)
+            {
+                Trace.WriteLine(table.GetHEWScript());
+            }
+
+            string[] results = new string[2] { def.LoggerId , def.cpuBits };
+            return results;
+        }
+
+        private static string[] WriteRRTables(string xmlId, string def)
         {
             Trace.WriteLine("auto referenceAddress;");
 
@@ -332,7 +369,7 @@ namespace NSFW
             int dtaddr = 0;
             string cpu = "32";
 
-            string rombase = GetRomBase(xmlId, def);
+            string rombase = GetRRRomBase(xmlId, def);
             string[] roms = new string[2] { rombase, xmlId };
 
             using (Stream stream = File.OpenRead(def))
@@ -443,13 +480,13 @@ namespace NSFW
                         Trace.WriteLine("// No tables found specifically for ROM " + id + ", used inherited ROM");
                     }
                 }
-                WriteIdcTableNames();
+                WriteRRTables();
             }
             string[] results = new string[2] { ecuid, cpu };
             return results;
         }
 
-        private static string GetRomBase(string xmlId, string def)
+        private static string GetRRRomBase(string xmlId, string def)
         {
             string rombase = "";
             using (Stream stream = File.OpenRead(def))
@@ -474,7 +511,7 @@ namespace NSFW
             return rombase;
         }
 
-        private static void WriteIdcTableNames()
+        private static void WriteRRTables()
         {
             foreach (var pair in tableList)
             {
@@ -714,7 +751,7 @@ namespace NSFW
 
         #region Utility functions
 
-        private static void WriteHeader1(string functionName, string description)
+        private static void WriteMainHeader(string functionName, string description)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
@@ -728,7 +765,7 @@ namespace NSFW
             Trace.WriteLine(builder.ToString());
         }
 
-        private static void WriteHeader2(string functionName)
+        private static void WriteFunctionHeader(string functionName)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("static " + functionName + " ()");
@@ -737,7 +774,7 @@ namespace NSFW
             Trace.Write(builder.ToString());
         }
 
-        private static void WriteHeader3(string functionName1, string functionName2, string functionName3, string description)
+        private static void WriteMakeAllMainHeader(string functionName1, string functionName2, string functionName3, string description)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");

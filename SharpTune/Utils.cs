@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using System.Diagnostics;
 using SharpTune.RomMod;
 
-namespace SharpTune
+namespace System
 {
     public class FDialogState
     {
@@ -159,6 +159,16 @@ namespace SharpTune
             return source.Split(' ').ToList();
         }
 
+        public static string ToIdaString(this string source)
+        {
+            source = Regex.Replace(source, @"\.", "");
+            source = Regex.Replace(source, @"\#", "");
+            source = Regex.Replace(source, @"\\", "");
+            source = Regex.Replace(source, @"\/", "");
+            source = Regex.Replace(source, @"\-", " ");
+            return Regex.Replace(source, " ", "_");
+        }
+
         public static bool EqualsIdaString(this string defname, List<string> idacleanname)
         {
             List<string> defcleannames = defname.CleanIdaString();
@@ -208,6 +218,16 @@ namespace SharpTune
                 highCtr -= 1;
             }
             return inArray;
+        }
+
+        public static string ToHexString(this int integer)
+        {
+            return integer.ToString("X");
+        }
+
+        public static string ToHexString0x(this int integer)
+        {
+            return "0x" + integer.ToString("X");
         }
 
         public static byte[] ToByteArray(this String hexString)

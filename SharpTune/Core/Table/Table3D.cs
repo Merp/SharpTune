@@ -28,57 +28,78 @@ namespace SharpTuneCore
 
     public class Table3D : Table
     {
-        private Scaling xAxisScaling { get; set; }
+        public TableAxis xAxis { get; protected set; }
+        public TableAxis yAxis { get; protected set; }
 
-        public Table3D()
+        public Table3D(XElement xel, Definition d, Table t)
+            : base(xel, d, t)
         {
+            foreach (XElement child in xel.Elements())
+            {
+                string cname = child.Name.ToString();
+
+                switch (cname)
+                {
+                    case "table":
+                        this.AddAxis(child);
+                        break;
+
+                    case "description":
+                        this.Description = child.Value.ToString();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            if (xAxis == null)
+            {
+                Table3D tt = (Table3D)BaseTable;
+                if (tt.xAxis != null)
+                    xAxis = tt.xAxis.ConstructChild(null, this);
+                else
+                    throw new Exception(String.Format("Table3D {0} is missing xAxis!", Name));
+            }
+            if (yAxis == null)
+            {
+                Table3D tt = (Table3D)BaseTable;
+                if (tt.yAxis != null)
+                    yAxis = tt.yAxis.ConstructChild(null, this);
+                else
+                    throw new Exception(String.Format("Table3D {0} is missing yAxis!", Name));
+            }
+            //TODO
+            //EVERY table gets its own axis!! OK to base it on the base table!
+            //Check the axis size has not been updated! add size???
+            //When exporting, check the axis size!//todo: replace the bool with table, if t = null, iTSA BASE TABLE
         }
 
-        public Table3D(XElement xel, Definition d, bool b)
-            : base(xel, d, b)
+        public override Table ConstructChild(XElement xel, Definition d)
         {
-
+            return new Table3D(xel, d, this);
         }
 
-
-        public Table3D DeepClone()
+        public void AddAxis(XElement axis)
         {
-            Table3D clone = new Table3D();
-            clone.xml = new XElement(xml);
-            clone.dataTable = dataTable.Clone();
-            clone.name = name;
-            clone.type = type;
-            clone.Tag = Tag;
-            clone.category = category;
-            clone.description = description;
-            clone.tableTypeString = tableTypeString;
-            clone.tableTypeHex = tableTypeHex;
-            //clone.scalingName { get; set; }
-            //clone.level = level;
-            //clone.address = address;
-            //clone.dataScaling = dataScaling;
-            //clone.colorMin = colorMin;
-            //clone.colorMax = colorMax;
-            //clone.elements = elements;
-            //clone.xAxis
-            //TODO FINISH THESEclone.yAxis { get; set; }
-            //clone.properties = new Dictionary<string, string>(properties);
-            // clone.endian = endian;
-            // clone.byteValues = new List<byte[]>(byteValues);
-            //clone.floatValues = new List<float>(floatValues);
-            //clone.displayValues = new List<string>(displayValues);
-            //clone.defaultScaling 
-            //clone.scaling { get; set; }
-            //clone.parentImage = parentImage;
-            //clone.Attributes = new List<string>(Attributes);
-            return clone;
-        }
+            string type;
+            if (axis.Attribute("type") != null)
+                type = axis.Attribute("type").Value.ToString();
+            else if (axis.Attribute("name") != null)
+                type = axis.Attribute("name").Value.ToString();
+            else
+                throw new Exception("Error bad table: " + axis.ToString());
+            
+            if (type.ContainsCI("y"))
+                this.yAxis = AxisFactory.CreateAxis(axis, this);
+            else
+                this.xAxis = AxisFactory.CreateAxis(axis, this);
 
+        }
         public override Table CreateChild(Lut ilut,Definition d)
         {
             Lut3D lut = (Lut3D)ilut;
             xml = new XElement("table");
-            xml.SetAttributeValue("name", name);
+            xml.SetAttributeValue("name", Name);
             xml.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
             XElement tx = new XElement("table");
             tx.SetAttributeValue("name", "X");
@@ -94,20 +115,6 @@ namespace SharpTuneCore
             //TODO also set attirbutes and split this up! Copy to table2D!!
         }
 
-        public override Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
-
-            return this;
-        }
-
         /// <summary>
         /// Read table bytes from ROM
         /// And convert to display values
@@ -115,13 +122,13 @@ namespace SharpTuneCore
         public override void Read()
         {
             DeviceImage image = this.parentImage;
-            this.elements = this.xAxis.elements * this.yAxis.elements;
+            this.elements = this.xAxis.Elements * this.yAxis.Elements;
             this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
             lock (image.imageStream)
             {
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
+                image.imageStream.Seek(this.Address, SeekOrigin.Begin);
                 this.byteValues = new List<byte[]>();
                 this.floatValues = new List<float>();
                 this.displayValues = new List<string>();
@@ -153,7 +160,7 @@ namespace SharpTuneCore
                 //2D only has Y axis
                 this.yAxis.Write();
                 this.xAxis.Write();
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
+                image.imageStream.Seek(this.Address, SeekOrigin.Begin);
 
                 //write this.bytevalues!
                 foreach (byte[] bytevalue in this.byteValues)
@@ -167,13 +174,29 @@ namespace SharpTuneCore
             }
 
         }
+
+        public override string GetHEWScript()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine(MakeHewName(Name, Address.ToHexString0x()));
+
+            if (xAxis != null && !xAxis.isStatic)
+                builder.AppendLine(MakeHewName(Name + "_X_AXIS", xAxis.Address.ToHexString0x()));
+            if (yAxis != null && !yAxis.isStatic)
+                builder.AppendLine(MakeHewName(Name + "_Y_AXIS", yAxis.Address.ToHexString0x())); //TODO: use UTILS for IDA name formatting
+
+            builder.AppendLine(MakeHEWReferenceScript(Address.ToHexString0x(), Name, 12));
+
+            return builder.ToString();
+        }
     }
 
     public class RamTable3D : Table3D
     {
 
-        public RamTable3D(XElement xel, Definition d, bool b)
-            : base(xel,d,b)
+        public RamTable3D(XElement xel, Definition d, Table t)
+            : base(xel,d,t)
         {
 
         }

@@ -41,12 +41,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
+            this.checkBoxECUFlash = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // romTablesCheckBox
             // 
             this.romTablesCheckBox.AutoSize = true;
-            this.romTablesCheckBox.Location = new System.Drawing.Point(232, 32);
+            this.romTablesCheckBox.Location = new System.Drawing.Point(232, 66);
             this.romTablesCheckBox.Name = "romTablesCheckBox";
             this.romTablesCheckBox.Size = new System.Drawing.Size(86, 17);
             this.romTablesCheckBox.TabIndex = 1;
@@ -57,7 +58,7 @@
             // ExtParamsCheckBox
             // 
             this.ExtParamsCheckBox.AutoSize = true;
-            this.ExtParamsCheckBox.Location = new System.Drawing.Point(232, 55);
+            this.ExtParamsCheckBox.Location = new System.Drawing.Point(232, 89);
             this.ExtParamsCheckBox.Name = "ExtParamsCheckBox";
             this.ExtParamsCheckBox.Size = new System.Drawing.Size(106, 17);
             this.ExtParamsCheckBox.TabIndex = 2;
@@ -68,7 +69,7 @@
             // ssmParamsCheckBox
             // 
             this.ssmParamsCheckBox.AutoSize = true;
-            this.ssmParamsCheckBox.Location = new System.Drawing.Point(232, 78);
+            this.ssmParamsCheckBox.Location = new System.Drawing.Point(232, 112);
             this.ssmParamsCheckBox.Name = "ssmParamsCheckBox";
             this.ssmParamsCheckBox.Size = new System.Drawing.Size(105, 17);
             this.ssmParamsCheckBox.TabIndex = 3;
@@ -80,7 +81,7 @@
             // ssmBaseTextBox
             // 
             this.ssmBaseTextBox.Enabled = false;
-            this.ssmBaseTextBox.Location = new System.Drawing.Point(232, 101);
+            this.ssmBaseTextBox.Location = new System.Drawing.Point(232, 135);
             this.ssmBaseTextBox.Name = "ssmBaseTextBox";
             this.ssmBaseTextBox.Size = new System.Drawing.Size(140, 20);
             this.ssmBaseTextBox.TabIndex = 4;
@@ -89,7 +90,7 @@
             // generateIdcButton
             // 
             this.generateIdcButton.Enabled = false;
-            this.generateIdcButton.Location = new System.Drawing.Point(9, 247);
+            this.generateIdcButton.Location = new System.Drawing.Point(12, 288);
             this.generateIdcButton.Name = "generateIdcButton";
             this.generateIdcButton.Size = new System.Drawing.Size(360, 32);
             this.generateIdcButton.TabIndex = 5;
@@ -113,13 +114,14 @@
             this.RomInfoTextBox.Multiline = true;
             this.RomInfoTextBox.Name = "RomInfoTextBox";
             this.RomInfoTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.RomInfoTextBox.Size = new System.Drawing.Size(211, 109);
+            this.RomInfoTextBox.Size = new System.Drawing.Size(211, 146);
             this.RomInfoTextBox.TabIndex = 10;
             // 
             // comboBoxEcuDef
             // 
+            this.comboBoxEcuDef.Enabled = false;
             this.comboBoxEcuDef.FormattingEnabled = true;
-            this.comboBoxEcuDef.Location = new System.Drawing.Point(12, 140);
+            this.comboBoxEcuDef.Location = new System.Drawing.Point(12, 177);
             this.comboBoxEcuDef.Name = "comboBoxEcuDef";
             this.comboBoxEcuDef.Size = new System.Drawing.Size(357, 21);
             this.comboBoxEcuDef.TabIndex = 11;
@@ -127,7 +129,7 @@
             // comboBoxLoggerDTD
             // 
             this.comboBoxLoggerDTD.FormattingEnabled = true;
-            this.comboBoxLoggerDTD.Location = new System.Drawing.Point(12, 220);
+            this.comboBoxLoggerDTD.Location = new System.Drawing.Point(12, 257);
             this.comboBoxLoggerDTD.Name = "comboBoxLoggerDTD";
             this.comboBoxLoggerDTD.Size = new System.Drawing.Size(357, 21);
             this.comboBoxLoggerDTD.TabIndex = 12;
@@ -135,7 +137,7 @@
             // comboBoxLoggerDef
             // 
             this.comboBoxLoggerDef.FormattingEnabled = true;
-            this.comboBoxLoggerDef.Location = new System.Drawing.Point(12, 180);
+            this.comboBoxLoggerDef.Location = new System.Drawing.Point(12, 217);
             this.comboBoxLoggerDef.Name = "comboBoxLoggerDef";
             this.comboBoxLoggerDef.Size = new System.Drawing.Size(357, 21);
             this.comboBoxLoggerDef.TabIndex = 13;
@@ -143,16 +145,17 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 124);
+            this.label1.Location = new System.Drawing.Point(12, 161);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(46, 13);
             this.label1.TabIndex = 14;
             this.label1.Text = "Ecu Def";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 164);
+            this.label2.Location = new System.Drawing.Point(12, 201);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(60, 13);
             this.label2.TabIndex = 15;
@@ -161,17 +164,31 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 204);
+            this.label4.Location = new System.Drawing.Point(12, 241);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(66, 13);
             this.label4.TabIndex = 16;
             this.label4.Text = "Logger DTD";
             // 
+            // checkBoxECUFlash
+            // 
+            this.checkBoxECUFlash.AutoSize = true;
+            this.checkBoxECUFlash.Checked = true;
+            this.checkBoxECUFlash.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxECUFlash.Location = new System.Drawing.Point(232, 43);
+            this.checkBoxECUFlash.Name = "checkBoxECUFlash";
+            this.checkBoxECUFlash.Size = new System.Drawing.Size(115, 17);
+            this.checkBoxECUFlash.TabIndex = 17;
+            this.checkBoxECUFlash.Text = "Use ECUFlash Def";
+            this.checkBoxECUFlash.UseVisualStyleBackColor = true;
+            this.checkBoxECUFlash.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // XMLtoIDC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(381, 291);
+            this.ClientSize = new System.Drawing.Size(381, 332);
+            this.Controls.Add(this.checkBoxECUFlash);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -208,5 +225,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkBoxECUFlash;
     }
 }

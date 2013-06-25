@@ -23,6 +23,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using SharpTune.Core;
 using System.Runtime.Serialization;
+using System.Diagnostics;
 
 
 namespace SharpTuneCore
@@ -39,29 +40,35 @@ namespace SharpTuneCore
         /// <returns></returns>
         public static Table CreateTable(XElement xel, Definition d)
         {
-            bool b = false;
-            if (xel.Attribute("address") == null)
-                b = true;
-            return CreateTableWithDimension(xel, d, b);
-        }
-
-        public static Table CreateTableWithDimension(XElement xel, Definition d, bool b)
-        {
-            if (xel.Attribute("type") != null)
+            string type = null;
+            if (xel.Attribute("address") != null)
             {
-                switch (xel.Attribute("type").Value.ToString())
+                if (xel.Attribute("name") != null && d.ExposedBaseRomTables.ContainsKey(xel.Attribute("name").Value.ToString()))
                 {
-                    case "1D":
-                        return new Table1D(xel,d,b);
-                    case "2D":
-                        return new Table2D(xel,d,b);
-                    case "3D":
-                        return new Table3D(xel,d,b);
-                    default:
-                        break;
+                    return d.ExposedBaseRomTables[xel.Attribute("name").Value.ToString()].ConstructChild(xel, d);
                 }
+                else
+                    throw new Exception("Error parsing definition: " + xel.ToString());
             }
-            return new Table(xel,d,b);
+            else if (xel.Attribute("type") != null)
+            {
+                type = xel.Attribute("type").Value.ToString();
+            }
+            else
+                throw new Exception("Error parsing definition: " + xel.ToString());
+
+            switch (type)
+            {
+                case "1D":
+                    return new Table1D(xel, d, null);
+                case "2D":
+                    return new Table2D(xel, d, null);
+                case "3D":
+                    return new Table3D(xel, d, null);
+                default:
+                    break;
+            }
+            return new Table(xel, d, null);
         }
 
         public static Scaling NewScalingHandler(XElement xel)
@@ -88,25 +95,41 @@ namespace SharpTuneCore
 
     public class Table
     {
+        public readonly bool IsBase;
+        public Table BaseTable { get; protected set; }
+
         public XElement xml { get; set; }//TODO WRITE SETTER
-        public DataTable dataTable { get; set; }
-        public string name { get; set; }
-        public string type { get; set; }
-        public string Tag { get; set; }
-        public string category { get; set; }
-        public string description { get; set; }
-        public string tableTypeString { get; set; }
-        public TableType tableTypeHex { get; set; }
-        //public string scalingName { get; set; }
-        public int level { get; set; }
-        public int address { get; set; }
-        private int dataScaling { get; set; }
-        private int colorMin { get; set; }
-        private int colorMax { get; set; }
-        public int elements { get; set; }
-        public Axis xAxis { get; set; }
-        public Axis yAxis { get; set; }
+
+        public string Name { get { if (IsBase) return name; else return BaseTable.Name; } }
+        protected readonly string name;
+
+        public string Type { get { if(IsBase) return type; else return BaseTable.Type;} }
+        protected readonly string type;
+
+        public string Category { get { if(IsBase) return category; else return BaseTable.Category;} }
+        protected readonly string category;
+
+        public string Description { get { if(description != null) return description; else return BaseTable.Description; } protected set { description = value; } }
+        protected string description;
+
+        public int Address { get; protected set; }
+
+        public List<Table> InheritanceList { get; private set; }
+
         public Dictionary<string, string> properties { get; set; }
+
+        protected string tableTypeString { get; set; }
+        protected TableType tableTypeHex { get; set; }
+        protected string scalingName { get; set; }
+        protected int level { get; set; }
+        protected int dataScaling { get; set; }
+        protected int colorMin { get; set; }
+        protected int colorMax { get; set; }
+
+
+        public DataTable dataTable { get; set; }
+        protected int elements { get; set; }
+        
         public string endian { get; private set; }
         public List<byte[]> byteValues { get; set; }
         public List<float> floatValues { get; set; }
@@ -115,22 +138,21 @@ namespace SharpTuneCore
         public Scaling scaling { get; set; }
         public DeviceImage parentImage { get; private set; }
         public Definition parentDef { get; private set; }
-        public List<string> Attributes { get; set; }
-        public bool isBase { get; private set; }
-
-        public List<Table> InheritanceList { get; private set; }
 
         public Table()
+        { }
+
+        public virtual Table ConstructChild(XElement xel, Definition d)
         {
-            //TODO INIT STUFF
+            return new Table(xel, d, this);
         }
 
         public virtual Table CreateChild(Lut lut, Definition d)
         {
             XElement xml = new XElement("table");
-            xml.SetAttributeValue("name", name);
+            xml.SetAttributeValue("name", Name);
             xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-            return TableFactory.CreateTable(xml, d);
+            return ConstructChild(xml, d);
             //TODO also set attirbutes and split this up!
         }
 
@@ -145,34 +167,40 @@ namespace SharpTuneCore
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
-        public Table(XElement xel, Definition d, bool b)
+        public Table(XElement xel, Definition d, Table t)
         {
+            if (t == null)
+                IsBase = true;
+            else
+                BaseTable = t;
+
             parentDef = d;
             InheritanceList = new List<Table>();
-            isBase = b;
+
             if(xel.Attribute("name") != null)
-                name = xel.Attribute("name").Value.ToString();
+                this.name = xel.Attribute("name").Value.ToString();
+
             if (d != null && d.inheritList != null)
             {
                 foreach (Definition id in d.inheritList)
                 {
-                    if (id.BaseRomTables.ContainsKey(name)) //TOOD THIS IS INCOMPATIBLE WITH RAM TABLES
+                    if (id.DefinedBaseRomTables.ContainsKey(Name)) //TOOD THIS IS INCOMPATIBLE WITH RAM TABLES
                     {
-                        if (id.BaseRomTables[name].InheritanceList != null)
-                            InheritanceList.AddRange(id.BaseRomTables[name].InheritanceList);
-                        InheritanceList.Add(id.BaseRomTables[name]);
+                        if (id.DefinedBaseRomTables[Name].InheritanceList != null)
+                            InheritanceList.AddRange(id.DefinedBaseRomTables[Name].InheritanceList);
+                        InheritanceList.Add(id.DefinedBaseRomTables[Name]);
                         break;
                     }
                 }
 
-                foreach (Table t in InheritanceList)
-                {
-                    if (t.category != null)
-                    {
-                        category = t.category;
-                        break;
-                    }
-                }
+                //foreach (Table table in InheritanceList)
+                //{
+                //    if (table.Category != null)
+                //    {
+                //        category = table.Category;
+                //        break;
+                //    }
+                //}
             }
 
             xml = xel;
@@ -194,7 +222,6 @@ namespace SharpTuneCore
             else
             {
                 this.name = this.properties["name"].ToString();
-                this.Tag = this.name + ".table";
             }
 
             foreach (KeyValuePair<string, string> property in this.properties)
@@ -206,7 +233,7 @@ namespace SharpTuneCore
                         continue;
 
                     case "address":
-                        this.address = System.Int32.Parse(property.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
+                        this.Address = System.Int32.Parse(property.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
                         continue;
 
                     case "elements":
@@ -238,11 +265,11 @@ namespace SharpTuneCore
                 switch (cname)
                 {
                     case "table":
-                        this.AddAxis(child);
+                        //this.AddAxis(child);
                         break;
 
                     case "description":
-                        this.description = child.Value.ToString();
+                        this.Description = child.Value.ToString();
                         break;
 
                     default:
@@ -251,74 +278,50 @@ namespace SharpTuneCore
             }
         }
 
-        public void ReadProperties(List<Scaling> scalinglist)
-        {
+        //public void ReadProperties(List<Scaling> scalinglist)
+        //{
 
-            foreach (KeyValuePair<string, string> property in this.properties)
-            {
-                switch (property.Key)
-                {
-                    case "name":
-                        this.name = property.Value;
-                        this.Tag = this.name + ".table";
-                        break;
-                    case "category":
-                        this.category = property.Value;
-                        break;
-                    case "type":
-                        this.tableTypeString = property.Value;
-                        break;
-                    case "level":
-                        this.level = System.Int32.Parse(property.Value.ToString());
-                        break;
-                    case "scaling":
-                        this.defaultScaling = scalinglist.Find(s => s.name == property.Value);
-                        break;
-                    case "address":
-                        this.address = System.Int32.Parse(property.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        //    foreach (KeyValuePair<string, string> property in this.properties)
+        //    {
+        //        switch (property.Key)
+        //        {
+        //            case "name":
+        //                this.name = property.Value;
+        //                break;
+        //            case "category":
+        //                this.category = property.Value;
+        //                break;
+        //            case "type":
+        //                this.tableTypeString = property.Value;
+        //                break;
+        //            case "level":
+        //                this.level = System.Int32.Parse(property.Value.ToString());
+        //                break;
+        //            case "scaling":
+        //                this.defaultScaling = scalinglist.Find(s => s.name == property.Value);
+        //                break;
+        //            case "address":
+        //                this.Address = System.Int32.Parse(property.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
+        //                break;
+        //            default:
+        //                break;
+        //        }
+        //    }
+        //}
 
-        public void AddAxis(XElement axis)
-        {
-            if (axis.Attribute("type") != null)
-            {
-                if (axis.Attribute("type").Value.ToString().ContainsCI("y"))
-                {
-                    //Adding new X axis
-                    this.yAxis = AxisFactory.CreateAxis(axis, this);
+        //public virtual Table MergeTables(Table basetable)
+        //{
+        //    foreach (KeyValuePair<string, string> property in basetable.properties)
+        //    {
+        //        //If property doesn't exist in the child, add it from the base!
+        //        if (!this.properties.ContainsKey(property.Key))
+        //        {
+        //            this.properties.Add(property.Key, property.Value);
+        //        }
+        //    }
 
-                }
-                else
-                {
-                    this.xAxis = AxisFactory.CreateAxis(axis, this);
-
-                }
-                // else
-                {
-                }
-            }
-
-
-        }
-
-        public virtual Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
-
-            return this;
-        }
+        //    return this;
+        //}
 
         public virtual void Read()
         {
@@ -326,6 +329,41 @@ namespace SharpTuneCore
 
         public virtual void Write()
         {
+        }
+
+        public virtual string GetHEWScript()
+        {
+            return MakeHewName(Name, Address.ToHexString0x());
+        }
+
+        protected string MakeHewName(string name, string addr)
+        {
+            if (addr.Length > 0 && name.Length > 0)
+            {
+                string command = string.Format("MakeNameEx({0}, \"{1}\", SN_CHECK);",
+                                               addr,
+                                               name.ToIdaString());
+                return command;
+            }
+            return null;
+        }
+
+        protected string MakeHEWReferenceScript(string tableAddress, string tableName, int offset)
+        {
+            tableName = "Table_" + tableName.ToIdaString();
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("referenceAddress = DfirstB(" + tableAddress + ");");
+            builder.AppendLine("if (referenceAddress > 0)");
+            builder.AppendLine("{");
+            builder.AppendLine("    referenceAddress = referenceAddress - " + offset.ToString() + ";");
+            string command = string.Format("    MakeNameEx(referenceAddress, \"{0}\", SN_CHECK);", tableName);
+            builder.AppendLine(command);
+            builder.AppendLine("}");
+            builder.AppendLine("else");
+            builder.AppendLine("{");
+            builder.AppendLine("    Message(\"No reference to " + tableName + "\\n\");");
+            builder.AppendLine("}");
+            return builder.ToString();
         }
     }
 

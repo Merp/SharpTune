@@ -27,24 +27,55 @@ namespace SharpTuneCore
     public class Table2D : Table
     {
 
-        public Table2D(XElement xel,Definition d, bool b)
-            : base(xel, d, b)
+        public Table2D(XElement xel, Definition d, Table t)
+            :base(xel,d,t)
         {
-
-        }
-
-        public override Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
+            foreach (XElement child in xel.Elements())
             {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
+                string cname = child.Name.ToString();
+
+                switch (cname)
                 {
-                    this.properties.Add(property.Key, property.Value);
+                    case "table":
+                        this.AddAxis(child);
+                        break;
+
+                    case "description":
+                        this.Description = child.Value.ToString();
+                        break;
+
+                    default:
+                        break;
                 }
             }
+            if (Axis == null)
+            {
+                Table2D tt = (Table2D)t;
+                Axis = tt.Axis.ConstructChild(null, this);
+            }
 
-            return this;
+            //TODO
+            //EVERY table gets its own axis!! OK to base it on the base table!
+            //Check the axis size has not been updated! add size???
+            //When exporting, check the axis size!//todo: replace the bool with table, if t = null, iTSA BASE TABLE
+        }
+
+        public TableAxis Axis { get; protected set; }
+
+        private void AddAxis(XElement axis)
+        {
+            if (Axis != null)
+                throw new Exception("Error, axis already exists!!");
+
+            if (axis.Attribute("type") != null || axis.Attribute("name") != null)
+            {
+                this.Axis = AxisFactory.CreateAxis(axis, this);
+            }
+        }
+
+        public override Table ConstructChild(XElement xel, Definition d)
+        {
+            return new Table2D(xel, d, this);
         }
 
         public override Table CreateChild(Lut lut,Definition d)
@@ -56,13 +87,13 @@ namespace SharpTuneCore
         public override void Read()
         {
             DeviceImage image = this.parentImage;
-            this.elements = this.yAxis.elements;    // * this.yAxis.elements;
+            this.elements = this.Axis.Elements;    // * this.yAxis.elements;
             this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
             this.scaling = this.defaultScaling;
 
             lock (image.imageStream)
             {
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
+                image.imageStream.Seek(this.Address, SeekOrigin.Begin);
                 this.byteValues = new List<byte[]>();
                 this.floatValues = new List<float>();
                 this.displayValues = new List<string>();
@@ -87,9 +118,8 @@ namespace SharpTuneCore
             DeviceImage image = this.parentImage;
             lock (image.imageStream)
             {
-                //2D only has Y axis
-                this.yAxis.Write();
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
+                this.Axis.Write();
+                image.imageStream.Seek(this.Address, SeekOrigin.Begin);
 
                 //write this.bytevalues!
                 foreach (byte[] bytevalue in this.byteValues)
@@ -104,13 +134,27 @@ namespace SharpTuneCore
 
         }
 
+        public override string GetHEWScript()
+        {
+            StringBuilder builder = new StringBuilder();
+            
+            builder.AppendLine(MakeHewName(Name, Address.ToHexString0x()));
+
+            if (!Axis.isStatic)
+            {
+                builder.AppendLine(MakeHewName(Name + "_X_Axis", Axis.Address.ToHexString0x()));
+                builder.AppendLine(MakeHEWReferenceScript(Address.ToHexString0x(), Name, 8));
+            }
+
+            return builder.ToString();
+        }
     }
 
     public class RamTable2D : Table2D
     {
 
-        public RamTable2D(XElement xel,Definition d, bool b)
-            : base(xel,d,b)
+        public RamTable2D(XElement xel,Definition d, Table t)
+            : base(xel,d,t)
         {
 
         }

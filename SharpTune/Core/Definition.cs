@@ -39,10 +39,30 @@ namespace SharpTuneCore
     public class Definition
     {
         public bool isBase { get; private set; }
-        public string internalId { get; set; }
+        public string internalId { get; set; } //TODO: rename 'calibration'???
         public int internalIdAddress { get; private set; }
 
+        public string LoggerId
+        {
+            get { return CarInfo["ecuid"]; }
+            set { }
+        }
+
+        public string cpuBits
+        {
+            get
+            {
+                if (this.CarInfo["memmodel"].ContainsCI("16"))
+                    return "16";
+                else
+                    return "32";
+                //TODO: make this better!
+            }
+            set { }
+        }
+
         private Dictionary<string,string> carInfo;
+
         /// <summary>
         /// Contains basic info for the definition
         /// Make, Model, etc
@@ -67,18 +87,18 @@ namespace SharpTuneCore
         /// </summary>
         public XElement xRomId { get; set; }
 
-        public Dictionary<string,Table> ExposedRomTables { get; private set;}
-        public Dictionary<string,Table> ExposedRamTables { get; private set;}
+        public Dictionary<string,Table> DefinedRomTables { get; private set;}
+        public Dictionary<string,Table> DefinedRamTables { get; private set;}
         
-        public Dictionary<string,Table> InheritedExposedRomTables { 
+        public Dictionary<string,Table> InheritedRomTables { 
             get{
                 Dictionary<string,Table> ret = new Dictionary<string,Table>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.ExposedRomTables.Values)
+                    foreach(Table t in d.DefinedRomTables.Values)
                     {
-                        if(!ret.ContainsKey(t.name))
-                            ret.Add(t.name,t);
+                        if(!ret.ContainsKey(t.Name))
+                            ret.Add(t.Name,t);
                     }
                 }
                 return ret;
@@ -86,15 +106,15 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string,Table> InheritedExposedRamTables { 
+        public Dictionary<string,Table> InheritedRamTables { 
             get{
                 Dictionary<string,Table> ret = new Dictionary<string,Table>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.ExposedRamTables.Values)
+                    foreach(Table t in d.DefinedRamTables.Values)
                     {
-                        if(!ret.ContainsKey(t.name))
-                            ret.Add(t.name,t);
+                        if(!ret.ContainsKey(t.Name))
+                            ret.Add(t.Name,t);
                     }
                 }
                 return ret;
@@ -102,30 +122,30 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string, Table> AggregateExposedRomTables { 
+        public Dictionary<string, Table> ExposedRomTables { 
             get{
-                return Utils.AggregateDictionary(ExposedRomTables,InheritedExposedRomTables);
+                return Utils.AggregateDictionary(DefinedRomTables,InheritedRomTables);
             }
             private set{}
         }
-        public Dictionary<string, Table> AggregateExposedRamTables { 
+        public Dictionary<string, Table> ExposedRamTables { 
             get{
-                return Utils.AggregateDictionary(ExposedRamTables,InheritedExposedRamTables);
+                return Utils.AggregateDictionary(DefinedRamTables,InheritedRamTables);
             }
             private set{}
         }
-        public Dictionary<string,Table> BaseRomTables { get; private set;}
-        public Dictionary<string,Table> BaseRamTables { get; private set;}
+        public Dictionary<string,Table> DefinedBaseRomTables { get; private set;}
+        public Dictionary<string,Table> DefinedBaseRamTables { get; private set;}
 
         public Dictionary<string,Table> InheritedBaseRomTables { 
             get{
                 Dictionary<string,Table> ret = new Dictionary<string,Table>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.BaseRomTables.Values)
+                    foreach(Table t in d.DefinedBaseRomTables.Values)
                     {
-                        if(!ret.ContainsKey(t.name))
-                            ret.Add(t.name,t);
+                        if(!ret.ContainsKey(t.Name))
+                            ret.Add(t.Name,t);
                     }
                 }
                 return ret;
@@ -138,10 +158,10 @@ namespace SharpTuneCore
                 Dictionary<string,Table> ret = new Dictionary<string,Table>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.BaseRamTables.Values)
+                    foreach(Table t in d.DefinedBaseRamTables.Values)
                     {
-                        if(!ret.ContainsKey(t.name))
-                            ret.Add(t.name,t);
+                        if(!ret.ContainsKey(t.Name))
+                            ret.Add(t.Name,t);
                     }
                 }
                 return ret;
@@ -149,15 +169,15 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string, Table> AggregateBaseRomTables { 
+        public Dictionary<string, Table> ExposedBaseRomTables { 
             get{
-                return Utils.AggregateDictionary(BaseRomTables,InheritedBaseRomTables);
+                return Utils.AggregateDictionary(DefinedBaseRomTables,InheritedBaseRomTables);
             }
             private set{}
         }
-        public Dictionary<string, Table> AggregateBaseRamTables { 
+        public Dictionary<string, Table> ExposedBaseRamTables { 
             get{
-                return Utils.AggregateDictionary(BaseRamTables,InheritedBaseRamTables);
+                return Utils.AggregateDictionary(DefinedBaseRamTables,InheritedBaseRamTables);
             }
             private set{}
         }
@@ -165,8 +185,8 @@ namespace SharpTuneCore
         public List<Table> RomTables{
             get{
                 List<Table> tlist = new List<Table>();
-                tlist.AddRange(ExposedRomTables.Values);
-                tlist.AddRange(BaseRomTables.Values);
+                tlist.AddRange(DefinedRomTables.Values);
+                tlist.AddRange(DefinedBaseRomTables.Values);
                 return tlist;
             }
             private set{}
@@ -175,8 +195,8 @@ namespace SharpTuneCore
         public List<Table> RamTables{
             get{
                 List<Table> tlist = new List<Table>();
-                tlist.AddRange(ExposedRomTables.Values);
-                tlist.AddRange(BaseRomTables.Values);
+                tlist.AddRange(DefinedRomTables.Values);
+                tlist.AddRange(DefinedBaseRomTables.Values);
                 return tlist;
             }
             private set{}
@@ -193,10 +213,10 @@ namespace SharpTuneCore
         {
             isBase = false;
             CarInfo = new Dictionary<string, string>();
-            ExposedRomTables = new Dictionary<string, Table>();
-            ExposedRamTables = new Dictionary<string, Table>();
-            BaseRomTables = new Dictionary<string, Table>();
-            BaseRamTables = new Dictionary<string, Table>();
+            DefinedRomTables = new Dictionary<string, Table>();
+            DefinedRamTables = new Dictionary<string, Table>();
+            DefinedBaseRomTables = new Dictionary<string, Table>();
+            DefinedBaseRamTables = new Dictionary<string, Table>();
             ScalingList = new Dictionary<string,Scaling>();
             inheritList = new List<Definition>();
             include = null;
@@ -349,10 +369,10 @@ namespace SharpTuneCore
 
         private void Clear()
         {
-            ExposedRomTables.Clear();
-            ExposedRamTables.Clear();
-            BaseRomTables.Clear();
-            BaseRamTables.Clear();
+            DefinedRomTables.Clear();
+            DefinedRamTables.Clear();
+            DefinedBaseRomTables.Clear();
+            DefinedBaseRamTables.Clear();
             ScalingList.Clear();
             inheritList.Clear();
         }
@@ -372,7 +392,13 @@ namespace SharpTuneCore
                 if (table.Attribute("name") == null) 
                     continue;
                 string tablename = table.Attribute("name").Value.ToString();
-                AddRomTable(TableFactory.CreateTable(table,this));
+                try{
+                    AddRomTable(TableFactory.CreateTable(table,this));
+                    }
+                    catch (Exception e)
+                    {
+                        Trace.TraceWarning(e.Message);
+                    }
             }
             // RAM table feteches here!
             var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
@@ -383,7 +409,13 @@ namespace SharpTuneCore
                     continue;
                 string tablename = table.Attribute("name").Value.ToString();
 
-                AddRamTable(TableFactory.CreateTable(table,this));
+                try{
+                    AddRamTable(TableFactory.CreateTable(table,this));
+                    }
+                    catch (Exception e)
+                    {
+                        Trace.TraceWarning(e.Message);
+                    }
             }
             //Read Scalings
             var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
@@ -404,37 +436,37 @@ namespace SharpTuneCore
 
         private void AddRomTable(Table table)
         {
-            if (table.isBase)
+            if (table.IsBase)
             {
-                if (!BaseRomTables.ContainsKey(table.name))
-                    BaseRomTables.Add(table.name, table);
+                if (!DefinedBaseRomTables.ContainsKey(table.Name))
+                    DefinedBaseRomTables.Add(table.Name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+                    Trace.WriteLine("Warning, duplicate table: " + table.Name + ". Please check the definition!!");
             }
             else
             {
-                if (!ExposedRomTables.ContainsKey(table.name))
-                    ExposedRomTables.Add(table.name, table);
+                if (!DefinedRomTables.ContainsKey(table.Name))
+                    DefinedRomTables.Add(table.Name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+                    Trace.WriteLine("Warning, duplicate table: " + table.Name + ". Please check the definition!!");
             }
         }
 
         private void AddRamTable(Table table)
         {
-            if (table.isBase)
+            if (table.IsBase)
             {
-                if (!BaseRamTables.ContainsKey(table.name))
-                    BaseRamTables.Add(table.name, table);
+                if (!DefinedBaseRamTables.ContainsKey(table.Name))
+                    DefinedBaseRamTables.Add(table.Name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+                    Trace.WriteLine("Warning, duplicate table: " + table.Name + ". Please check the definition!!");
             }
             else
             {
-                if (!ExposedRamTables.ContainsKey(table.name))
-                    ExposedRamTables.Add(table.name, table);
+                if (!DefinedRamTables.ContainsKey(table.Name))
+                    DefinedRamTables.Add(table.Name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition!!");
+                    Trace.WriteLine("Warning, duplicate table: " + table.Name + ". Please check the definition!!");
                     
             }
         }
@@ -682,7 +714,7 @@ namespace SharpTuneCore
                     //Write ROM tables
                     if (RomTables != null)
                     {
-                        List<Table> romExportList = (from entry in RomTables orderby entry.category ascending select entry)
+                        List<Table> romExportList = (from entry in RomTables orderby entry.Category ascending select entry)
                             .ToList();
 
                         foreach (Table table in romExportList)
@@ -715,10 +747,10 @@ namespace SharpTuneCore
         {
             foreach (Definition d in inheritList)
             {
-                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRomTables.ContainsKey(name))
-                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRomTables[name];
-                else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRamTables.ContainsKey(name))//TODO FIX RAMTABLES
-                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].AggregateBaseRamTables[name];
+                if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].ExposedBaseRomTables.ContainsKey(name))
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].ExposedBaseRomTables[name];
+                else if (SharpTuner.AvailableDevices.DefDictionary[d.internalId].ExposedBaseRamTables.ContainsKey(name))//TODO FIX RAMTABLES
+                    return SharpTuner.AvailableDevices.DefDictionary[d.internalId].ExposedBaseRamTables[name];
             }
             Trace.WriteLine("Warning: base table for " + name + " not found");
             return null;
@@ -726,7 +758,8 @@ namespace SharpTuneCore
 
         public void ExposeTable(string name, Lut lut)
         {
-            Table baseTable = GetBaseTable(name);
+            try{
+                Table baseTable = GetBaseTable(name);
             if (baseTable != null)
             {
 
@@ -735,15 +768,15 @@ namespace SharpTuneCore
                 if (lut.dataAddress < 0x400000)
                 {
                     //TODO: HANDLE UPDATES TO EXISTING TABLES!!??
-                    if (ExposedRomTables.ContainsKey(childTable.name))
-                        ExposedRomTables.Remove(childTable.name);
-                    ExposedRomTables.Add(childTable.name, childTable);
+                    if (DefinedRomTables.ContainsKey(childTable.Name))
+                        DefinedRomTables.Remove(childTable.Name);
+                    DefinedRomTables.Add(childTable.Name, childTable);
                 }
                 else
                 {
-                    if (ExposedRamTables.ContainsKey(childTable.name))
-                        ExposedRamTables.Remove(childTable.name);
-                    ExposedRamTables.Add(childTable.name, childTable);
+                    if (DefinedRamTables.ContainsKey(childTable.Name))
+                        DefinedRamTables.Remove(childTable.Name);
+                    DefinedRamTables.Add(childTable.Name, childTable);
                 }
             }
 
@@ -803,7 +836,11 @@ namespace SharpTuneCore
             //{
             //    bt.Element(rem).Remove();
             //}
-
+            }
+            catch (Exception e)
+            {
+                Trace.TraceWarning(e.Message);
+            }
         }
 
 
@@ -886,10 +923,10 @@ namespace SharpTuneCore
 
         public void CopyTables(Definition d)
         {
-            ExposedRomTables = new Dictionary<string,Table>(d.ExposedRomTables);
-            ExposedRamTables = new Dictionary<string,Table>(d.ExposedRamTables);
-            BaseRomTables = new Dictionary<string, Table>(d.BaseRomTables);
-            BaseRamTables = new Dictionary<string, Table>(d.BaseRamTables);
+            DefinedRomTables = new Dictionary<string,Table>(d.DefinedRomTables);
+            DefinedRamTables = new Dictionary<string,Table>(d.DefinedRamTables);
+            DefinedBaseRomTables = new Dictionary<string, Table>(d.DefinedBaseRomTables);
+            DefinedBaseRamTables = new Dictionary<string, Table>(d.DefinedBaseRamTables);
             ScalingList = new Dictionary<string, Scaling>(d.ScalingList);
         }
 
@@ -909,7 +946,7 @@ namespace SharpTuneCore
         public void ReadMap(IdaMap idaMap,DeviceImage image)
         {
             //loop through base def and search for table names in map
-            foreach (var romtable in AggregateBaseRomTables)
+            foreach (var romtable in ExposedBaseRomTables)
             {
                 foreach (var idan in idaMap.IdaCleanNames)
                 {

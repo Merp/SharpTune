@@ -20,7 +20,7 @@ using SharpTune;
 using System.Diagnostics;
 
 
-namespace SharpTuneCore
+namespace System
 {
     public class ResourceUtil
     {

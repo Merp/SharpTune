@@ -40,7 +40,7 @@ namespace SharpTune.GUI
                 string t = Path.GetDirectoryName(SharpTuner.ActiveImage.FilePath);
                 d.SelectedPath = t;
             }
-            DialogResult ret = SharpTune.Utils.STAShowFDialog(d);
+            DialogResult ret = Utils.STAShowFDialog(d);
             if (ret == DialogResult.OK)
             {
                 //TODO ERROR HANDLING, CLEAR OUTPUT FILES FIRST??
@@ -48,7 +48,7 @@ namespace SharpTune.GUI
                 {
                     string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_XmlToIdc.idc";
                     spath.deleteFile();
-                    Trace.WriteLine("Writing SSM param IDC file to " + spath);
+                    Trace.WriteLine("Writing All Def IDC file to " + spath);
                     NSFW.XMLtoIDC.GuiRun(new string[] { "makeall", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                 }
                 else
@@ -206,17 +206,38 @@ namespace SharpTune.GUI
 
             //search through defs for ecu defs
             ecudefs = Utils.DirSearchCI(SharpTune.SharpTuner.RRDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
+            ecudefs.Add("SharpTune parsed ECUFlash definition"); //TODO: this is hackish, do something cleaner~!
             Utils.getFilePaths(ecudefs, ref ecudeffiles);
             comboBoxEcuDef.DataSource = ecudeffiles;
-            foreach (string d in ecudeffiles)
+            comboBoxEcuDef.SelectedItem = "SharpTune parsed ECUFlash definition";
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxECUFlash.Checked)
             {
-                
-                if(d.ContainsCI("ecu_defs")) ///TODO update RR repo and add search for "STD"
-                    comboBoxEcuDef.SelectedItem = d;
-                else if (d.ContainsCI(SharpTuner.ActiveImage.CalId))
+                comboBoxEcuDef.Enabled = false;
+                comboBoxEcuDef.SelectedItem = "SharpTune parsed ECUFlash definition";
+            }
+            else
+            {
+                comboBoxEcuDef.Enabled = true;
+                foreach (string d in ecudeffiles)
                 {
-                    comboBoxEcuDef.SelectedItem = d;
-                    break; //gives precedence to def with CALID
+
+                    if (d.ContainsCI("ecu_defs")) ///TODO update RR repo and add search for "STD"
+                        comboBoxEcuDef.SelectedItem = d;
+                    else if (d.ContainsCI(SharpTuner.ActiveImage.CalId))
+                    {
+                        comboBoxEcuDef.SelectedItem = d;
+                        break; //gives precedence to def with CALID
+                    }
                 }
             }
         }

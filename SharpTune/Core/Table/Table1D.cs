@@ -29,25 +29,16 @@ namespace SharpTuneCore
     public class Table1D : Table
     {
 
-
-        public Table1D(XElement xel, Definition d, bool b)
-            : base(xel, d, b)
-        {}
-
-        public override Table MergeTables(Table basetable)
+        public Table1D(XElement xel, Definition d, Table t)
+            : base(xel, d, t)
         {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
 
-            return this;
         }
 
+        public override Table ConstructChild(XElement xel, Definition d)
+        {
+            return new Table1D(xel, d, this);
+        }
         public override Table CreateChild(Lut lut,Definition d)
         {
             return base.CreateChild(lut,d);
@@ -62,7 +53,7 @@ namespace SharpTuneCore
 
             lock (image.imageStream)
             {
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
+                image.imageStream.Seek(this.Address, SeekOrigin.Begin);
                 this.byteValues = new List<byte[]>();
                 this.displayValues = new List<string>();
 
@@ -84,7 +75,7 @@ namespace SharpTuneCore
             lock (image.imageStream)
             {
                 //No need to write axes, they don't really exist for 1D tables!
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
+                image.imageStream.Seek(this.Address, SeekOrigin.Begin);
 
                 //write this.bytevalues!
                 foreach (byte[] bytevalue in this.byteValues)
@@ -98,30 +89,20 @@ namespace SharpTuneCore
             }
 
         }
+
+        public override string GetHEWScript()
+        {
+            return base.MakeHewName(Name, Address.ToHexString0x());
+        }
     }
 
 
     public class RamTable1D : Table1D
     {
-        public RamTable1D(XElement xel, Definition d, bool b)// DeviceImage image)
-            : base(xel, d, b)
+        public RamTable1D(XElement xel, Definition d, Table t)// DeviceImage image)
+            : base(xel, d, t)
         {
 
-        }
-
-
-        public override Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
-
-            return this;
         }
 
         public override void Read()
