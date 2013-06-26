@@ -40,7 +40,7 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Table CreateTable(XElement xel, Definition d)
+        public static Table CreateRomTable(XElement xel, Definition d)
         {
             string type = null;
             if (xel.Attribute("address") != null)
@@ -73,9 +73,16 @@ namespace SharpTuneCore
             return new Table(xel, d, null);
         }
 
-        public static Table CreateRRRamTable(XElement xel)
+        public static Table CreateRamTable()
+        {
+            return null;
+            //TODO Complete this
+        }
+
+        public static Table CreateRamTableRR(XElement xel)
         {
             //TODO: Handle RR tables
+            return null;
         }
 
         public static Scaling NewScalingHandler(XElement xel)

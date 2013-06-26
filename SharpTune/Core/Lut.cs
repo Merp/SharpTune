@@ -18,7 +18,7 @@ namespace SharpTune.Core
             if (Lut3D.TrySynthesizeLut3D(out lut3d,name,tb,address))
                 return lut3d;
             Lut2D lut2d;
-            if (Lut2D.TrySynthesizeLut2D(out lut2d,name,tb,address))
+            if (Lut2D.TrySynthesizeLut2D(out lut2d,name,tb,address))//TODO DEBUG THIS: doesn't seem to work for TGV tables (first attempt at 2d)
                 return lut2d;
             Lut lut;
             if (Lut.TrySynthesizeLut(out lut, name, address))

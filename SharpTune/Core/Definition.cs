@@ -395,7 +395,7 @@ namespace SharpTuneCore
                     continue;
                 string tablename = table.Attribute("name").Value.ToString();
                 try{
-                    AddRomTable(TableFactory.CreateTable(table,this));
+                    AddRomTable(TableFactory.CreateRomTable(table,this));
                     }
                     catch (Exception e)
                     {
@@ -412,7 +412,7 @@ namespace SharpTuneCore
                 string tablename = table.Attribute("name").Value.ToString();
 
                 try{
-                    AddRamTable(TableFactory.CreateTable(table,this));
+                    AddRamTable(TableFactory.CreateRomTable(table,this));
                     }
                     catch (Exception e)
                     {

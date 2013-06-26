@@ -113,7 +113,7 @@ namespace SharpTuneCore
             ty.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
             ty.SetAttributeValue("elements", lut.rows);
             xml.Add(ty);
-            return TableFactory.CreateTable(xml, d);
+            return TableFactory.CreateRomTable(xml, d);
             //TODO also set attirbutes and split this up! Copy to table2D!!
         }
 
