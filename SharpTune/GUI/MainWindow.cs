@@ -591,11 +591,8 @@ namespace SharpTune
 
         private void definitionEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (ForceOpenRom())
-            {
-                this.workerThread = new Thread(new ThreadStart(this.SpawnDefEditor));
-                this.workerThread.Start();
-            }
+            this.workerThread = new Thread(new ThreadStart(this.SpawnDefEditor));
+            this.workerThread.Start();
         }
 
         private void SpawnDefEditor()

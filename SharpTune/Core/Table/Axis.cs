@@ -109,13 +109,14 @@ namespace SharpTuneCore
 
         public int Address { get; protected set; }
 
-        public int Elements { get { if (elements != null) return elements; else return BaseAxis.Elements; } protected set { } }
+        public int Elements { get { if (elements != null && elements != 0) return elements; else return BaseAxis.Elements; } protected set { } }
         protected int elements;
 
         public string Name { get { if(IsBase) return name; else return BaseAxis.Name;}  set{} }
         protected string name;
 
-        public string type { get; private set; }
+        public string Type { get { if (IsBase) return name; else return BaseAxis.Name; } private set { } }
+        protected string type;
 
         public string endian { get; private set; }
 
@@ -171,7 +172,6 @@ namespace SharpTuneCore
             Name = "base";
             Elements = new int();
             Address = new int();
-            type = "generic axis";
             staticList = new List<string>();
             floatList = new List<float>();
             parentTable = table;
@@ -192,7 +192,12 @@ namespace SharpTuneCore
                             continue;
 
                         case "elements":
-                            this.elements = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer);
+                            if (System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer) != 0)
+                                this.elements = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer);
+                            else
+                            {
+                                int lol = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer);//just for breakpoint
+                            }
                             continue;
                     }
                 }

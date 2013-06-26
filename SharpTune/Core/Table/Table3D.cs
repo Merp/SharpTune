@@ -22,6 +22,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using SharpTune.Core;
 using System.Runtime.Serialization;
+using SharpTune.GUI;
 
 namespace SharpTuneCore
 {
@@ -190,6 +191,15 @@ namespace SharpTuneCore
 
             return builder.ToString();
         }
+
+        public override List<AxisDefinitionControl> GenerateAxisControls()
+        {
+            List<AxisDefinitionControl> lad = new List<AxisDefinitionControl>();
+            lad.Add(new AxisDefinitionControl(xAxis));
+            lad.Add(new AxisDefinitionControl(yAxis));
+            return lad;
+        }
+
     }
 
     public class RamTable3D : Table3D

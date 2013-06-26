@@ -29,6 +29,8 @@ namespace SharpTune.GUI
         private Dictionary<string,Table> Unexposed;
         private Dictionary<string,Table> BaseTables;
         private Dictionary<string,Table> Exposed;
+        private TreeNode unexp;
+        private TreeNode exp;
 
         public DefinitionEditor()
         {
@@ -43,31 +45,51 @@ namespace SharpTune.GUI
 
         private void DefinitionEditor_Load(object sender, EventArgs e)
         {
-            Def = SharpTuner.ActiveImage.Definition;
-            Exposed = Def.ExposedRomTables;
-            BaseTables = Def.ExposedBaseRomTables;
+            unexp = new TreeNode("Unexposed Rom Tables");
+            exp = new TreeNode("Exposed Rom Tables"); //TODO SORT BY CATEGORY!! (ROUTINE IN DEFINITION)
+            if (SharpTuner.ActiveImage != null)
+                Def = SharpTuner.ActiveImage.Definition;
 
-            TreeNode unexp = new TreeNode("Unexposed Rom Tables");
-            TreeNode exp = new TreeNode("Exposed Rom Tables"); //TODO SORT BY CATEGORY!! (ROUTINE IN DEFINITION)
-            
-            foreach (var t in BaseTables)
+            comboBoxAvailableDefs.DataSource = SharpTuner.AvailableDevices.DefDictionary.Keys.ToList();
+
+            UpdateDefinitionEditor();
+        }
+
+        private void UpdateDefinitionEditor()
+        {
+            if (Def != null)
             {
-                if (!Exposed.ContainsKey(t.Key))
+                defTreeView.Nodes.Clear();
+                exp.Nodes.Clear();
+                unexp.Nodes.Clear();
+
+                tabDefinition.Controls.Clear();
+
+                Exposed = Def.ExposedRomTables;
+
+                BaseTables = Def.ExposedBaseRomTables;
+
+                comboBoxAvailableDefs.SelectedItem = Def.internalId.ToString();
+
+                foreach (var t in BaseTables)
                 {
-                    TreeNode tn = new TreeNode(t.Key);//TODO PUT THIS IN DEFINITION!!
-                    tn.Tag = t.Value;
-                    unexp.Nodes.Add(tn);
+                    if (!Exposed.ContainsKey(t.Key))
+                    {
+                        TreeNode tn = new TreeNode(t.Key);//TODO PUT THIS IN DEFINITION!!
+                        tn.Tag = t.Value;
+                        unexp.Nodes.Add(tn);
+                    }
                 }
-            }
-            foreach (var t in Exposed)
-            {
-                TreeNode tn = new TreeNode(t.Key);
-                tn.Tag = t.Value;
-                exp.Nodes.Add(tn);
-            }
+                foreach (var t in Exposed)
+                {
+                    TreeNode tn = new TreeNode(t.Key);
+                    tn.Tag = t.Value;
+                    exp.Nodes.Add(tn);
+                }
 
-            defTreeView.Nodes.Add(exp);
-            defTreeView.Nodes.Add(unexp);
+                defTreeView.Nodes.Add(exp);
+                defTreeView.Nodes.Add(unexp);
+            }
         }
 
         private void defTreeView_DoubleClick(object sender, EventArgs e)
@@ -129,12 +151,65 @@ namespace SharpTune.GUI
                 }
             }
             textBoxTableInfo.Text = sb.ToString();
+
+            PopulateTabs(t);
+        }
+
+        private void PopulateTabs(Table t)
+        {
+            tabDefinition.Controls.Clear();
+
+            foreach (Table it in t.InheritanceList)
+            {
+                TabPage tp = new TabPage(it.parentDef.internalId);
+                DataGrid grid = new DataGrid();
+
+                //grid.Dock = DockStyle.Fill;
+                //grid.DataSource = dataForTheCurrentLoop;
+
+                //tabPage.Controls.Add(grid);
+                tabDefinition.Controls.Add(GenerateTableTab(it));
+            }
+            tabDefinition.Controls.Add(GenerateTableTab(t));//TODO: anchor
+            tabDefinition.SelectTab(t.parentDef.internalId.ToString());
+        }
+
+        private TabPage GenerateTableTab(Table t)
+        {
+            int bolc;
+            int pad = 10;
+            TabPage tp = new TabPage(t.parentDef.internalId.ToString());
+            tp.Name = t.parentDef.internalId.ToString();
+            TableDefinitionControl tdt = new TableDefinitionControl(t);
+            tp.Controls.Add(tdt);
+            bolc = tdt.Bottom;
+            //TODO: Point locationOnForm = control.FindForm().PointToClient(
+             // control.Parent.PointToScreen(control.Location));
+
+            List<AxisDefinitionControl> axisControls = t.GenerateAxisControls();
+            foreach (AxisDefinitionControl adc in axisControls)
+            {
+                if (adc != null)
+                {
+                    adc.Location = new Point(4, bolc + pad);
+                    tp.Controls.Add(adc);
+                    bolc = adc.Bottom;
+                }
+            }
+            return tp;
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
             Def.ExportXML();
             Unsaved = false;
+        }
+
+        private void comboBoxAvailableDefs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Def = SharpTuner.AvailableDevices.DefDictionary[comboBoxAvailableDefs.SelectedItem.ToString()];
+            Def.Populate();
+            UpdateDefinitionEditor();
         }
     }
 }

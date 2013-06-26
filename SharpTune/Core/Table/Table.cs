@@ -24,6 +24,7 @@ using System.Drawing;
 using SharpTune.Core;
 using System.Runtime.Serialization;
 using System.Diagnostics;
+using SharpTune.GUI;
 
 
 namespace SharpTuneCore
@@ -109,7 +110,7 @@ namespace SharpTuneCore
         public string Category { get { if(IsBase) return category; else return BaseTable.Category;} }
         protected readonly string category;
 
-        public string Description { get { if(description != null) return description; else return BaseTable.Description; } protected set { description = value; } }
+        public string Description { get { if (description != null) return description; else if (!IsBase && BaseTable != null && BaseTable.Description != null) return BaseTable.Description; else return "Error: No Description"; } protected set { description = value; } }
         protected string description;
 
         public int Address { get; protected set; }
@@ -170,7 +171,11 @@ namespace SharpTuneCore
         public Table(XElement xel, Definition d, Table t)
         {
             if (t == null)
+            {
                 IsBase = true;
+                if (!d.internalId.ContainsCI("base"))
+                    Trace.TraceWarning("Error: no base table given for NON-BASE table: " + t.name);
+            }
             else
                 BaseTable = t;
 
@@ -322,6 +327,16 @@ namespace SharpTuneCore
 
         //    return this;
         //}
+
+        public virtual TableDefinitionControl GenerateTableControl()
+        {
+            return new TableDefinitionControl(this);
+        }
+
+        public virtual List<AxisDefinitionControl> GenerateAxisControls()
+        {
+            return null;
+        }
 
         public virtual void Read()
         {

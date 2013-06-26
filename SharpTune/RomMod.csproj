@@ -92,6 +92,12 @@
     <Compile Include="GUI\AboutWindow.Designer.cs">
       <DependentUpon>AboutWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\AxisDefinitionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\AxisDefinitionControl.Designer.cs">
+      <DependentUpon>AxisDefinitionControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\CalidUtility.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -130,6 +136,12 @@
     <Compile Include="GUI\SSMTestApp.cs" />
     <Compile Include="GUI\SSMTestApp.Designer.cs">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\TableDefinitionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\TableDefinitionControl.Designer.cs">
+      <DependentUpon>TableDefinitionControl.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\UndefinedWindow.cs">
       <SubType>Form</SubType>
@@ -174,6 +186,9 @@
     <EmbeddedResource Include="GUI\AboutWindow.resx">
       <DependentUpon>AboutWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\AxisDefinitionControl.resx">
+      <DependentUpon>AxisDefinitionControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\CalidUtility.resx">
       <DependentUpon>CalidUtility.cs</DependentUpon>
     </EmbeddedResource>
@@ -194,6 +209,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SSMTestApp.resx">
       <DependentUpon>SSMTestApp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\TableDefinitionControl.resx">
+      <DependentUpon>TableDefinitionControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\UndefinedWindow.resx">
       <DependentUpon>UndefinedWindow.cs</DependentUpon>
