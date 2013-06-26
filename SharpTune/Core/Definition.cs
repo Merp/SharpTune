@@ -26,6 +26,8 @@ using SharpTune.Core;
 using SharpTune.ConversionTools;
 using SharpTune.RomMod;
 using System.Runtime.Serialization;
+using SharpTune;
+using System.Windows.Forms;
 
 namespace SharpTuneCore
 {
@@ -685,6 +687,7 @@ namespace SharpTuneCore
                 objXmlWriterSettings.OmitXmlDeclaration = false;
                 using (XmlWriter writer = XmlWriter.Create(filepath, objXmlWriterSettings))
                 {
+                    MessageBox.Show("Writing definition to: " + filepath);
                     //Start writing doc
                     writer.WriteStartDocument();
 
@@ -728,6 +731,7 @@ namespace SharpTuneCore
             }
             catch (Exception e)
             {
+                MessageBox.Show("Error creating definition!");
                 Trace.WriteLine(e.Message);
                 return false;
             }

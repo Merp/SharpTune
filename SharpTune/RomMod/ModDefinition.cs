@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using SharpTune.ConversionTools;
 using SharpTune.Core;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTune.RomMod
 {
@@ -720,7 +721,7 @@ namespace SharpTune.RomMod
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("length").Value = length.ToString();
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel,null));
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateRRRamTable(xel,null));
         }
         #endregion
 

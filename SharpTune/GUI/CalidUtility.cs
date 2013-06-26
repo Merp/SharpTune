@@ -23,6 +23,7 @@ using System.Collections;
 using SharpTune.RomMod;
 using SharpTuneCore;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTune
 {

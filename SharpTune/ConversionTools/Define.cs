@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using SharpTune;
 using System.IO;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTune.ConversionTools
 {

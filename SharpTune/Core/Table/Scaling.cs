@@ -21,6 +21,7 @@ using System.Globalization;
 using SharpTune;
 using System.Windows.Forms;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTuneCore
 {

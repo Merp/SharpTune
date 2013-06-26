@@ -20,6 +20,7 @@ using SharpTune.RomMod;
 using System.IO;
 using SharpTune.ConversionTools;
 using System.Text;
+using SharpTune;
 
 namespace SharpTune
 {

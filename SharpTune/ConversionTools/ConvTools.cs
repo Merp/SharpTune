@@ -10,6 +10,7 @@ using System.Xml;
 using System.Text.RegularExpressions;
 using SharpTuneCore;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTune.ConversionTools
 {

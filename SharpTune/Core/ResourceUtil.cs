@@ -20,9 +20,9 @@ using SharpTune;
 using System.Diagnostics;
 
 
-namespace System
+namespace SharpTune
 {
-    public class ResourceUtil
+    public class ResourceUtils
     {
         /// <summary>
         /// Takes the full name of a resource and loads it in to a stream.

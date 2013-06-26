@@ -20,6 +20,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using SharpTune;
 using SharpTuneCore;
+using SharpTune;
 
 namespace NSFW
 {

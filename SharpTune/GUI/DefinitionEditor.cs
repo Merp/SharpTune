@@ -19,6 +19,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using SharpTune;
 
 namespace SharpTune.GUI
 {
@@ -187,13 +188,16 @@ namespace SharpTune.GUI
              // control.Parent.PointToScreen(control.Location));
 
             List<AxisDefinitionControl> axisControls = t.GenerateAxisControls();
-            foreach (AxisDefinitionControl adc in axisControls)
+            if (axisControls != null)//TODO use exceptions?
             {
-                if (adc != null)
+                foreach (AxisDefinitionControl adc in axisControls)
                 {
-                    adc.Location = new Point(4, bolc + pad);
-                    tp.Controls.Add(adc);
-                    bolc = adc.Bottom;
+                    if (adc != null)
+                    {
+                        adc.Location = new Point(4, bolc + pad);
+                        tp.Controls.Add(adc);
+                        bolc = adc.Bottom;
+                    }
                 }
             }
             return tp;

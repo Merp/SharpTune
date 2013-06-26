@@ -19,6 +19,7 @@ using SharpTune;
 using System.IO;
 using System.Data;
 using System.Windows.Forms;
+using SharpTune;
 
 namespace SharpTuneCore
 {
@@ -109,7 +110,7 @@ namespace SharpTuneCore
 
         public int Address { get; protected set; }
 
-        public int Elements { get { if (elements != null && elements != 0) return elements; else return BaseAxis.Elements; } protected set { } }
+        public int Elements { get { if (elements != 0) return elements; else return BaseAxis.Elements; } protected set { } }
         protected int elements;
 
         public string Name { get { if(IsBase) return name; else return BaseAxis.Name;}  set{} }

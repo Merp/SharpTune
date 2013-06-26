@@ -25,6 +25,7 @@ using SharpTune.Core;
 using System.Runtime.Serialization;
 using System.Diagnostics;
 using SharpTune.GUI;
+using SharpTune;
 
 
 namespace SharpTuneCore
@@ -70,6 +71,11 @@ namespace SharpTuneCore
                     break;
             }
             return new Table(xel, d, null);
+        }
+
+        public static Table CreateRRRamTable(XElement xel)
+        {
+            //TODO: Handle RR tables
         }
 
         public static Scaling NewScalingHandler(XElement xel)

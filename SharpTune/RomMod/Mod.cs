@@ -19,6 +19,7 @@ using SharpTune;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTune.RomMod
 {

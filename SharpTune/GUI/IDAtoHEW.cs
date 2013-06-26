@@ -10,6 +10,7 @@ using System.IO;
 using SharpTune;
 using SharpTune.ConversionTools;
 using System.Diagnostics;
+using SharpTune;
 
 namespace SharpTune.GUI
 {

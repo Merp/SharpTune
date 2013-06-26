@@ -28,6 +28,7 @@ using SharpTune.Core;
 using System.Net;
 using System.ComponentModel;
 using System.Windows.Forms;
+using SharpTune;
 
 namespace SharpTune
 {
@@ -296,7 +297,7 @@ namespace SharpTune
         {
             int i = AvailableMods.Count;
             string[] terms = { ".patch" };
-            List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
+            List<string> searchresults = ResourceUtils.directorySearchRecursive(Settings.Default.PatchPath, terms);
             if (searchresults == null)
             {
                 Trace.WriteLine("No External Mods found");

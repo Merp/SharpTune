@@ -22,6 +22,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using SharpTune.Core;
 using System.Runtime.Serialization;
+using SharpTune;
 
 namespace SharpTuneCore
 {

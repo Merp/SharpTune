@@ -22,6 +22,7 @@ using SharpTuneCore;
 using SharpTune.Core;
 using System.Runtime.Serialization;
 using SharpTune.GUI;
+using SharpTune;
 
 namespace SharpTuneCore
 {

@@ -24,6 +24,7 @@ using System.Windows.Forms;
 using SharpTune;
 using System.Diagnostics;
 using System.Threading;
+using SharpTune;
 
 namespace SharpTuneCore
 {
@@ -48,7 +49,7 @@ namespace SharpTuneCore
             try
             {
                 //wtf is this TODO
-                List<string> ts = ResourceUtil.directorySearchRecursiveDir(SharpTuner.EcuFlashDefRepoPath,null);
+                List<string> ts = ResourceUtils.directorySearchRecursiveDir(SharpTuner.EcuFlashDefRepoPath,null);
                 if(!GetDevices(ts[0]))
                 {
                     Trace.WriteLine("XML initialize failed");

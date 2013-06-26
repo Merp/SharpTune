@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using System.Diagnostics;
 using SharpTune.RomMod;
 
-namespace System
+namespace SharpTune
 {
     public class FDialogState
     {
