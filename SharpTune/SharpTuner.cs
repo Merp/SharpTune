@@ -29,6 +29,8 @@ using System.Net;
 using System.ComponentModel;
 using System.Windows.Forms;
 using SharpTune;
+using System.Xml.XPath;
+using System.Xml.Linq;
 
 namespace SharpTune
 {
@@ -88,6 +90,54 @@ namespace SharpTune
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         static SharpTuner(){}
+
+
+        public void ImportRomRaiderLoggerXML(string filepath)
+        {
+            if (!File.Exists(filepath))
+                return;
+
+            XDocument xmlDoc = XDocument.Load(filepath, LoadOptions.PreserveWhitespace);
+
+            XElement xprotocol = xmlDoc.XPathSelectElement("/logger/protocols/protocol");
+            List<string> protocolAttr = new List<string>();
+            foreach (XAttribute attr in xprotocol.Attributes())
+            {
+                protocolAttr.Add(attr.Value.ToString());
+            }
+
+            IEnumerable<XElement> xparams = xmlDoc.XPathSelectElements("/logger/protocols/protocol/parameters/parameter");
+            IEnumerable<XElement> xswitches = xmlDoc.XPathSelectElements("/logger/protocols/protocol/switches/switch");
+            IEnumerable<XElement> xecuparams = xmlDoc.XPathSelectElements("/logger/protocols/protocol/ecuparams/ecuparam");
+
+            foreach (XElement rt in xecuparams)
+            {
+                List<Definition> bases = new List<Definition>();
+                //construct the ram table!
+                Table ramtable = new RamTable1D(rt);
+
+                IEnumerable<XElement> xecus = rt.XPathSelectElements("/ecuparam/ecu");
+                foreach (XElement ecu in xecus)
+                {
+                    foreach (Definition d in AvailableDevices.DefDictionary.Values)
+                    {
+                        if (ecu.Attribute("id") != null && d.EcuId == ecu.Attribute("id").Value.ToString())
+                        {
+                            //found a match!
+                            ramtable.ConstructChild(ecu, d); //TODO: OVERRIDE THIS IN RAMTABLE!!
+                            if (!d.IsBase && !bases.Contains(d.InheritList[0]))//TODO: VERIFY THIS ORDER!!! NOTE IN COMMENT FOR INHLIST
+                            {
+                                d.InheritList[0].DefinedBaseRamTables.Add(ramtable.Name, ramtable);
+                                bases.Add(d.InheritList[0]);
+                            }
+                        }
+                        //TODO: CHECK INHERITANCE and remove reduntant exposures!
+                        //TODO: Examine ST behavior when 'overriding' a table.
+                        //TODO:                 //UPDATE XML EXPORTING!!!
+                    }
+                }
+            }
+        }
 
         public static void Init()
         {

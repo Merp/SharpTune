@@ -46,13 +46,14 @@ namespace SharpTune.RomMod
 
         private string outputPath {get; set;}
 
-        public Definition definition { get; private set; }
+        public Definition Def { get; private set; }
 
         public ModDefinition(Mod parent)
         {
             this.parentMod = parent;
             RomLutList = new List<Lut>();
             RamTableList = new Dictionary<string, Table>();
+            Def = new Definition();
         }
 
         #region Patch ReadingCode
@@ -75,7 +76,7 @@ namespace SharpTune.RomMod
 
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
-            definition = new Definition(defPath, this.parentMod);
+            Def = new Definition(defPath, this.parentMod);
 
             //TODO: move RR stuff into definition?
             //prompt to select logger type
@@ -231,7 +232,7 @@ namespace SharpTune.RomMod
         private bool TryCleanDef()
         {
             List<string> removelist = new List<string>();
-            foreach (KeyValuePair<string, Table> table in this.definition.DefinedRomTables)
+            foreach (KeyValuePair<string, Table> table in this.Def.DefinedRomTables)
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
@@ -245,12 +246,12 @@ namespace SharpTune.RomMod
             }
             foreach (string table in removelist)
             {
-                this.definition.DefinedRomTables.Remove(table);
+                this.Def.DefinedRomTables.Remove(table);
             }
 
             //same operation for ramtables
             removelist.Clear();
-            foreach (KeyValuePair<string, Table> table in this.definition.ExposedRamTables)
+            foreach (KeyValuePair<string, Table> table in this.Def.ExposedRamTables)
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
@@ -264,7 +265,7 @@ namespace SharpTune.RomMod
             }
             foreach (string table in removelist)
             {
-                this.definition.ExposedRamTables.Remove(table);
+                this.Def.ExposedRamTables.Remove(table);
             }
             return true;
         }
@@ -720,7 +721,11 @@ namespace SharpTune.RomMod
             }
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("length").Value = length.ToString();
-
+            
+            //Table parenttable;
+            //if (Def.ExposedRamTables.TryGetValue(name, out parenttable))
+              //  return new KeyValuePair<string, Table>(name, new RamTable1D(xel, Def, parenttable));
+           // throw new Exception("error creating RR ramtable: " + name);
             return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTableRR(xel));
         }
         #endregion

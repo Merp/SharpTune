@@ -32,7 +32,14 @@ namespace SharpTuneCore
         public Table2D(XElement xel, Definition d, Table t)
             :base(xel,d,t)
         {
-            foreach (XElement child in xel.Elements())
+            ReadXmlECUFlash();
+        }
+
+        public override void ReadXmlECUFlash()
+        {
+ 	        base.ReadXmlECUFlash();
+
+            foreach (XElement child in xml.Elements())
             {
                 string cname = child.Name.ToString();
 
@@ -50,12 +57,11 @@ namespace SharpTuneCore
                         break;
                 }
             }
-            if (Axis == null)
+            if (Axis == null)//TODO: use encapsulation instead.
             {
-                Table2D tt = (Table2D)t;
+                Table2D tt = (Table2D)BaseTable;
                 Axis = tt.Axis.ConstructChild(null, this);
             }
-
             //TODO
             //EVERY table gets its own axis!! OK to base it on the base table!
             //Check the axis size has not been updated! add size???

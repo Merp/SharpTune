@@ -183,7 +183,7 @@ namespace SharpTune.RomMod
             Directory.CreateDirectory(defPath);
             defPath += ModIdent.ToString() + ".xml";
 
-            modDef.definition.ExportXML(defPath);
+            modDef.Def.ExportXML(defPath);
             return true;
         }
 

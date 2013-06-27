@@ -36,7 +36,13 @@ namespace SharpTuneCore
         public Table3D(XElement xel, Definition d, Table t)
             : base(xel, d, t)
         {
-            foreach (XElement child in xel.Elements())
+        }
+
+         public override void ReadXmlECUFlash()
+        {
+ 	        base.ReadXmlECUFlash();
+
+            foreach (XElement child in xml.Elements())
             {
                 string cname = child.Name.ToString();
 

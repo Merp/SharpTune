@@ -73,18 +73,6 @@ namespace SharpTuneCore
             return new Table(xel, d, null);
         }
 
-        public static Table CreateRamTable()
-        {
-            return null;
-            //TODO Complete this
-        }
-
-        public static Table CreateRamTableRR(XElement xel)
-        {
-            //TODO: Handle RR tables
-            return null;
-        }
-
         public static Scaling NewScalingHandler(XElement xel)
         {
             if (xel.Attribute("storagetype") != null)
@@ -109,19 +97,19 @@ namespace SharpTuneCore
 
     public class Table
     {
-        public readonly bool IsBase;
+        public bool IsBase;
         public Table BaseTable { get; protected set; }
 
         public XElement xml { get; set; }//TODO WRITE SETTER
 
         public string Name { get { if (IsBase) return name; else return BaseTable.Name; } }
-        protected readonly string name;
+        protected string name;
 
         public string Type { get { if(IsBase) return type; else return BaseTable.Type;} }
-        protected readonly string type;
+        protected string type;
 
         public string Category { get { if(IsBase) return category; else return BaseTable.Category;} }
-        protected readonly string category;
+        protected string category;
 
         public string Description { get { if (description != null) return description; else if (!IsBase && BaseTable != null && BaseTable.Description != null) return BaseTable.Description; else return "Error: No Description"; } protected set { description = value; } }
         protected string description;
@@ -156,51 +144,34 @@ namespace SharpTuneCore
         public Table()
         { }
 
-        public virtual Table ConstructChild(XElement xel, Definition d)
-        {
-            return new Table(xel, d, this);
-        }
-
-        public virtual Table CreateChild(Lut lut, Definition d)
-        {
-            XElement xml = new XElement("table");
-            xml.SetAttributeValue("name", Name);
-            xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-            return ConstructChild(xml, d);
-            //TODO also set attirbutes and split this up!
-        }
-
-        /// <summary>
-        /// Method to parse XML for adding a table axis
-        /// </summary>
-        public void AddAxis()
-        {
-        }
-
         /// <summary>
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
         public Table(XElement xel, Definition d, Table t)
         {
+            xml = xel;
+
             if (t == null)
             {
                 IsBase = true;
-                if (!d.internalId.ContainsCI("base"))
+                if (!d.CalId.ContainsCI("base"))
                     Trace.TraceWarning("Error: no base table given for NON-BASE table: " + t.name);
             }
             else
                 BaseTable = t;
 
             parentDef = d;
+
+            dataTable = new DataTable();
+
+            properties = new Dictionary<string, string>();
+
             InheritanceList = new List<Table>();
 
-            if(xel.Attribute("name") != null)
-                this.name = xel.Attribute("name").Value.ToString();
-
-            if (d != null && d.inheritList != null)
+            if (d != null && d.InheritList != null)
             {
-                foreach (Definition id in d.inheritList)
+                foreach (Definition id in d.InheritList)
                 {
                     if (id.DefinedBaseRomTables.ContainsKey(Name)) //TOOD THIS IS INCOMPATIBLE WITH RAM TABLES
                     {
@@ -221,13 +192,12 @@ namespace SharpTuneCore
                 //}
             }
 
-            xml = xel;
+        }
 
-            dataTable = new DataTable();
+        public virtual void ReadXmlECUFlash()
+        {
 
-            properties = new Dictionary<string, string>();
-
-            foreach (XAttribute attribute in xel.Attributes())
+            foreach (XAttribute attribute in xml.Attributes())
             {
                 this.properties.Add(attribute.Name.ToString(), attribute.Value.ToString());
             }
@@ -236,11 +206,13 @@ namespace SharpTuneCore
             {
                 this.properties.Add("name", "unknown");
             }
-
             else
             {
                 this.name = this.properties["name"].ToString();
             }
+
+            //if (xel.Attribute("name") != null)
+            //    this.name = xel.Attribute("name").Value.ToString();
 
             foreach (KeyValuePair<string, string> property in this.properties)
             {
@@ -276,7 +248,7 @@ namespace SharpTuneCore
                 }
             }
 
-            foreach (XElement child in xel.Elements())
+            foreach (XElement child in xml.Elements())
             {
                 string cname = child.Name.ToString();
 
@@ -294,6 +266,27 @@ namespace SharpTuneCore
                         break;
                 }
             }
+        }
+
+        public virtual Table ConstructChild(XElement xel, Definition d)
+        {
+            return new Table(xel, d, this);
+        }
+
+        public virtual Table CreateChild(Lut lut, Definition d)
+        {
+            XElement xml = new XElement("table");
+            xml.SetAttributeValue("name", Name);
+            xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
+            return ConstructChild(xml, d);
+            //TODO also set attirbutes and split this up!
+        }
+
+        /// <summary>
+        /// Method to parse XML for adding a table axis
+        /// </summary>
+        public void AddAxis()
+        {
         }
 
         //public void ReadProperties(List<Scaling> scalinglist)

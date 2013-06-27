@@ -123,14 +123,14 @@ namespace SharpTuneCore
 
             foreach (KeyValuePair<string, Definition> device in SharpTuner.AvailableDevices.DefDictionary)
             {
-                this.imageStream.Seek(device.Value.internalIdAddress, SeekOrigin.Begin);
+                this.imageStream.Seek(device.Value.CalIdAddress, SeekOrigin.Begin);
 
-                byte[] b = new byte[device.Value.internalId.Length];
-                this.imageStream.Read(b, 0, device.Value.internalId.Length);
+                byte[] b = new byte[device.Value.CalId.Length];
+                this.imageStream.Read(b, 0, device.Value.CalId.Length);
 
-                if (device.Value.internalId.ToString() == System.Text.Encoding.UTF8.GetString(b))
+                if (device.Value.CalId.ToString() == System.Text.Encoding.UTF8.GetString(b))
                 {
-                    CalIdOffset = device.Value.internalIdAddress;
+                    CalIdOffset = device.Value.CalIdAddress;
                     CalId = device.Key.ToString();
                     Definition = device.Value;
                     Definition.Populate();

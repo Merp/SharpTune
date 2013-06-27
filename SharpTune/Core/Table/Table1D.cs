@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using System.Data;
 using System.IO;
 using SharpTune;
@@ -29,11 +30,13 @@ namespace SharpTuneCore
 
     public class Table1D : Table
     {
+        public Table1D()
+        { }
 
         public Table1D(XElement xel, Definition d, Table t)
             : base(xel, d, t)
         {
-
+            this.ReadXmlECUFlash();
         }
 
         public override Table ConstructChild(XElement xel, Definition d)
@@ -100,10 +103,38 @@ namespace SharpTuneCore
 
     public class RamTable1D : Table1D
     {
+        protected string rrid;
+        protected string rrtarget;
+        protected List<Scaling> rrconversions;
+        
         public RamTable1D(XElement xel, Definition d, Table t)// DeviceImage image)
-            : base(xel, d, t)
+            : base(xel, d, t)//MUDO: structure things so this ONLY initializes stuff!!!: 
         {
+            
+        }
 
+        public RamTable1D()
+        {
+            // TODO: Complete member initialization
+        }
+
+        /// <summary>
+        /// ONLY FOR ROMRAIDER CONVERSION
+        /// </summary>
+        /// <param name="xel"></param>
+        public RamTable1D(XElement xel)
+        {
+            IsBase = true;
+            name = xel.Attribute("name").Value.ToString();
+            rrid = xel.Attribute("id").Value.ToString();
+            description = xel.Attribute("desc").Value.ToString();
+            rrtarget = xel.Attribute("target").Value.ToString();
+
+            IEnumerable<XElement> xconversions = xel.XPathSelectElements("/ecuparam/conversions/conversion");
+            foreach (XElement conv in xconversions)
+            {
+                //do something with the scalings.
+            }
         }
 
         public override void Read()

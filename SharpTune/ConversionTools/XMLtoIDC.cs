@@ -354,7 +354,7 @@ namespace NSFW
                 Trace.WriteLine(table.GetHEWScript());
             }
 
-            string[] results = new string[2] { def.LoggerId , def.cpuBits };
+            string[] results = new string[2] { def.EcuId , def.CpuBits };
             return results;
         }
 

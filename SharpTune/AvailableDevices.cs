@@ -87,7 +87,7 @@ namespace SharpTuneCore
 
             foreach (KeyValuePair<String, Definition> pair in this.DefDictionary)
             {
-                imap.Add(pair.Value.defPath, findInherit(pair.Key));
+                imap.Add(pair.Value.FilefPath, findInherit(pair.Key));
             }
             return imap;
         }
@@ -121,22 +121,22 @@ namespace SharpTuneCore
                         try
                         {
                             Definition d = new Definition(f);
-                            if (d.isBase)
+                            if (d.IsBase)
                                 d.LoadRomId();
                             lock(DefDictionary)
                             {
-                                if (DefDictionary.ContainsKey(d.internalId))
+                                if (DefDictionary.ContainsKey(d.CalId))
                                 {
-                                    Trace.WriteLine("Duplicate definition found for: " + d.internalId + " in file: " + f + " Check the definitions!!");
-                                    Trace.WriteLine("Definition was previously found in file: " + DefDictionary[d.internalId].defPath);
+                                    Trace.WriteLine("Duplicate definition found for: " + d.CalId + " in file: " + f + " Check the definitions!!");
+                                    Trace.WriteLine("Definition was previously found in file: " + DefDictionary[d.CalId].FilefPath);
                                 }
                                 else
                                 {
-                                    DefDictionary.Add(d.internalId, d);
+                                    DefDictionary.Add(d.CalId, d);
 
                                     lock (IdentList)
                                     {
-                                        IdentList.Add(d.internalId);
+                                        IdentList.Add(d.CalId);
                                         DeviceCount++;
                                     }
                                 }
@@ -172,14 +172,14 @@ namespace SharpTuneCore
 
         public string getDefPath(string id)
         {
-            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
-                return DefDictionary[id].defPath;
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].CalId != null)
+                return DefDictionary[id].FilefPath;
             return null;
         }
 
         public Definition getDef(string id)
         {
-            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].CalId != null)
             {
                 DefDictionary[id].Populate();
                 return DefDictionary[id];

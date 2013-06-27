@@ -70,7 +70,7 @@ namespace SharpTune.GUI
 
                 BaseTables = Def.ExposedBaseRomTables;
 
-                comboBoxAvailableDefs.SelectedItem = Def.internalId.ToString();
+                comboBoxAvailableDefs.SelectedItem = Def.CalId.ToString();
 
                 foreach (var t in BaseTables)
                 {
@@ -139,7 +139,7 @@ namespace SharpTune.GUI
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Table XML exposed in " + t.parentDef.internalId.ToString());
+            sb.AppendLine("Table XML exposed in " + t.parentDef.CalId.ToString());
             sb.AppendLine(t.xml.ToString());
             if (!t.IsBase)
             {
@@ -147,7 +147,7 @@ namespace SharpTune.GUI
                 {
                     sb.AppendLine();
                     sb.AppendLine();
-                    sb.AppendLine("Base Table XML inherited from " + i.parentDef.internalId.ToString());
+                    sb.AppendLine("Base Table XML inherited from " + i.parentDef.CalId.ToString());
                     sb.AppendLine(i.xml.ToString());
                 }
             }
@@ -162,7 +162,7 @@ namespace SharpTune.GUI
 
             foreach (Table it in t.InheritanceList)
             {
-                TabPage tp = new TabPage(it.parentDef.internalId);
+                TabPage tp = new TabPage(it.parentDef.CalId);
                 DataGrid grid = new DataGrid();
 
                 //grid.Dock = DockStyle.Fill;
@@ -172,15 +172,15 @@ namespace SharpTune.GUI
                 tabDefinition.Controls.Add(GenerateTableTab(it));
             }
             tabDefinition.Controls.Add(GenerateTableTab(t));//TODO: anchor
-            tabDefinition.SelectTab(t.parentDef.internalId.ToString());
+            tabDefinition.SelectTab(t.parentDef.CalId.ToString());
         }
 
         private TabPage GenerateTableTab(Table t)
         {
             int bolc;
             int pad = 10;
-            TabPage tp = new TabPage(t.parentDef.internalId.ToString());
-            tp.Name = t.parentDef.internalId.ToString();
+            TabPage tp = new TabPage(t.parentDef.CalId.ToString());
+            tp.Name = t.parentDef.CalId.ToString();
             TableDefinitionControl tdt = new TableDefinitionControl(t);
             tp.Controls.Add(tdt);
             bolc = tdt.Bottom;
