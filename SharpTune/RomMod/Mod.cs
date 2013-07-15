@@ -831,13 +831,16 @@ namespace SharpTune.RomMod
 
                     if (finalCalibrationId.ContainsCI("ffffffff"))
                     {
-                        StringBuilder s = new StringBuilder(initialCalibrationId, 0,initialCalibrationId.Length, initialCalibrationId.Length);
-                        s.Remove(initialCalibrationId.Length-2,2);
-                        s.Insert(initialCalibrationId.Length-2,"MM");
+                        StringBuilder s = new StringBuilder(initialCalibrationId, 0, initialCalibrationId.Length, initialCalibrationId.Length);
+                        s.Remove(initialCalibrationId.Length - 3, 2);
+                        s.Insert(initialCalibrationId.Length - 3, "MM");
                         FinalCalibrationId = s.ToString();
                     }
+                    else
+                    {
+                        this.FinalCalibrationId = finalCalibrationId;
+                    }
 
-                    this.FinalCalibrationId = finalCalibrationId;
                     // Synthesize calibration-change patch and blobs.
                     patch = new Patch( "Calibration ID Patch",
                         CalIdAddress,
@@ -851,7 +854,7 @@ namespace SharpTune.RomMod
 
                     patch.Payload = new Blob(
                         CalIdAddress,
-                        Encoding.ASCII.GetBytes(finalCalibrationId));
+                        Encoding.ASCII.GetBytes(FinalCalibrationId));
 
                     this.patchList.AddPatch(patch);
                 }
