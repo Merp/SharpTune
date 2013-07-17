@@ -18,6 +18,7 @@ using System.Text;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace NSFW
 {
@@ -332,7 +333,7 @@ namespace NSFW
             int dtaddr = 0;
             string cpu = "32";
 
-            string rombase = GetRomBase(xmlId, def);
+            string rombase = GetRomBase(xmlId, def);//TODO notify user if ERROR???
             string[] roms = new string[2] { rombase, xmlId };
 
             using (Stream stream = File.OpenRead(def))
@@ -451,27 +452,13 @@ namespace NSFW
 
         private static string GetRomBase(string xmlId, string def)
         {
-            string rombase = "";
-            using (Stream stream = File.OpenRead(def))
-            {
-                XPathDocument doc = new XPathDocument(stream);
-                XPathNavigator nav = doc.CreateNavigator();
-                string path = "/roms/rom/romid[xmlid='" + xmlId + "']";
-                XPathNodeIterator iter = nav.Select(path);
-                iter.MoveNext();
-                nav = iter.Current;
-                nav.MoveToChild(XPathNodeType.Element);
-                do
-                {
-                    nav.MoveToParent();
-                } while (nav.Name != "rom");
-
-                if (nav.Name == "rom")
-                {
-                    rombase = nav.GetAttribute("base", "");
-                }
-            }
-            return rombase;
+            XDocument doc = XDocument.Load(def);
+            string path = "/roms/rom[romid/xmlid='" + xmlId + "']";
+            XElement xel = doc.XPathSelectElement(path);
+            if (xel != null && xel.Attribute("base") != null)
+                return xel.Attribute("base").Value;
+            throw new Exception("ERROR missing definition for xmlid: " + xmlId + " in file: " + def.ToString()); //TODO: Something else?? Catch this?
+            return null;
         }
 
         private static void WriteIdcTableNames()
