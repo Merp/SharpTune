@@ -304,14 +304,14 @@ namespace SharpTune.RomMod
                     }
                     if (isAuthd)
                     {
-                        if (!SharpTuner.AuthenticateMod(outStream))
-                        {
+                        //if (!SharpTuner.AuthenticateMod(outStream))
+                        //{
                             outStream.Dispose();
                             Console.WriteLine("Authentication Failed!! Please Contact Support");
                             MessageBox.Show("Authentication Failed!! Please Contact Support");
                             return false;
-                        }
-                        Console.WriteLine("Auth Success");
+                        //}
+                        //Console.WriteLine("Auth Success");
                     }
                     try
                     {

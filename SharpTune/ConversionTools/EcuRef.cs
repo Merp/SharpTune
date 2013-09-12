@@ -7,13 +7,13 @@ using SharpTune;
 
 namespace SharpTune.ConversionTools
 {
-    public class IdaDef
+    public class EcuRef
     {
         public string name { get; private set; }
-        public string type { get; private set; }
+        public string type { get; private set; } //TODO: use enum instead??
         public int priority { get; private set; }
 
-        public IdaDef(XElement xi)
+        public EcuRef(XElement xi)
         {
             name = xi.Attribute("name").Value.ToString();
             if (xi.Attribute("type") != null)
@@ -26,7 +26,7 @@ namespace SharpTune.ConversionTools
                 priority = 1;
         }
 
-        public IdaDef(string n)
+        public EcuRef(string n)
         {
             name = n;
             type = "default";

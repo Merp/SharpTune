@@ -17,7 +17,7 @@ namespace SharpTune.ConversionTools
     {
         public static Dictionary<string, List<Define>> Defines;
         public static Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
-        public static IdaMap idaMap;
+        public static EcuMap ecuMap;
 
 
         public ConvTool()
@@ -26,53 +26,74 @@ namespace SharpTune.ConversionTools
             Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
         }
 
+        public static void WriteHelp()
+        {
+            Trace.WriteLine("SharpTune ConvTools CopyRight Merrill A. Myers III 2012");
+            Trace.WriteLine("USAGE:");
+            Trace.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt> <target CALID> <Build Config>");
+            Trace.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
+            Trace.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
+        }
+
         public static bool Run(string[] args)
         {
             ConvTool prog = new ConvTool();
-            
+
             if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
             {
-                Trace.WriteLine("IDAtoHEW CopyRight Merrill A. Myers III 2012");
-                Trace.WriteLine("USAGE:");
-                Trace.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt>");
-                Trace.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
-                Trace.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
+                WriteHelp();
             }
             else if (args[0].ContainsCI(".h"))
             {
                 prog.ReadHeader(args[0]);
-                if (args.Length < 3)
+                if (args.Length < 2) //no idc filename specified, use header name
                     prog.WriteIDC(Regex.Split(args[0], ".h")[0] + ".idc");
-                else
+                else if (args[1].ContainsCI(".idc"))
                     prog.WriteIDC(args[1]);
+                else
+                    WriteHelp();
             }
             else if (args[0].ContainsCI(".map"))
             {
-                idaMap = new IdaMap(args[0]);
-                prog.MapToDefines();
-                if (args.Length < 3)
+                prog.MapToDefines(args[0]);
+                if (args.Length < 2) //no filename specified
                     prog.WriteIDC(Regex.Split(args[0], ".map")[0] + ".idc");
-                else
+                else if (args[1].ContainsCI(".idc"))
                     prog.WriteIDC(args[1]);
+                else
+                    WriteHelp();
             }
-            else if (args[0].ContainsCI(".xml") && args.Length == 6)
+            else if (args[0].ContainsCI(".xml") && args[1].ContainsCI(".map") && args[2].ContainsCI(".h") && args[3].ContainsCI(".txt") && args.Length == 6)
             {
-                String Build = "Debug";
-                String Config = args[5].Split('_')[0];
-                if(args[5].Split('_').Length > 1)
-                    Build = args[5].Split('_')[1];
-                
-                prog.LoadXML(args[0]);
-                idaMap = new IdaMap(args[1]);
-
-                Definition def = SharpTuner.AvailableDevices.DefDictionary[args[4]];
-
-                prog.FindAndWriteDefines(args[2],Build,Config,def.CarInfo["internalidstring"].ToString(),def.CarInfo["ecuid"].ToString()); //TODO: auto load ecuid??
-                prog.FindAndWriteSections(args[3]);
+                prog.UpdateTargetHeader(args[0], args[1], args[2], args[3], args[4], args[5]);
             }
             else
-                Trace.WriteLine("invalid command! Args: " + args.Length );
+                WriteHelp();
             return true; //TODO FIX!!
+        }
+
+        public void UpdateTargetHeader(string xmlFileName, string mapFileName, string headerFileName, string linkerScriptFileName, string romCalId, string buildConfig)
+        {
+            String Build;
+            String Config = buildConfig.Split('_')[0];
+            if (buildConfig.Split('_').Length > 1)
+                Build = buildConfig.Split('_')[1];
+            else
+                Build = "Debug";
+
+            LoadXML(xmlFileName);
+            ecuMap = new EcuMap(mapFileName,headerFileName);
+            Definition def;
+
+            if(SharpTuner.AvailableDevices.DefDictionary.ContainsKey(romCalId))
+                def = SharpTuner.AvailableDevices.DefDictionary[romCalId];
+            else
+            {
+                Trace.WriteLine("Error, rom calid not found!!");
+                return;
+            }
+
+            FindAndWriteDefines(headerFileName, Build, Config, def.CarInfo["internalidstring"].ToString(), def.CarInfo["ecuid"].ToString());
         }
 
         public void LoadXML(string file)
@@ -157,13 +178,14 @@ namespace SharpTune.ConversionTools
             }
         }
 
-        public void MapToDefines()
+        public void MapToDefines(String map)
         {
+            ecuMap = new EcuMap(map);
             foreach (List<Define> category in Defines.Values)
             {
                 foreach (Define define in category)
                 {
-                    define.findOffset(idaMap.IdaNames);
+                    define.findOffset(ecuMap.IdaNames);
                 }
             }
         }
@@ -215,7 +237,7 @@ namespace SharpTune.ConversionTools
                     writer.WriteLine("");
                     foreach (var def in category.Value)
                     {
-                        def.findOffset(idaMap.IdaNames);
+                        def.findOffset(ecuMap.IdaNames);
                         def.print(writer);
                     }
                     writer.WriteLine("");
@@ -239,7 +261,7 @@ namespace SharpTune.ConversionTools
 
                     foreach (string sec in tl)
                     {
-                        foreach (var idan in idaMap.IdaNames)
+                        foreach (var idan in ecuMap.IdaNames)
                         {
                             if (idan.Key.ToString().EqualsCI(sec))
                             {

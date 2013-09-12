@@ -13,23 +13,23 @@ namespace SharpTune.ConversionTools
     {
         public string name { get; private set; }
         public string type { get; private set; }
-        public Dictionary<int,IdaDef> idaDefs { get; private set; }
+        public Dictionary<int,EcuRef> ecuRefs { get; private set; }
         public string offset {get; private set; }
 
         public Define(XElement xe)
         {
-            idaDefs = new Dictionary<int, IdaDef>();
+            ecuRefs = new Dictionary<int, EcuRef>();
             name = xe.Attribute("name").Value.ToString();
             if (xe.Attribute("type") != null)
                 type = xe.Attribute("type").Value.ToString();
             else
                 type = null;
             IEnumerable<XElement> te = xe.Elements();
-            idaDefs.Add(0,new IdaDef(name));
+            ecuRefs.Add(0,new EcuRef(name));
             foreach (var xi in xe.Elements())
             {
-                IdaDef tid = new IdaDef(xi);
-                idaDefs.Add(tid.priority, tid);
+                EcuRef tid = new EcuRef(xi);
+                ecuRefs.Add(tid.priority, tid);
             }
         }
 
@@ -58,9 +58,9 @@ namespace SharpTune.ConversionTools
         {
             foreach (var entry in map)
             {
-                for (int i = 0; i < idaDefs.Count; i++)
+                for (int i = 0; i < ecuRefs.Count; i++)
                 {
-                    if (entry.Key.EqualsCI(idaDefs[i].name))
+                    if (entry.Key.EqualsCI(ecuRefs[i].name))
                     {
                         offset = entry.Value.ToString();
                         return;

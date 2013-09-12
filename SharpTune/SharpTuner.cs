@@ -237,45 +237,47 @@ namespace SharpTune
             }
         }
 
-        public static bool AuthenticateMod(Stream outStream)
-        {
-            foreach (IPlugin i in Plugins)
-            {
-                if (i != null && i.Name != null && i.Name == "SharpTune Vin Authentication")
-                    return i.Run(outStream);
-            }
-            DialogResult res;
-            res = MessageBox.Show("Auth Plugin not found! Download?", "Plugin Missing!", MessageBoxButtons.YesNo);
-            if (res == DialogResult.Yes)
-            {
-                if (InstallAuth())
-                {
-                    SharpTuner.LoadPlugins();
-                    return AuthenticateMod(outStream);
-                }
-            }
-            return false;
-        }
+        //public static bool AuthenticateMod(Stream outStream)
+        //{
+        //    foreach (IPlugin i in Plugins)
+        //    {
+        //        if (i != null && i.Name != null && i.Name == "SharpTune Vin Authentication")
+        //            return i.Run(outStream);
+        //    }
+        //    DialogResult res;
+        //    res = MessageBox.Show("Auth Plugin not found! Download?", "Plugin Missing!", MessageBoxButtons.YesNo);
+        //    if (res == DialogResult.Yes)
+        //    {
+        //        if (InstallAuth())
+        //        {
+        //            SharpTuner.LoadPlugins();
+        //            return AuthenticateMod(outStream);
+        //        }
+        //    }
+        //    return false;
+        //}
 
-        private static Uri AuthDownloadUri = new Uri("http://sharptuning.com/wp-content/uploads/edd/2013/05/SharpTuneAuth.dll");
-        private static bool InstallAuth()
-        {
-            try
-            {
-                using (WebClient webClient = new WebClient())
-                {
-                    webClient.DownloadFile(AuthDownloadUri, Settings.Default.PluginPath + @"\SharpTuneAuth.dll");
-                    webClient.Dispose();
-                }
-                return true;
-            }
-            catch (Exception E)
-            {
-                Trace.WriteLine(E.Message);
-                MessageBox.Show("Error downloading auth plugin!");
-                return false;
-            }
-        }
+        //private static Uri AuthDownloadUri = new Uri("http://sharptuning.com/wp-content/uploads/edd/2013/05/SharpTuneAuth.dll");
+        //private static bool InstallAuth()
+        //{
+        //    try
+        //    {
+        //        using (WebClient webClient = new WebClient())
+        //        {
+        //            webClient.DownloadFile(AuthDownloadUri, Settings.Default.PluginPath + @"\SharpTuneAuth.dll");
+        //            webClient.Dispose();
+        //        }
+        //        return true;
+        //    }
+        //    catch (Exception E)
+        //    {
+        //        Trace.WriteLine(E.Message);
+        //        MessageBox.Show("Error downloading auth plugin!");
+        //        return false;
+        //    }
+        //}
+
+
         /// <summary>
         /// TODO FIX OR REMOVE THIS. Can't really embed mods as resources without source code anyway!!
         /// </summary>

@@ -465,7 +465,7 @@ namespace SharpTune.RomMod
 
         public static void DefineRRLogEcuFromMap(string mapFile, string ident)
         {
-            IdaMap im = new IdaMap(mapFile);
+            EcuMap im = new EcuMap(mapFile);
             DefineRRLogEcu(im.IdaNames, ident);
         }
 

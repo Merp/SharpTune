@@ -4,27 +4,56 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SharpTune.ConversionTools
 {
-    public class IdaMap
+    public class EcuMap
     {
         public Dictionary<string, string> IdaNames { get; private set; }
         public Dictionary<List<string>, string> IdaCleanNames { get; private set; }
 
-        public IdaMap()
+        public EcuMap()
         {
             IdaNames = new Dictionary<string, string>();
             IdaCleanNames = new Dictionary<List<string>, string>();
         }
 
-        public IdaMap(string fileOrText)
+        public EcuMap(string fileOrText)
             : this()
         {
             if (File.Exists(fileOrText))
                 LoadFromFile(fileOrText);
             else
                 LoadFromString(fileOrText);
+        }
+
+        public EcuMap(string mapFileName, string headerFileName)
+            :this()
+        {
+            if (File.Exists(headerFileName))
+                LoadHeader(headerFileName);
+
+            if (File.Exists(mapFileName))
+                LoadFromFile(mapFileName);
+        }
+        
+        public void LoadHeader(string filename)
+        {
+            using (StreamReader reader = new StreamReader(filename))
+            {
+                string line;
+                List<Define> defines = new List<Define>();
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.ContainsCI("#define"))
+                    {
+                        string[] ln = line.Split(' ');
+                        IdaNames.Add(ln[1], Regex.Split(ln[2], "0x")[1].Split(')')[0]);
+                    }
+                }
+            }
+            CleanNames();
         }
 
         public void LoadFromFile(string filename)

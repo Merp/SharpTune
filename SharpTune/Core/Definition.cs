@@ -896,17 +896,17 @@ namespace SharpTuneCore
         #region ECUFlash XML Code
         public void ImportMapFile(string filepath, DeviceImage image)
         {
-            IdaMap idaMap = new IdaMap(filepath);
+            EcuMap idaMap = new EcuMap(filepath);
             ReadMap(idaMap,image);
         }
 
         public void ImportMapText(string text, DeviceImage image)
         {
-            IdaMap idaMap = new IdaMap(text);
+            EcuMap idaMap = new EcuMap(text);
             ReadMap(idaMap,image);
         }
 
-        public void ReadMap(IdaMap idaMap,DeviceImage image)
+        public void ReadMap(EcuMap idaMap,DeviceImage image)
         {
             //loop through base def and search for table names in map
             foreach (var romtable in AggregateBaseRomTables)

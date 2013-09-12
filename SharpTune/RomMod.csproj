@@ -70,8 +70,8 @@
     <Compile Include="AvailableDevices.cs" />
     <Compile Include="ConversionTools\ConvTools.cs" />
     <Compile Include="ConversionTools\Define.cs" />
-    <Compile Include="ConversionTools\IdaDef.cs" />
-    <Compile Include="ConversionTools\IdaMap.cs" />
+    <Compile Include="ConversionTools\EcuRef.cs" />
+    <Compile Include="ConversionTools\EcuMap.cs" />
     <Compile Include="ConversionTools\XMLtoIDC.cs" />
     <Compile Include="Core\Definition.cs" />
     <Compile Include="Core\DeviceImage.cs" />
