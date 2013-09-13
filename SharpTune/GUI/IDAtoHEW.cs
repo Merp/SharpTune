@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using SharpTune;
-using SharpTune.ConversionTools;
+using SharpTune.EcuMapTools;
 using System.Diagnostics;
 
 namespace SharpTune.GUI
@@ -52,20 +52,20 @@ namespace SharpTune.GUI
             switch (mode)
             {
                 case "header":
-                    ConvTool.Run(new string[] { textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc" });
+                    EcuMapTool.Run(new string[] { textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc" });
                     //call header->idc
                     break;
 
                 case "map":
                     if (convertToComboBox.SelectedItem.ToString() == mapoutputs[0])
                     {
-                        ConvTool.Run(new string[] { translationTextBox.Text, textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.h", output + Path.GetFileName(textBox1.Text) + "_converted_sections.txt" } );
+                        EcuMapTool.Run(new string[] { translationTextBox.Text, textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.h", output + Path.GetFileName(textBox1.Text) + "_converted_sections.txt" } );
                         break;
                         //call map->hew
                     }
                     else
                     {
-                        ConvTool.Run(new string[] {textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc"});
+                        EcuMapTool.Run(new string[] {textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc"});
                         //cal map>idc
                         break;
                     }

@@ -5,15 +5,15 @@ using System.Text;
 using System.Xml.Linq;
 using SharpTune;
 
-namespace SharpTune.ConversionTools
+namespace SharpTune.EcuMapTools
 {
-    public class EcuRef
+    public class EcuLocCandidate
     {
         public string name { get; private set; }
         public string type { get; private set; } //TODO: use enum instead??
         public int priority { get; private set; }
 
-        public EcuRef(XElement xi)
+        public EcuLocCandidate(XElement xi)
         {
             name = xi.Attribute("name").Value.ToString();
             if (xi.Attribute("type") != null)
@@ -26,7 +26,7 @@ namespace SharpTune.ConversionTools
                 priority = 1;
         }
 
-        public EcuRef(string n)
+        public EcuLocCandidate(string n)
         {
             name = n;
             type = "default";

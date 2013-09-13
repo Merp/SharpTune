@@ -23,7 +23,7 @@ using System.Linq;
 using SharpTune;
 using SharpTune.Properties;
 using SharpTune.Core;
-using SharpTune.ConversionTools;
+using SharpTune.EcuMapTools;
 using SharpTune.RomMod;
 using System.Runtime.Serialization;
 
@@ -896,14 +896,16 @@ namespace SharpTuneCore
         #region ECUFlash XML Code
         public void ImportMapFile(string filepath, DeviceImage image)
         {
-            EcuMap idaMap = new EcuMap(filepath);
-            ReadMap(idaMap,image);
+            EcuMap im = new EcuMap();
+            im.ImportFromMapFileOrText(filepath);
+            ReadMap(im,image);
         }
 
         public void ImportMapText(string text, DeviceImage image)
         {
-            EcuMap idaMap = new EcuMap(text);
-            ReadMap(idaMap,image);
+            EcuMap im = new EcuMap();
+            im.ImportFromMapFileOrText(text);
+            ReadMap(im,image);
         }
 
         public void ReadMap(EcuMap idaMap,DeviceImage image)
@@ -911,9 +913,9 @@ namespace SharpTuneCore
             //loop through base def and search for table names in map
             foreach (var romtable in AggregateBaseRomTables)
             {
-                foreach (var idan in idaMap.IdaCleanNames)
+                foreach (var idan in idaMap.CleanLocs)
                 {
-                    if (romtable.Key.EqualsIdaString(idan.Key))
+                    if (romtable.Key.EqualsDefineString(idan.Key))
                     {
                         ExposeTable(romtable.Key, LutFactory.CreateLut(romtable.Key, uint.Parse(idan.Value.ToString(), NumberStyles.AllowHexSpecifier), image.imageStream));
                         break;

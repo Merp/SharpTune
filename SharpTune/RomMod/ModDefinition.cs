@@ -10,7 +10,7 @@ using SharpTune;
 using SharpTuneCore;
 using System.IO;
 using System.Text.RegularExpressions;
-using SharpTune.ConversionTools;
+using SharpTune.EcuMapTools;
 using SharpTune.Core;
 using System.Diagnostics;
 
@@ -465,8 +465,9 @@ namespace SharpTune.RomMod
 
         public static void DefineRRLogEcuFromMap(string mapFile, string ident)
         {
-            EcuMap im = new EcuMap(mapFile);
-            DefineRRLogEcu(im.IdaNames, ident);
+            EcuMap im = new EcuMap();
+            im.ImportFromMapFileOrText(mapFile);
+            DefineRRLogEcu(im.Locs, ident);
         }
 
         //TODO: Maybe this belongs in IdaMap Class?

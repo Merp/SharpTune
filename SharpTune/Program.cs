@@ -18,7 +18,7 @@ using ConsoleRedirection;
 using System.Diagnostics;
 using SharpTune.RomMod;
 using System.IO;
-using SharpTune.ConversionTools;
+using SharpTune.EcuMapTools;
 using System.Text;
 
 namespace SharpTune
@@ -69,9 +69,9 @@ namespace SharpTune
 
             SharpTuner.Init();
 
-            if (args[0] == "convtools")
+            if (args[0] == "ecumaptool")
             {
-                return ConvTool.Run(Utils.ShiftLeftTruncate(args));
+                return EcuMapTool.Run(Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {

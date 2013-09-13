@@ -11,69 +11,80 @@ using System.Text.RegularExpressions;
 using SharpTuneCore;
 using System.Diagnostics;
 
-namespace SharpTune.ConversionTools
+namespace SharpTune.EcuMapTools
 {
-    public class ConvTool
+    public class EcuMapTool
     {
-        public static Dictionary<string, List<Define>> Defines;
+        public static Dictionary<string, List<EcuLoc>> Defines;
         public static Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
         public static EcuMap ecuMap;
 
 
-        public ConvTool()
+        public EcuMapTool()
         {
-            Defines = new Dictionary<string, List<Define>>();
+            Defines = new Dictionary<string, List<EcuLoc>>();
             Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
+            ecuMap = new EcuMap();
         }
 
         public static void WriteHelp()
         {
-            Trace.WriteLine("SharpTune ConvTools CopyRight Merrill A. Myers III 2012");
+            Trace.WriteLine("SharpTune EcuMapTools CopyRight Merrill A. Myers III 2012");
             Trace.WriteLine("USAGE:");
-            Trace.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: IDAtoHEW <file.xml> <file.map> <file.h> <file.txt> <target CALID> <Build Config>");
+            Trace.WriteLine("Convert .map file to C defines header (.h) and section file (.txt) using .xml translation: ecumaptool <file.xml> <file.map> <file.h> <file.txt> <target CALID> <Build Config>");
             Trace.WriteLine("Convert .map file to IDC script: IDAtoHEW <file.map> <file.idc>");
             Trace.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
         }
 
         public static bool Run(string[] args)
         {
-            ConvTool prog = new ConvTool();
+            try
+            {
 
-            if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
-            {
-                WriteHelp();
-            }
-            else if (args[0].ContainsCI(".h"))
-            {
-                prog.ReadHeader(args[0]);
-                if (args.Length < 2) //no idc filename specified, use header name
-                    prog.WriteIDC(Regex.Split(args[0], ".h")[0] + ".idc");
-                else if (args[1].ContainsCI(".idc"))
-                    prog.WriteIDC(args[1]);
+                EcuMapTool prog = new EcuMapTool();
+
+                if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
+                {
+                    WriteHelp();
+                }
+                else if (args[0].ContainsCI(".h"))
+                {
+                    prog.ReadHeader(args[0]);
+                    if (args.Length < 2) //no idc filename specified, use header name
+                        prog.WriteIDC(Regex.Split(args[0], ".h")[0] + ".idc");
+                    else if (args[1].ContainsCI(".idc"))
+                        prog.WriteIDC(args[1]);
+                    else
+                        WriteHelp();
+                }
+                else if (args[0].ContainsCI(".map"))
+                {
+                    prog.MapToDefines(args[0]);
+                    if (args.Length < 2) //no filename specified
+                        prog.WriteIDC(Regex.Split(args[0], ".map")[0] + ".idc");
+                    else if (args[1].ContainsCI(".idc"))
+                        prog.WriteIDC(args[1]);
+                    else
+                        WriteHelp();
+                }
+                else if (args[0].ContainsCI(".xml") && args[1].ContainsCI(".map") && args[2].ContainsCI(".h") && args[3].ContainsCI(".txt") && args.Length == 6)
+                {
+                    prog.UpdateTargetHeader(args[0], args[1], args[2], args[3], args[4], args[5]);
+                }
                 else
                     WriteHelp();
+                return true; //TODO FIX!!
             }
-            else if (args[0].ContainsCI(".map"))
+            catch (Exception e)
             {
-                prog.MapToDefines(args[0]);
-                if (args.Length < 2) //no filename specified
-                    prog.WriteIDC(Regex.Split(args[0], ".map")[0] + ".idc");
-                else if (args[1].ContainsCI(".idc"))
-                    prog.WriteIDC(args[1]);
-                else
-                    WriteHelp();
+                Trace.WriteLine(e.Message);
+                return false;
             }
-            else if (args[0].ContainsCI(".xml") && args[1].ContainsCI(".map") && args[2].ContainsCI(".h") && args[3].ContainsCI(".txt") && args.Length == 6)
-            {
-                prog.UpdateTargetHeader(args[0], args[1], args[2], args[3], args[4], args[5]);
-            }
-            else
-                WriteHelp();
-            return true; //TODO FIX!!
         }
 
         public void UpdateTargetHeader(string xmlFileName, string mapFileName, string headerFileName, string linkerScriptFileName, string romCalId, string buildConfig)
         {
+            Trace.WriteLine("Begin updating target header");
             String Build;
             String Config = buildConfig.Split('_')[0];
             if (buildConfig.Split('_').Length > 1)
@@ -82,30 +93,40 @@ namespace SharpTune.ConversionTools
                 Build = "Debug";
 
             LoadXML(xmlFileName);
-            ecuMap = new EcuMap(mapFileName,headerFileName);
-            Definition def;
+            ecuMap = new EcuMap();
+            if (ecuMap.ImportFromHeaderAndMapFile(mapFileName, headerFileName))
+            {
+                Definition def;
 
-            if(SharpTuner.AvailableDevices.DefDictionary.ContainsKey(romCalId))
-                def = SharpTuner.AvailableDevices.DefDictionary[romCalId];
+                if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(romCalId))
+                    def = SharpTuner.AvailableDevices.DefDictionary[romCalId];
+                else
+                {
+                    Trace.WriteLine("Error, rom calid not found!!");
+                    return;
+                }
+
+                FindAndWriteDefines(headerFileName, Build, Config, def.CarInfo["internalidstring"].ToString(), def.CarInfo["ecuid"].ToString());
+                Trace.WriteLine("Target header update success!!");
+            }
             else
             {
-                Trace.WriteLine("Error, rom calid not found!!");
-                return;
+                for (int i = 0; i < 10; i++)
+                    Trace.WriteLine("Target header update FAILURE!!! Missing map AND header files!!! Check CALID Placeholder");
             }
-
-            FindAndWriteDefines(headerFileName, Build, Config, def.CarInfo["internalidstring"].ToString(), def.CarInfo["ecuid"].ToString());
         }
 
         public void LoadXML(string file)
         {
+            Trace.WriteLine("Loading conversion XML");
             XDocument xmlDoc = XDocument.Load(file, LoadOptions.PreserveWhitespace);
             XElement xdefs = xmlDoc.XPathSelectElement("//idatohew/defines");
             foreach (XElement xel in xdefs.Elements("category"))
             {
-                List<Define> td = new List<Define>();
+                List<EcuLoc> td = new List<EcuLoc>();
                 foreach (XElement xe in xel.Elements("define"))
                 {
-                    td.Add(new Define(xe));
+                    td.Add(new EcuLoc(xe));
                 }
                 Defines.Add(xel.Attribute("name").Value.ToString(), td);
             }
@@ -116,13 +137,14 @@ namespace SharpTune.ConversionTools
                 {
                     ls.Add(s.Attribute("name").Value.ToString());
                 }
-                List<string>als = new List<string>();
+                List<string> als = new List<string>();
                 foreach (XElement s in xel.Elements("alias"))
                 {
                     als.Add(s.Attribute("name").Value.ToString());
                 }
-                Sections.Add(new KeyValuePair<string,List<string>>(xel.Attribute("name").Value.ToString(),als) , ls);
+                Sections.Add(new KeyValuePair<string, List<string>>(xel.Attribute("name").Value.ToString(), als), ls);
             }
+            Trace.WriteLine("Conversion XML Successfully Loaded");
         }
 
         /*public void DumpXML(string file)
@@ -165,13 +187,13 @@ namespace SharpTune.ConversionTools
             using (StreamReader reader = new StreamReader(filename))
             {
                 string line;
-                List<Define> defines = new List<Define>();
+                List<EcuLoc> defines = new List<EcuLoc>();
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (line.ContainsCI("#define"))
                     {
                         string[] ln = line.Split(' ');
-                        defines.Add(new Define(ln[1], Regex.Split(ln[2],"0x")[1].Split(')')[0]));
+                        defines.Add(new EcuLoc(ln[1], Regex.Split(ln[2],"0x")[1].Split(')')[0]));
                     }
                 }
                 Defines.Add("defines", defines);
@@ -180,12 +202,12 @@ namespace SharpTune.ConversionTools
 
         public void MapToDefines(String map)
         {
-            ecuMap = new EcuMap(map);
-            foreach (List<Define> category in Defines.Values)
+            ecuMap.ImportFromMapFileOrText(map);
+            foreach (List<EcuLoc> category in Defines.Values)
             {
-                foreach (Define define in category)
+                foreach (EcuLoc define in category)
                 {
-                    define.findOffset(ecuMap.IdaNames);
+                    define.findOffset(ecuMap.Locs);
                 }
             }
         }
@@ -202,7 +224,7 @@ namespace SharpTune.ConversionTools
                     writer.WriteLine("/////////////////////");
                     writer.WriteLine("//"+c.Key);
                     writer.WriteLine("/////////////////////");
-                    foreach (Define d in c.Value)
+                    foreach (EcuLoc d in c.Value)
                     {
                         if(d.offset.Length == 8)
                             writer.WriteLine("MakeNameEx(0x" + d.offset + ", \"" + d.name + "\", SN_CHECK);");
@@ -237,7 +259,7 @@ namespace SharpTune.ConversionTools
                     writer.WriteLine("");
                     foreach (var def in category.Value)
                     {
-                        def.findOffset(ecuMap.IdaNames);
+                        def.findOffset(ecuMap.Locs);
                         def.print(writer);
                     }
                     writer.WriteLine("");
@@ -261,7 +283,7 @@ namespace SharpTune.ConversionTools
 
                     foreach (string sec in tl)
                     {
-                        foreach (var idan in ecuMap.IdaNames)
+                        foreach (var idan in ecuMap.Locs)
                         {
                             if (idan.Key.ToString().EqualsCI(sec))
                             {

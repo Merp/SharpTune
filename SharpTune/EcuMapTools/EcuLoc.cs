@@ -7,33 +7,40 @@ using SharpTune;
 using System.IO;
 using System.Diagnostics;
 
-namespace SharpTune.ConversionTools
+namespace SharpTune.EcuMapTools
 {
-    public class Define
+    /// <summary>
+    /// Represents a location within the ecu
+    /// Encapsulates the EcuLocCandidates (potential names in .map file)
+    /// used to identify the locations
+    /// </summary>
+    public class EcuLoc
     {
-        public string name { get; private set; }
-        public string type { get; private set; }
-        public Dictionary<int,EcuRef> ecuRefs { get; private set; }
-        public string offset {get; private set; }
 
-        public Define(XElement xe)
+        public string name { get; private set; }
+        public string dataType { get; private set; } //TODO: enums??? 
+        public Dictionary<int,EcuLocCandidate> ecuRefCandidates { get; private set; }
+        public string offset {get; private set; }
+        public string bit {get; private set; }
+
+        public EcuLoc(XElement xe)
         {
-            ecuRefs = new Dictionary<int, EcuRef>();
+            ecuRefCandidates = new Dictionary<int, EcuLocCandidate>();
             name = xe.Attribute("name").Value.ToString();
             if (xe.Attribute("type") != null)
-                type = xe.Attribute("type").Value.ToString();
+                dataType = xe.Attribute("type").Value.ToString();
             else
-                type = null;
+                dataType = null;
             IEnumerable<XElement> te = xe.Elements();
-            ecuRefs.Add(0,new EcuRef(name));
+            ecuRefCandidates.Add(0,new EcuLocCandidate(name));
             foreach (var xi in xe.Elements())
             {
-                EcuRef tid = new EcuRef(xi);
-                ecuRefs.Add(tid.priority, tid);
+                EcuLocCandidate tid = new EcuLocCandidate(xi);
+                ecuRefCandidates.Add(tid.priority, tid);
             }
         }
 
-        public Define(string n, string hexaddr)
+        public EcuLoc(string n, string hexaddr)
         {
             name = n;
             offset = hexaddr;
@@ -41,9 +48,9 @@ namespace SharpTune.ConversionTools
 
         public string printType()
         {
-            if (type == null)
+            if (dataType == null)
                 return null;
-            return "(" + type + ")";
+            return "(" + dataType + ")";
         }
 
         public void print(StreamWriter writer)
@@ -58,9 +65,9 @@ namespace SharpTune.ConversionTools
         {
             foreach (var entry in map)
             {
-                for (int i = 0; i < ecuRefs.Count; i++)
+                for (int i = 0; i < ecuRefCandidates.Count; i++)
                 {
-                    if (entry.Key.EqualsCI(ecuRefs[i].name))
+                    if (entry.Key.EqualsCI(ecuRefCandidates[i].name))
                     {
                         offset = entry.Value.ToString();
                         return;

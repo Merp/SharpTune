@@ -68,11 +68,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AvailableDevices.cs" />
-    <Compile Include="ConversionTools\ConvTools.cs" />
-    <Compile Include="ConversionTools\Define.cs" />
-    <Compile Include="ConversionTools\EcuRef.cs" />
-    <Compile Include="ConversionTools\EcuMap.cs" />
-    <Compile Include="ConversionTools\XMLtoIDC.cs" />
+    <Compile Include="EcuMapTools\EcuMapTool.cs" />
+    <Compile Include="EcuMapTools\EcuLoc.cs" />
+    <Compile Include="EcuMapTools\EcuLocCandidate.cs" />
+    <Compile Include="EcuMapTools\EcuMap.cs" />
+    <Compile Include="EcuMapTools\XMLtoIDC.cs" />
     <Compile Include="Core\Definition.cs" />
     <Compile Include="Core\DeviceImage.cs" />
     <Compile Include="Core\Plugin.cs" />

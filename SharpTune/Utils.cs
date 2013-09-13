@@ -139,7 +139,8 @@ namespace SharpTune
             //}
         }
 
-        public static List<string> CleanIdaString(this string source)
+        public static List<string> CleanDefineString
+            (this string source)
         {
             bool endscore = false;
             if (source[source.Length - 1].ToString() == "_")
@@ -159,9 +160,9 @@ namespace SharpTune
             return source.Split(' ').ToList();
         }
 
-        public static bool EqualsIdaString(this string defname, List<string> idacleanname)
+        public static bool EqualsDefineString(this string defname, List<string> idacleanname)
         {
-            List<string> defcleannames = defname.CleanIdaString();
+            List<string> defcleannames = defname.CleanDefineString();
             if (defcleannames.Count != idacleanname.Count)
                 return false;
 
