@@ -70,6 +70,7 @@ namespace SharpTune
         public static List<Scaling> UnitScalings { get; set; }
 
         public static string DefRepoPath;
+        public static string EmbeddedDefRepoPath;
         public static string EcuFlashDefRepoPath;
         public static string RRDefRepoPath;
         public static string RREcuDefPath;
@@ -142,6 +143,7 @@ namespace SharpTune
                     Directory.CreateDirectory(Settings.Default.LogFilePath);
 
             DefRepoPath = Settings.Default.SubaruDefsRepoPath;
+            EmbeddedDefRepoPath = Settings.Default.SettingsPath + @"\EmbeddedDefs";
             EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
             RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
             RREcuDefPath = RRDefRepoPath + @"\ecu\standard\";
@@ -151,14 +153,17 @@ namespace SharpTune
 
         public static void PopulateAvailableDevices()
         {
+            AvailableDevices = new AvailableDevices();
             if (!Directory.Exists(EcuFlashDefRepoPath) || Directory.GetFiles(EcuFlashDefRepoPath).Length < 1)
             {
-                Directory.CreateDirectory(EcuFlashDefRepoPath);
-                CopyEmbeddedDefs();
+                if (!Directory.Exists(EmbeddedDefRepoPath))
+                    Directory.CreateDirectory(EmbeddedDefRepoPath);
+                if (Directory.GetFiles(EmbeddedDefRepoPath).Length < 1)
+                    CopyEmbeddedDefs();
+                AvailableDevices.Populate(EmbeddedDefRepoPath);
             }
-
-            AvailableDevices = new AvailableDevices();
-            AvailableDevices.Populate();
+            else
+                AvailableDevices.Populate(EcuFlashDefRepoPath);
         }
 
         public static void CopyEmbeddedDefs()
@@ -171,7 +176,7 @@ namespace SharpTune
                     
                     using(Stream ResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(res))
                     {
-                        string writePath = SharpTuner.EcuFlashDefRepoPath.ToString() + @"\" + res;
+                        string writePath = SharpTuner.EmbeddedDefRepoPath.ToString() + @"\" + res;
                         using(Stream ExternalFile = File.OpenWrite(writePath))
                             ResourceStream.CopyTo(ExternalFile);
                     }                
@@ -313,11 +318,9 @@ namespace SharpTune
             {
                 if (!res.ContainsCI(".patch"))
                     continue;
-                using (Stream stream = assembly.GetManifestResourceStream(res))
-                {
+                Stream stream = assembly.GetManifestResourceStream(res);
                     AvailableMods.Add(new Mod(stream, res));
                     i++;
-                }
             }
             if (i > 0)
                 Trace.WriteLine(String.Format("Added {0} embedded mods", i));

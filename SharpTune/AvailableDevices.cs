@@ -47,18 +47,12 @@ namespace SharpTuneCore
             this.DeviceCount = 0;
         }
 
-        public void Populate()
-        {
-                this.PopulateFromFiles(SharpTuner.EcuFlashDefRepoPath.ToString());
-        }
-
-        
-        private void PopulateFromFiles(string xmldir)
+        public void Populate(string xmldir)
         {
             try
             {
                 //wtf is this TODO
-                List<string> ts = ResourceUtil.directorySearchRecursiveDir(SharpTuner.EcuFlashDefRepoPath,null);
+                List<string> ts = ResourceUtil.directorySearchRecursiveDir(xmldir,null);
                 if(!GetDevices(ts[0]))
                 {
                     Trace.WriteLine("XML initialize failed");
