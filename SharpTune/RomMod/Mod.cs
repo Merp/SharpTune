@@ -166,6 +166,7 @@ namespace SharpTune.RomMod
             this.ModBuild = "Unknown Build";
             reader = new SRecordReader(s, modPath);
             FileName = modPath;
+            FilePath = modPath;
             isResource = true;
             modStream = s;
             TryReadPatches();

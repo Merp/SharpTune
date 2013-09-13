@@ -313,11 +313,9 @@ namespace SharpTune
             {
                 if (!res.ContainsCI(".patch"))
                     continue;
-                using (Stream stream = assembly.GetManifestResourceStream(res))
-                {
+                Stream stream = assembly.GetManifestResourceStream(res);
                     AvailableMods.Add(new Mod(stream, res));
                     i++;
-                }
             }
             if (i > 0)
                 Trace.WriteLine(String.Format("Added {0} embedded mods", i));
