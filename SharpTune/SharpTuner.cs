@@ -36,10 +36,10 @@ namespace SharpTune
     /// </summary>
     public static class SharpTuner
     {
-        public const string GitHelpUrl = "http://sharptuning.com/definitions";
-        public const string DonateUrl = "http://sharptuning.com/donate";
-        public const string HomeUrl = "http://sharptuning.com";
-        public const string ForumUrl = "http://discourse.sharptuning.com";
+        public const string GitHelpUrl = "http://github.com/Merp/SharpTune/tree/README.md";
+        public const string DonateUrl = "http://github.com/Merp/SharpTune/tree/DONATE.md";
+        public const string HomeUrl = "http://romraider.com";
+        public const string ForumUrl = "http://romraider.com";
 
         public static MainWindow Window { get; set; }
 
