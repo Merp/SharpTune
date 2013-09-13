@@ -28,6 +28,7 @@ using SharpTune.Core;
 using System.Net;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace SharpTune
 {
@@ -123,13 +124,10 @@ namespace SharpTune
                 Directory.CreateDirectory(Settings.Default.PluginPath);
 
             if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
-                if (Directory.Exists(userdir + @"\Dev\SubaruDefs"))
-                    Settings.Default.SubaruDefsRepoPath = userdir + @"\Dev\SubaruDefs";
-                else
-                    Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
+                Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
 
-            //if (!Directory.Exists(Settings.Default.SubaruDefsRepoPath))
-            //       Directory.CreateDirectory(Settings.Default.SubaruDefsRepoPath);
+            if (!Directory.Exists(Settings.Default.SubaruDefsRepoPath))
+                Directory.CreateDirectory(Settings.Default.SubaruDefsRepoPath);
 
             if (Settings.Default.PatchPath == null || Settings.Default.PatchPath == "")
                 Settings.Default.PatchPath = Settings.Default.SettingsPath + @"\Mods";
@@ -143,6 +141,7 @@ namespace SharpTune
              if (!Directory.Exists(Settings.Default.LogFilePath))
                     Directory.CreateDirectory(Settings.Default.LogFilePath);
 
+            DefRepoPath = Settings.Default.SubaruDefsRepoPath;
             EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
             RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
             RREcuDefPath = RRDefRepoPath + @"\ecu\standard\";
@@ -152,7 +151,31 @@ namespace SharpTune
 
         public static void PopulateAvailableDevices()
         {
-            AvailableDevices = new AvailableDevices(EcuFlashDefRepoPath.ToString());
+            if (!Directory.Exists(EcuFlashDefRepoPath) || Directory.GetFiles(EcuFlashDefRepoPath).Length < 1)
+            {
+                Directory.CreateDirectory(EcuFlashDefRepoPath);
+                CopyEmbeddedDefs();
+            }
+
+            AvailableDevices = new AvailableDevices();
+            AvailableDevices.Populate();
+        }
+
+        public static void CopyEmbeddedDefs()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            string[] resources = assembly.GetManifestResourceNames();
+            Parallel.ForEach(resources, res =>
+            {
+                if (res.ContainsCI(".xml") && res.ContainsCI("defs"))
+                    
+                    using(Stream ResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(res))
+                    {
+                        string writePath = SharpTuner.EcuFlashDefRepoPath.ToString() + @"\" + res;
+                        using(Stream ExternalFile = File.OpenWrite(writePath))
+                            ResourceStream.CopyTo(ExternalFile);
+                    }                
+            });
         }
 
         //public static void setSsmInterface(SsmInterface s)
@@ -169,7 +192,7 @@ namespace SharpTune
         public static void LoadMods()
         {
             AvailableMods = new List<Mod>();
-            //LoadResourceMods();
+            LoadResourceMods();
             LoadExternalMods();
         }
 
@@ -279,40 +302,59 @@ namespace SharpTune
 
 
         /// <summary>
-        /// TODO FIX OR REMOVE THIS. Can't really embed mods as resources without source code anyway!!
+        /// Gets mods from embedded resources
         /// </summary>
         private static void LoadResourceMods()
         {
-            int i = AvailableMods.Count;
-            ResourceSet ress = Resources.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
-            ResourceManager rm = SharpTune.Properties.Resources.ResourceManager;
-            foreach (DictionaryEntry r in ress)
+            int i = 0;
+            var assembly = Assembly.GetExecutingAssembly();
+            string[] resources = assembly.GetManifestResourceNames();
+            foreach(string res in resources)
             {
-                MemoryStream stream = new MemoryStream((byte[])rm.GetObject(r.Key.ToString()));
-                //if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
-                AvailableMods.Add(new Mod(stream, r.Key.ToString()));
+                if (!res.ContainsCI(".patch"))
+                    continue;
+                using (Stream stream = assembly.GetManifestResourceStream(res))
+                {
+                    AvailableMods.Add(new Mod(stream, res));
+                    i++;
+                }
             }
+            if (i > 0)
+                Trace.WriteLine(String.Format("Added {0} embedded mods", i));
+            else
+                Trace.WriteLine("No embedded mods found");
+
+            //int i = AvailableMods.Count;
+            //ResourceSet ress = Resources.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
+            //ResourceManager rm = SharpTune.Properties.Resources.ResourceManager;
+            //foreach (DictionaryEntry r in ress)
+            //{
+            //    MemoryStream stream = new MemoryStream((byte[])rm.GetObject(r.Key.ToString()));
+            //    //if (tempMod.TryCheckApplyMod(FilePath, FilePath + ".temp", 2, false))
+            //    AvailableMods.Add(new Mod(stream, r.Key.ToString()));
+            //}
         }
 
         private static void LoadExternalMods()
         {
-            int i = AvailableMods.Count;
+            int i = 0;
             string[] terms = { ".patch" };
             List<string> searchresults = ResourceUtil.directorySearchRecursive(Settings.Default.PatchPath, terms);
-            if (searchresults == null)
-            {
-                Trace.WriteLine("No External Mods found");
-            }
-            else
+            if (searchresults != null)
             {
                 foreach (string modpath in searchresults)
                 {
                     if (!modpath.ContainsCI("debug") && !modpath.ContainsCI("currentbuild"))
                     {
                         AvailableMods.Add(new Mod(modpath));
+                        i++;
                     }
                 }
             }
+            if (i > 0)
+                Trace.WriteLine(String.Format("Added {0} external mods", i));
+            else
+                Trace.WriteLine("No external mods found");
         }
 
         public static List<Mod> GetValidMods(this DeviceImage d)

@@ -24,6 +24,7 @@ using System.Windows.Forms;
 using SharpTune;
 using System.Diagnostics;
 using System.Threading;
+using System.Reflection;
 
 namespace SharpTuneCore
 {
@@ -39,12 +40,21 @@ namespace SharpTuneCore
         /// <summary>
         /// Constructor
         /// </summary>
-        public AvailableDevices(string xmldir)
+        public AvailableDevices()
         {
             DefDictionary = new Dictionary<string,Definition>();
             IdentList = new List<string>();
             this.DeviceCount = 0;
+        }
 
+        public void Populate()
+        {
+                this.PopulateFromFiles(SharpTuner.EcuFlashDefRepoPath.ToString());
+        }
+
+        
+        private void PopulateFromFiles(string xmldir)
+        {
             try
             {
                 //wtf is this TODO
@@ -107,7 +117,6 @@ namespace SharpTuneCore
                     return null;
                 }
         }  
-
 
         public bool GetDevices(string directory)
         {

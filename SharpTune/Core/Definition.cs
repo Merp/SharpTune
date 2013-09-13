@@ -26,6 +26,7 @@ using SharpTune.Core;
 using SharpTune.EcuMapTools;
 using SharpTune.RomMod;
 using System.Runtime.Serialization;
+using System.Reflection;
 
 namespace SharpTuneCore
 {
@@ -40,7 +41,7 @@ namespace SharpTuneCore
     {
         public bool isBase { get; private set; }
         public string internalId { get; set; }
-        public int internalIdAddress { get; private set; }
+        public int internalIdAddress { get; private set; }                
 
         private Dictionary<string,string> carInfo;
         /// <summary>
@@ -208,10 +209,19 @@ namespace SharpTuneCore
         /// TODO: Include more information about inheritance in the class for def-editing
         /// </summary>
         /// <param name="calID"></param>
-        public Definition(string filepath) : this()
+        public Definition(string filepath)
+            : this()
         {
             internalId = null;
             defPath = filepath;
+            LoadRomId();
+        }
+
+        public Definition(string respath, bool isres)
+            : this()
+        {
+            internalId = null;
+            defPath = respath;
             LoadRomId();
         }
 
@@ -310,6 +320,7 @@ namespace SharpTuneCore
         /// <returns></returns>
         public void LoadRomId()
         {
+            
             XDocument xmlDoc = XDocument.Load(defPath, LoadOptions.PreserveWhitespace);
             this.xRomId = xmlDoc.XPathSelectElement("/rom/romid");
             ParseRomId();

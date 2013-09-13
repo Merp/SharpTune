@@ -232,7 +232,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <None Include="Resources\beer1.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -256,6 +255,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\**\**\**\**\*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Defs\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot
@@ -264,7 +269,9 @@ Copy oem.bin patched.bin</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TestRom\SharpTune.exe"
-Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TARGETS\SharpTune.exe"</PostBuildEvent>
+Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TARGETS\SharpTune.exe"
+xcopy "..\..\..\..\MerpMod\Release" "..\..\Resources\Mods\" /s /e /k /y
+xcopy "..\..\..\..\SubaruDefs\ECUFlash\subaru standard" "..\..\Resources\Defs\" /s /e /k /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

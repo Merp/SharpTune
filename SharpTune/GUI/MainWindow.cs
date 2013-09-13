@@ -70,7 +70,27 @@ namespace SharpTune
         private void Form1_Load(object sender, EventArgs e)
         {
             this.toolStripStatusLabel1.Text = "SharpTune Version " + SharpTuner.Version;
-            MessageBox.Show("THIS SOFTWARE IS PROVIDED 'AS IS' AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.", "SharpTune");
+            MessageBox.Show(@"
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    " + @"THIS SOFTWARE IS PROVIDED 'AS IS' AND WITHOUT ANY WARRANTY
+    OF ANY KIND, WHETHER ORAL, WRITTEN, EXPRESS, IMPLIED OR STATUTORY, 
+    INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+    
+    " + @"Source code for this program and all included software, 
+    patches, data, and information can be found at:
+    http://github.com/Merp/SharpTune
+    http://github.com/Merp/MerpMod
+    http://github.com/Merp/SubaruDefs." , "SharpTune");
             // Instantiate the writer
             //TODO switch to traces instead of console redirection.
             _writer = new TextBoxStreamWriter(txtConsole);
