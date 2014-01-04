@@ -458,7 +458,7 @@ namespace SharpTune.RomMod
         {
             XDocument xmlDoc = SelectGetRRLogDef();
             InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
-            AddRRLogDefBase(ref xmlDoc, outPath, template);
+            AddRRLogDefBase(ref xmlDoc, outPath, ramTableList, template);
             PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
             xmlDoc.SaveToFile(outPath);
         }
@@ -587,7 +587,7 @@ namespace SharpTune.RomMod
             return xmlDoc2;
         }
 
-        private static void AddRRLogDefBase(ref XDocument xmlDoc, string outPath, string templatePath)
+        private static void AddRRLogDefBase(ref XDocument xmlDoc, string outPath, Dictionary<string,Table> ramTableList, string templatePath)
         {
             XDocument xmlBase = XDocument.Load(templatePath);//, LoadOptions.PreserveWhitespace);
             string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
@@ -595,7 +595,10 @@ namespace SharpTune.RomMod
 
             foreach (XElement xb in xbase)
             {
-                xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
+                if (ramTableList.ContainsKeyCI(xb.Attribute("name").Value))
+                {
+                    xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
+                }
             }
             xmlDoc.SaveToFile(outPath);
         }

@@ -186,6 +186,15 @@ namespace SharpTune
             return source.IndexOf(toCheck, comp) >= 0;
         }
 
+        public static bool ContainsKeyCI(this Dictionary<string,SharpTuneCore.Table> source, string toCheck)
+        {
+            foreach(string key in source.Keys){
+                if(key.ToLower() == toCheck.ToLower())
+                    return true;
+            }
+            return false;
+        }
+
         public static bool ContainsCI(this string source, string toCheck)
         {
             return source.IndexOf(toCheck, StringComparison.OrdinalIgnoreCase) >= 0;
