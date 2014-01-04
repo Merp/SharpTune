@@ -97,18 +97,35 @@ namespace SharpTune.EcuMapTools
                 {
                     if (line.ContainsCI("#define"))
                     {
-                        string[] ln = line.Split(' ');
-                        try
+                        string address;
+                        string name;
+                        string type = "";
+                        Match nameMatch = Regex.Match(line, @"(?<=#define )\w+\b");
+                        if (nameMatch.Success)
                         {
-                            if(ln[2].Contains("0x"))
-                                Locs.Add(ln[1], Regex.Split(ln[2], "0x")[1].Split(')')[0]);
-                        }
-                        catch (Exception e)
-                        {
-                            Trace.WriteLine("Error processing header line:");
-                            Trace.WriteLine(line);
-                            Trace.WriteLine("Array length: " + ln.Length.ToString());
-                            Trace.WriteLine("Error: " + e.Message);
+                            name = nameMatch.Value;
+
+                            Match typeMatch = Regex.Match(line, @"(?<=\(\()[A-Za-z0-9 _]+[\*](?=\))");
+                            if (typeMatch.Success)
+                                type = typeMatch.Value;//TODO: do something with the type??
+
+                            Match addressMatch = Regex.Match(line, @"(?<=(0[xX]))[0-9a-fA-F]+");
+                            if (addressMatch.Success)
+                            {
+                                address = addressMatch.Value;
+
+                                try
+                                {
+                                    
+                                    Locs.Add(name, address);
+                                }
+                                catch (Exception e)
+                                {
+                                    Trace.WriteLine("Error processing header line:");
+                                    Trace.WriteLine(line);
+                                    Trace.WriteLine("Error: " + e.Message);
+                                }
+                            }
                         }
                     }
                 }
