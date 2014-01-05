@@ -503,6 +503,8 @@ namespace SharpTune
             if (ret == DialogResult.OK)
             {
                 Settings.Default.SubaruDefsRepoPath = d.SelectedPath.ToString();
+                Settings.Default.Save();
+                Trace.WriteLine("Definition Repo Path Changed to: " + Settings.Default.SubaruDefsRepoPath);
                 SharpTuner.Init();
                 SharpTuner.RefreshImages();
             } 
@@ -621,6 +623,11 @@ namespace SharpTune
         private void SpawnDefEditor()
         {
             Application.Run(new DefinitionEditor());
+        }
+
+        private void xMLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

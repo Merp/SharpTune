@@ -175,16 +175,25 @@ namespace SharpTune.RomMod
         
         public bool TryDefinition(string defPath)
         {
-            this.modDef = new ModDefinition(this);
-            if (!modDef.TryReadDefs(defPath)) return false;
+            try
+            {
+                this.modDef = new ModDefinition(this);
+                if (!modDef.TryReadDefs(defPath)) return false;
 
-            if (ModBuild != null)
-                defPath = defPath + "/MerpMod/" + ModBuild + "/";
-            Directory.CreateDirectory(defPath);
-            defPath += ModIdent.ToString() + ".xml";
-
-            modDef.definition.ExportXML(defPath);
-            return true;
+                if (ModBuild != null)
+                    defPath = defPath + "/MerpMod/" + ModBuild + "/";
+                Directory.CreateDirectory(defPath);
+                defPath += ModIdent.ToString() + ".xml";
+                Trace.WriteLine("Attempting to write ECUFlash definition to: " + defPath);
+                modDef.definition.ExportXML(defPath);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Error writing ECUFlash definition to: " + defPath);
+                Trace.WriteLine(e.Message);
+                return false;
+            }
         }
 
         public bool TryCheckApplyMod(string romPath, string outPath, bool apply, bool commit)

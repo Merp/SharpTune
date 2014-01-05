@@ -49,6 +49,9 @@ namespace SharpTuneCore
 
         public void Populate(string xmldir)
         {
+            DefDictionary.Clear();
+            DeviceCount = 0;
+            IdentList.Clear();
             try
             {
                 //wtf is this TODO

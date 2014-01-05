@@ -456,11 +456,22 @@ namespace SharpTune.RomMod
         
         public static void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
         {
-            XDocument xmlDoc = SelectGetRRLogDef();
-            InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
-            AddRRLogDefBase(ref xmlDoc, outPath, ramTableList, template);
-            PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
-            xmlDoc.SaveToFile(outPath);
+            try
+            {
+                FileInfo outpfi = new FileInfo(outPath);
+                Directory.CreateDirectory(outpfi.Directory.FullName);
+                XDocument xmlDoc = SelectGetRRLogDef();
+                InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
+                AddRRLogDefBase(ref xmlDoc, outPath, ramTableList, template);
+                PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
+                Trace.WriteLine("Attempting to write RR logger definition file to: " + outPath);
+                xmlDoc.SaveToFile(outPath);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Error creating RR logger definition for " + ident);
+                Trace.WriteLine(e.Message);
+            }
         }
 
         public static void DefineRRLogEcuFromMap(string mapFile, string ident)

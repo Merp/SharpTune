@@ -258,9 +258,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\**\**\**\**\*.*" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\Defs\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot
@@ -268,8 +266,7 @@ Copy ..\..\..\..\MerpMod\MerpMod\TestRom\oem.bin oem.bin
 Copy oem.bin patched.bin</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TestRom\SharpTune.exe"
-Copy SharpTune.exe "..\..\..\..\MerpMod\MerpMod\TARGETS\SharpTune.exe"
+    <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\SharpTune.exe"
 xcopy "..\..\..\..\MerpMod\Release" "..\..\Resources\Mods\" /s /e /k /y
 xcopy "..\..\..\..\SubaruDefs\ECUFlash\subaru standard" "..\..\Resources\Defs\" /s /e /k /y</PostBuildEvent>
   </PropertyGroup>

@@ -37,8 +37,8 @@ namespace SharpTune
     /// </summary>
     public static class SharpTuner
     {
-        public const string GitHelpUrl = "http://github.com/Merp/SharpTune/tree/README.md";
-        public const string DonateUrl = "http://github.com/Merp/SharpTune/tree/DONATE.md";
+        public const string GitHelpUrl = "https://github.com/Merp/SharpTune/blob/master/README.md";
+        public const string DonateUrl = "https://github.com/Merp/SharpTune/blob/master/DONATE.md";
         public const string HomeUrl = "http://romraider.com";
         public const string ForumUrl = "http://romraider.com";
 
@@ -143,6 +143,7 @@ namespace SharpTune
                     Directory.CreateDirectory(Settings.Default.LogFilePath);
 
             DefRepoPath = Settings.Default.SubaruDefsRepoPath;
+            Trace.WriteLine("Using Definition Repo Path: " + DefRepoPath);
             EmbeddedDefRepoPath = Settings.Default.SettingsPath + @"\EmbeddedDefs";
             EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
             RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
@@ -154,16 +155,20 @@ namespace SharpTune
         public static void PopulateAvailableDevices()
         {
             AvailableDevices = new AvailableDevices();
-            if (!Directory.Exists(EcuFlashDefRepoPath) || Directory.GetFiles(EcuFlashDefRepoPath).Length < 1)
+            if (Directory.Exists(EcuFlashDefRepoPath) && (Directory.GetDirectories(EcuFlashDefRepoPath).Length > 0 || Directory.GetFiles(EcuFlashDefRepoPath).Length < 1 ))
+            {
+                Trace.WriteLine("Loading definitions from: " + EcuFlashDefRepoPath);
+                AvailableDevices.Populate(EcuFlashDefRepoPath);
+            }
+            else
             {
                 if (!Directory.Exists(EmbeddedDefRepoPath))
                     Directory.CreateDirectory(EmbeddedDefRepoPath);
                 if (Directory.GetFiles(EmbeddedDefRepoPath).Length < 1)
                     CopyEmbeddedDefs();
+                Trace.WriteLine("Loading definitions from: " + EmbeddedDefRepoPath);
                 AvailableDevices.Populate(EmbeddedDefRepoPath);
             }
-            else
-                AvailableDevices.Populate(EcuFlashDefRepoPath);
         }
 
         public static void CopyEmbeddedDefs()

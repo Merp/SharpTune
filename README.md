@@ -4,6 +4,8 @@ SharpTune is an automotive ROM image reader/editor with functionality to apply M
 
 It is currently in a very alpha state and it is NOT recommended to use the editor until it is thoroughly debugged.
 
+Embedded resources are specified in RomMod.csproj, not in project properties -> resources GUI.
+
 # Credits:
 -Merp - SharpTune GUI Design, RomModCore upgrades, Subaru mod development
 -NSFW - RomModCore (Previously RomPatch), Subaru mod development (Transition to HEW)

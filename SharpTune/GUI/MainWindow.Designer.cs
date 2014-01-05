@@ -230,6 +230,7 @@
             this.xMLToolStripMenuItem.Name = "xMLToolStripMenuItem";
             this.xMLToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.xMLToolStripMenuItem.Text = "Settings";
+            this.xMLToolStripMenuItem.Click += new System.EventHandler(this.xMLToolStripMenuItem_Click);
             // 
             // definitionLocationToolStripMenuItem
             // 
@@ -266,7 +267,7 @@
             this.romRaiderForumToolStripMenuItem,
             this.sharpTuningForumToolStripMenuItem});
             this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
-            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.onlineHelpToolStripMenuItem.Text = "Online Help";
             // 
             // romRaiderIRCChannelToolStripMenuItem
@@ -293,14 +294,14 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // licensingToolStripMenuItem
             // 
             this.licensingToolStripMenuItem.Name = "licensingToolStripMenuItem";
-            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.licensingToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.licensingToolStripMenuItem.Text = "Licensing";
             this.licensingToolStripMenuItem.Click += new System.EventHandler(this.licensingToolStripMenuItem_Click);
             // 
