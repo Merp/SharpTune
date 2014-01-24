@@ -87,6 +87,11 @@ namespace SharpTune
                 PrintHelp(args[1]);
                 return true;
             }
+            else if (args[0] == "deftools")
+            {
+                Trace.WriteLine("Running definition tools!");
+                return DefinitionTools.DefinitionTool(args);
+            }
             return false;
         }
 

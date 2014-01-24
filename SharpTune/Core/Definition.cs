@@ -328,6 +328,28 @@ namespace SharpTuneCore
                 include = xmlDoc.XPathSelectElement("/rom/include").Value.ToString();
         }
 
+        public XElement ExportRRRomId()
+        {
+            XElement xe = new XElement("rom");
+            xe.SetAttributeValue("base",this.include);
+            XElement xeromid = new XElement("romid");
+            foreach(KeyValuePair<String,String> entry in carInfo){
+                XElement xel = new XElement(entry.Key.ToString(),entry.Value.ToString());
+                xeromid.Add(xel);
+            }
+            if (!carInfo.ContainsKey("filesize") && carInfo.ContainsKey("memmodel"))
+            {
+                if (carInfo["memmodel"].ToLower() == "sh7055")
+                    xeromid.Add(new XElement("filesize", "512kb"));
+                else if (carInfo["memmodel"].ToLower() == "sh7058")
+                    xeromid.Add(new XElement("filesize", "1024kb"));
+                else if (carInfo["memmodel"].ToLower() == "68hc16ys")
+                    xeromid.Add(new XElement("filesize", "192kb"));
+            }
+            xe.Add(xeromid);
+            return xe;
+        }
+
         /// <summary>
         /// Populates a 'short def' (romid + include) into a full definition
         /// </summary>
