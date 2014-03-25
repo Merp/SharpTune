@@ -30,9 +30,9 @@ namespace SharpTuneCore
     {
 
 
-        public Table1D(XElement xel, Definition d, bool b)
-            : base(xel, d, b)
-        {}
+        public Table1D(XElement xel, Definition def, Table basetable)
+            : base(xel, def, basetable)
+        { this.type = "1D"; }
 
         public override Table MergeTables(Table basetable)
         {
@@ -103,8 +103,8 @@ namespace SharpTuneCore
 
     public class RamTable1D : Table1D
     {
-        public RamTable1D(XElement xel, Definition d, bool b)// DeviceImage image)
-            : base(xel, d, b)
+        public RamTable1D(XElement xel, Definition def, Table basetable)// DeviceImage image)
+            : base(xel, def, basetable)
         {
 
         }

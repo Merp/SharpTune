@@ -101,7 +101,7 @@ namespace SharpTune.GUI
                 DialogResult save;
                 save = MessageBox.Show("Save changes??", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if (save == DialogResult.Yes)
-                    Def.ExportXML();
+                    Def.ExportEcuFlashXML();
                 else if (save == DialogResult.Cancel)
                     e.Cancel = true;
             }
@@ -116,24 +116,21 @@ namespace SharpTune.GUI
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Table XML exposed in " + t.parentDef.internalId.ToString());
+            sb.AppendLine("Table XML exposed in " + t.parentDef.calibrationlId.ToString());
             sb.AppendLine(t.xml.ToString());
             if (!t.isBase)
             {
-                foreach(var i in t.InheritanceList)
-                {
                     sb.AppendLine();
                     sb.AppendLine();
-                    sb.AppendLine("Base Table XML inherited from " + i.parentDef.internalId.ToString());
-                    sb.AppendLine(i.xml.ToString());
-                }
+                    sb.AppendLine("Base Table XML inherited from " + t.baseTable.parentDef.calibrationlId.ToString());
+                    sb.AppendLine(t.baseTable.xml.ToString());
             }
             textBoxTableInfo.Text = sb.ToString();
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
-            Def.ExportXML();
+            Def.ExportEcuFlashXML();
             Unsaved = false;
         }
     }

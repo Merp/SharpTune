@@ -27,6 +27,16 @@ namespace NSFW
         private static HashSet<string> names = new HashSet<string>();
         private static IDictionary<string, string> tableList = new Dictionary<string, string>();
         private static String DefPath = "";
+        private static TextWriterTraceListener twtl;
+
+
+        public XMLtoIDC(string outpath)
+        {
+            twtl = new TextWriterTraceListener(outpath);
+            twtl.Name = "TextLogger";
+            twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+        }
+
 
         public static void GuiRun(string[] args, string outpath, string def, string loggerdef, string loggerdtd)
         {
@@ -238,7 +248,130 @@ namespace NSFW
         //    }
         //}
 
+        public static void MakeRomTables(SharpTuneCore.DeviceImage rom, string outpath){
+            using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
+            {
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+                Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
+
+                string calId = rom.CalId.ToUpper();
+                string functionName = "Tables_" + calId;
+                WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
+                DefineECUFlashTables(functionName, rom.Definition);
+            }
+            Trace.Listeners.Remove("TextLogger");
+        }
+
+        public static void MakeRomTables(SharpTuneCore.DeviceImage rom, string ecudefs, string outpath){
+            using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
+            {
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
+                string calId = rom.CalId.ToUpper();
+                string functionName = "Tables_" + calId;
+                WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
+                DefineTables(functionName, calId, ecudefs);
+            }
+            Trace.Listeners.Remove("TextLogger");
+        }
+
+        public static void MakeStdParams(SharpTuneCore.DeviceImage rom, string ssmbase, string loggerdef, string loggerdtd, string outpath){
+            using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
+            {
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
+                string cpu = rom.Definition.CpuBits;
+                string target = "ecu";
+                string calId = rom.CalId.ToUpper();
+                string ssmBaseString = ssmbase;
+                string functionName = "StdParams_" + calId;
+                uint ssmBase = ConvertBaseString(ssmBaseString);
+                WriteHeader1(functionName,
+                             string.Format("Standard parameter definitions for {0} bit {1}: {2} with SSM read vector base {3}",
+                              cpu, target, calId, ssmBase.ToString("X")));
+                DefineStandardParameters(functionName, target, calId, ssmBase, cpu, loggerdef, loggerdtd);
+            }
+            Trace.Listeners.Remove("TextLogger");
+        }
+
+        public static void MakeExtParams(SharpTuneCore.DeviceImage rom, string loggerdef, string loggerdtd, string outpath)
+        {
+            using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
+            {
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
+                string cpu = rom.Definition.CpuBits;
+                string target = "ecu";
+                string calId = rom.CalId.ToUpper();
+                string ecuId = rom.Definition.EcuId.ToUpper();
+                string functionName = "ExtParams_" + ecuId;
+                WriteHeader1(functionName,
+                             string.Format("Extended parameter definitions for {0} bit {1}: {2}",
+                              cpu, target, ecuId));
+                DefineExtendedParameters(functionName, target, ecuId, cpu, loggerdef, loggerdtd);
+            }
+            Trace.Listeners.Remove("TextLogger");
+        }
+                            
+        public static void MakeAll(SharpTuneCore.DeviceImage rom, string ssmbase, string loggerdef, string loggerdtd, string outpath){
+            using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
+            {
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; string target = "ecu";
+                string calId = rom.CalId.ToUpper();
+                string ssmBaseString = ssmbase.ToUpper();
+                string functionName1 = "Tables";
+                string functionName2 = "StdParams";
+                string functionName3 = "ExtParams";
+                WriteHeader3(functionName1, functionName2, functionName3,
+                                string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
+                                target, calId, ssmBaseString));
+                string[] results = new string[2];
+                results = DefineECUFlashTables(functionName1, rom.Definition);
+                uint ssmBase = ConvertBaseString(ssmBaseString);
+                DefineStandardParameters(functionName2, target, calId, ssmBase, results[1], loggerdef, loggerdtd);
+                DefineExtendedParameters(functionName3, target, results[0], results[1], loggerdef, loggerdtd);
+            }
+            Trace.Listeners.Remove("TextLogger");
+        }
+
+        public static void MakeAll(SharpTuneCore.DeviceImage rom, string ssmbase, string ecudefs, string loggerdef, string loggerdtd, string outpath){
+            using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
+            {
+                twtl.Name = "TextLogger";
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; string target = "ecu";
+                string calId = rom.CalId.ToUpper();
+                string ssmBaseString = ssmbase.ToUpper();
+                string functionName1 = "Tables";
+                string functionName2 = "StdParams";
+                string functionName3 = "ExtParams";
+                WriteHeader3(functionName1, functionName2, functionName3,
+                                string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
+                                target, calId, ssmBaseString));
+                string[] results = new string[2];
+                results = DefineTables(functionName1, calId, ecudefs);
+                uint ssmBase = ConvertBaseString(ssmBaseString);
+                DefineStandardParameters(functionName2, target, calId, ssmBase, results[1], loggerdef, loggerdtd);
+                DefineExtendedParameters(functionName3, target, results[0], results[1], loggerdef, loggerdtd);
+            }
+            Trace.Listeners.Remove("TextLogger");
+        }
+
         #region DefineXxxx functions
+
+        private static string[] DefineECUFlashTables(string functionName, SharpTuneCore.Definition def)
+        {
+            string[] results = new string[2];
+            WriteHeader2(functionName);
+            results = WriteEcuFlashTableNames(def);
+            WriteFooter(functionName);
+            return results;
+        }
 
         private static string[] DefineTables(string functionName, string calId, string def)
         {
@@ -320,6 +453,60 @@ namespace NSFW
         }
 
         #endregion
+
+        private static string[] WriteEcuFlashTableNames(SharpTuneCore.Definition def)
+        {
+            int tableCount = 0;
+            Trace.WriteLine("auto referenceAddress;");
+
+            foreach (KeyValuePair<string, SharpTuneCore.Table> t in def.AggregateExposedRomTables)
+            {
+                SharpTuneCore.Table table = t.Value; //TODO: put this code in Table class! "getIDCTable"
+                try
+                {
+                    if (table.type.ToUpper() == "1D")
+                    {
+                        UpdateTableList(ConvertName(table.name), table.addressHexString);
+                    }
+                    else
+                    {
+                        int axes = 0;
+                        UpdateTableList(ConvertName(table.name), table.addressHexString);
+                        
+                        if (table.xAxis != null && !table.xAxis.type.ToLower().Contains("static") && table.xAxis.addressHexString != "0")
+                        {
+                            axes++;
+                            UpdateTableList(ConvertName(table.name + "_X_AXIS"), table.xAxis.addressHexString);
+                        }
+                        
+                        if (table.yAxis != null && !table.yAxis.type.ToLower().Contains("static") && table.yAxis.addressHexString != "0")
+                        {
+                            axes++;
+                            UpdateTableList(ConvertName(table.name + "_Y_AXIS"), table.yAxis.addressHexString);
+                        }
+                        
+                        if (axes == 1)
+                            UpdateTableList(ConvertName("Table_" + table.name), "1axis");
+                        else if (axes == 2)
+                            UpdateTableList(ConvertName("Table_" + table.name), "2axis");
+                    }
+                    tableCount++;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+                if (tableCount < 1)
+                {
+                    Trace.WriteLine("// No tables found specifically for ROM " + def.calibrationlId + ", used inherited ROM");
+                }
+                
+            }
+            WriteIdcTableNames();
+            string[] results = new string[2] { def.EcuId, def.CpuBits }; ;
+            return results;
+        }
 
         private static string[] WriteTableNames(string xmlId, string def)
         {
@@ -1011,5 +1198,6 @@ namespace NSFW
             MessageBox.Show(builder.ToString(), "XmlToIdc makeall Usage Help");
         }
         #endregion
+
     }
 }

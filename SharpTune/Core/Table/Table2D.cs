@@ -27,10 +27,10 @@ namespace SharpTuneCore
     public class Table2D : Table
     {
 
-        public Table2D(XElement xel,Definition d, bool b)
-            : base(xel, d, b)
+        public Table2D(XElement xel,Definition def, Table basetable)
+            : base(xel, def, basetable)
         {
-
+            this.type = "2D";
         }
 
         public override Table MergeTables(Table basetable)
@@ -109,8 +109,8 @@ namespace SharpTuneCore
     public class RamTable2D : Table2D
     {
 
-        public RamTable2D(XElement xel,Definition d, bool b)
-            : base(xel,d,b)
+        public RamTable2D(XElement xel,Definition def, Table basetable)
+            : base(xel,def,basetable)
         {
 
         }

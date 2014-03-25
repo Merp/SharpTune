@@ -106,7 +106,7 @@ namespace SharpTune.EcuMapTools
                     return;
                 }
 
-                FindAndWriteDefines(headerFileName, Build, Config, def.CarInfo["internalidstring"].ToString(), def.CarInfo["ecuid"].ToString());
+                FindAndWriteDefines(headerFileName, Build, Config, def.calibrationlId, def.EcuId);
                 Trace.WriteLine("Target header update success!!");
             }
             else

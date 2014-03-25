@@ -185,7 +185,7 @@ namespace SharpTune.RomMod
                 Directory.CreateDirectory(defPath);
                 defPath += ModIdent.ToString() + ".xml";
                 Trace.WriteLine("Attempting to write ECUFlash definition to: " + defPath);
-                modDef.definition.ExportXML(defPath);
+                modDef.definition.ExportEcuFlashXML(defPath);
                 return true;
             }
             catch (Exception e)
@@ -345,8 +345,6 @@ namespace SharpTune.RomMod
                             Trace.WriteLine(excpt.Message);
                         return false;
                     }
-                        Trace.WriteLine("ROM file modified successfully, mod has been applied.");
-                    return true;
                 }
                 else
                 {

@@ -93,7 +93,7 @@ namespace SharpTuneCore
 
             foreach (KeyValuePair<String, Definition> pair in this.DefDictionary)
             {
-                imap.Add(pair.Value.defPath, findInherit(pair.Key));
+                imap.Add(pair.Value.filePath, findInherit(pair.Key));
             }
             return imap;
         }
@@ -120,28 +120,29 @@ namespace SharpTuneCore
             try
             {
                 string[] files = Directory.GetFiles(directory);
-                Parallel.ForEach(
-                    files, f =>
+                //Parallel.ForEach(
+                  //  files, f =>
+                foreach(var f in files)
                     {
                         try
                         {
                             Definition d = new Definition(f);
-                            if (d.isBase)
-                                d.LoadRomId();
+                            if(d.isBase)
+                                d.Populate();
                             lock(DefDictionary)
                             {
-                                if (DefDictionary.ContainsKey(d.internalId))
+                                if (DefDictionary.ContainsKey(d.calibrationlId))
                                 {
-                                    Trace.WriteLine("Duplicate definition found for: " + d.internalId + " in file: " + f + " Check the definitions!!");
-                                    Trace.WriteLine("Definition was previously found in file: " + DefDictionary[d.internalId].defPath);
+                                    Trace.WriteLine("Duplicate definition found for: " + d.calibrationlId + " in file: " + f + " Check the definitions!!");
+                                    Trace.WriteLine("Definition was previously found in file: " + DefDictionary[d.calibrationlId].filePath);
                                 }
                                 else
                                 {
-                                    DefDictionary.Add(d.internalId, d);
+                                    DefDictionary.Add(d.calibrationlId, d);
 
                                     lock (IdentList)
                                     {
-                                        IdentList.Add(d.internalId);
+                                        IdentList.Add(d.calibrationlId);
                                         DeviceCount++;
                                     }
                                 }
@@ -152,18 +153,19 @@ namespace SharpTuneCore
                             Trace.WriteLine("Error reading XML file " + f);
                             Trace.WriteLine(excpt.Message);
                         }
-                    });
+                }
+            //});
 
                 List<string> directories = Directory.GetDirectories(directory).ToList();
                 
-                Parallel.ForEach(
-                    directories, d =>
-                    {
+                //Parallel.ForEach(
+                 //   directories, d =>
+                  foreach(var d in directories)  {
                         if (!GetDevices(d))
                         {
-                            return;
+                            return false;
                         }
-                    });
+                  }// });
 
                 return true;
             }
@@ -177,14 +179,14 @@ namespace SharpTuneCore
 
         public string getDefPath(string id)
         {
-            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
-                return DefDictionary[id].defPath;
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].calibrationlId != null)
+                return DefDictionary[id].filePath;
             return null;
         }
 
         public Definition getDef(string id)
         {
-            if (DefDictionary.ContainsKey(id) && DefDictionary[id].internalId != null)
+            if (DefDictionary.ContainsKey(id) && DefDictionary[id].calibrationlId != null)
             {
                 DefDictionary[id].Populate();
                 return DefDictionary[id];

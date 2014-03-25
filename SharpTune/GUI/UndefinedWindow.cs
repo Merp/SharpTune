@@ -73,8 +73,8 @@ namespace SharpTune.GUI
             //TODO put this in definition class!
             try
             {
-                def.xRomId = XElement.Parse(textBoxDefXml.Text);
-                def.ParseRomId();
+                XElement xe = XElement.Parse(textBoxDefXml.Text);
+                def.MetaData.ParseEcuFlashXml(xe,def.include);
             }
             catch (Exception er)
             {
@@ -88,7 +88,7 @@ namespace SharpTune.GUI
                 memStream.SetLength(fileStream.Length);
                 fileStream.Read(memStream.GetBuffer(), 0, (int)fileStream.Length);
 
-                memStream.Seek(def.internalIdAddress, SeekOrigin.Begin);
+                memStream.Seek(def.calibrationIdAddress, SeekOrigin.Begin);
 
                 byte[] b = new byte[8];
                 memStream.Read(b, 0, 8);
@@ -96,9 +96,8 @@ namespace SharpTune.GUI
                 DialogResult dialogResult = MessageBox.Show("Found Identifier: " + id +". Use this??", "Identifier", MessageBoxButtons.YesNo);
                 if(dialogResult == DialogResult.Yes)
                 {
-                    def.CarInfo["internalidstring"] = id;
-                    def.CarInfo["xmlid"] = id;
-                    textBoxDefXml.Text = def.xRomId.ToString();
+                    def.MetaData.setIdForUndefined(id);
+                    textBoxDefXml.Text = def.MetaData.EcuFlashXml.ToString();
 
                 }
                 else if (dialogResult == DialogResult.No)
@@ -111,9 +110,9 @@ namespace SharpTune.GUI
         private void comboBoxIncludeDef_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxIncludeDef.SelectedItem.ToString()))
-                def.include = comboBoxIncludeDef.SelectedItem.ToString();
+                def.MetaData.include = comboBoxIncludeDef.SelectedItem.ToString();
             else
-                def.include = null;
+                def.MetaData.include = null;
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
@@ -126,24 +125,23 @@ namespace SharpTune.GUI
             //Save the definition XML
             try
             {
-                def.xRomId = XElement.Parse(textBoxDefXml.Text);
-                def.ParseRomId();
-                def.include = comboBoxIncludeDef.SelectedValue.ToString();
+                XElement xe = XElement.Parse(textBoxDefXml.Text);
+                def.MetaData.ParseEcuFlashXml(xe,comboBoxIncludeDef.SelectedValue.ToString());
             
             StringBuilder path = new StringBuilder();
             path.Append(SharpTuner.EcuFlashDefRepoPath + "/");
-            if (def.CarInfo.ContainsKey("model") && def.CarInfo["model"] != null)
+            if (def.MetaData.model != null)
             {
-                path.Append(def.CarInfo["model"].ToString());
-                if (def.CarInfo.ContainsKey("submodel") && def.CarInfo["submodel"] != null)
+                path.Append(def.MetaData.model.ToString());
+                if (def.MetaData.submodel != null)
                 {
-                    string s = " " + def.CarInfo["submodel"];
+                    string s = " " + def.MetaData.submodel;
                     path.Append(s);
                 }
                 path.Append("/");
             }
             string dirpath = path.ToString();
-            path.Append(def.internalId.ToString() + ".xml");
+            path.Append(def.calibrationlId.ToString() + ".xml");
             if (!Directory.Exists(dirpath))
             {
                 Directory.CreateDirectory(dirpath);
@@ -157,9 +155,9 @@ namespace SharpTune.GUI
                     return;
                 }
             }
-            def.defPath = path.ToString();
-            def.ExportXML();
-            MessageBox.Show("Successfully saved definition to " + def.defPath);
+            def.filePath = path.ToString();
+            def.ExportEcuFlashXML();
+            MessageBox.Show("Successfully saved definition to " + def.filePath);
             SharpTuner.PopulateAvailableDevices();
             this.Dispose();
             }
@@ -194,7 +192,7 @@ namespace SharpTune.GUI
         {
             if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                textBoxDefXml.Text = SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].xRomId.ToString();
+                textBoxDefXml.Text = SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].MetaData.EcuFlashXml.ToString();
                 comboBoxIncludeDef.SelectedItem = comboBoxCopyDef.SelectedItem;
             }
             else

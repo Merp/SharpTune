@@ -220,6 +220,74 @@ namespace SharpTune
             return inArray;
         }
 
+        public static int ConvertStringToInt(this string input)
+        {
+            return System.Int32.Parse(input, System.Globalization.NumberStyles.Integer);
+        }
+
+        public static string ToKiloBytesString(this int input)
+        {
+            return (input / 1024) + "kb";
+        }
+
+        public static string ConvertStringToHex(this String input, System.Text.Encoding encoding)
+        {
+            Byte[] stringBytes = encoding.GetBytes(input);
+            StringBuilder sbBytes = new StringBuilder(stringBytes.Length * 2);
+            foreach (byte b in stringBytes)
+            {
+                sbBytes.AppendFormat("{0:X2}", b);
+            }
+            return sbBytes.ToString();
+        }
+
+        public static Byte[] ConvertStringToBytes(this String input, System.Text.Encoding encoding)
+        {
+            Byte[] stringBytes = encoding.GetBytes(input);
+            return stringBytes;
+        }
+
+        public static string ConvertHexToString(this String hexInput, System.Text.Encoding encoding)
+        {
+            int numberChars = hexInput.Length;
+            byte[] bytes = new byte[numberChars / 2];
+            for (int i = 0; i < numberChars; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hexInput.Substring(i, 2), 16);
+            }
+            return encoding.GetString(bytes);
+        }
+
+        public static long ConvertHexToLong(this String hexInput)
+        {
+            return long.Parse(hexInput, System.Globalization.NumberStyles.AllowHexSpecifier);
+        }
+
+        public static int ConvertHexToInt(this String hexInput)
+        {
+            return int.Parse(hexInput, System.Globalization.NumberStyles.AllowHexSpecifier);
+        }
+
+        public static string ConvertIntToHexString(this int offs)
+        {
+            return offs.ToString("X");
+        }
+
+        public static string ConvertLongToHexString(this long offs)
+        {
+            return offs.ToString("X");
+        }
+
+        public static string ConvertBytesToHexString(this Byte[] input)
+        {
+            return BitConverter.ToString(input);
+        }
+
+        public static string ConvertBytesToString(this Byte[] input, System.Text.Encoding encoding)
+        {
+            return encoding.GetString(input);
+        }
+
         public static byte[] ToByteArray(this String hexString)
         {
 

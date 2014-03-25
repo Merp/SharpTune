@@ -41,6 +41,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
+            this.checkBoxUseDef = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // romTablesCheckBox
@@ -57,7 +58,7 @@
             // ExtParamsCheckBox
             // 
             this.ExtParamsCheckBox.AutoSize = true;
-            this.ExtParamsCheckBox.Location = new System.Drawing.Point(232, 55);
+            this.ExtParamsCheckBox.Location = new System.Drawing.Point(232, 79);
             this.ExtParamsCheckBox.Name = "ExtParamsCheckBox";
             this.ExtParamsCheckBox.Size = new System.Drawing.Size(106, 17);
             this.ExtParamsCheckBox.TabIndex = 2;
@@ -68,7 +69,7 @@
             // ssmParamsCheckBox
             // 
             this.ssmParamsCheckBox.AutoSize = true;
-            this.ssmParamsCheckBox.Location = new System.Drawing.Point(232, 78);
+            this.ssmParamsCheckBox.Location = new System.Drawing.Point(232, 102);
             this.ssmParamsCheckBox.Name = "ssmParamsCheckBox";
             this.ssmParamsCheckBox.Size = new System.Drawing.Size(105, 17);
             this.ssmParamsCheckBox.TabIndex = 3;
@@ -80,7 +81,7 @@
             // ssmBaseTextBox
             // 
             this.ssmBaseTextBox.Enabled = false;
-            this.ssmBaseTextBox.Location = new System.Drawing.Point(232, 101);
+            this.ssmBaseTextBox.Location = new System.Drawing.Point(229, 125);
             this.ssmBaseTextBox.Name = "ssmBaseTextBox";
             this.ssmBaseTextBox.Size = new System.Drawing.Size(140, 20);
             this.ssmBaseTextBox.TabIndex = 4;
@@ -89,7 +90,7 @@
             // generateIdcButton
             // 
             this.generateIdcButton.Enabled = false;
-            this.generateIdcButton.Location = new System.Drawing.Point(9, 247);
+            this.generateIdcButton.Location = new System.Drawing.Point(9, 291);
             this.generateIdcButton.Name = "generateIdcButton";
             this.generateIdcButton.Size = new System.Drawing.Size(360, 32);
             this.generateIdcButton.TabIndex = 5;
@@ -113,13 +114,13 @@
             this.RomInfoTextBox.Multiline = true;
             this.RomInfoTextBox.Name = "RomInfoTextBox";
             this.RomInfoTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.RomInfoTextBox.Size = new System.Drawing.Size(211, 109);
+            this.RomInfoTextBox.Size = new System.Drawing.Size(211, 133);
             this.RomInfoTextBox.TabIndex = 10;
             // 
             // comboBoxEcuDef
             // 
             this.comboBoxEcuDef.FormattingEnabled = true;
-            this.comboBoxEcuDef.Location = new System.Drawing.Point(12, 140);
+            this.comboBoxEcuDef.Location = new System.Drawing.Point(12, 184);
             this.comboBoxEcuDef.Name = "comboBoxEcuDef";
             this.comboBoxEcuDef.Size = new System.Drawing.Size(357, 21);
             this.comboBoxEcuDef.TabIndex = 11;
@@ -127,7 +128,7 @@
             // comboBoxLoggerDTD
             // 
             this.comboBoxLoggerDTD.FormattingEnabled = true;
-            this.comboBoxLoggerDTD.Location = new System.Drawing.Point(12, 220);
+            this.comboBoxLoggerDTD.Location = new System.Drawing.Point(12, 264);
             this.comboBoxLoggerDTD.Name = "comboBoxLoggerDTD";
             this.comboBoxLoggerDTD.Size = new System.Drawing.Size(357, 21);
             this.comboBoxLoggerDTD.TabIndex = 12;
@@ -135,7 +136,7 @@
             // comboBoxLoggerDef
             // 
             this.comboBoxLoggerDef.FormattingEnabled = true;
-            this.comboBoxLoggerDef.Location = new System.Drawing.Point(12, 180);
+            this.comboBoxLoggerDef.Location = new System.Drawing.Point(12, 224);
             this.comboBoxLoggerDef.Name = "comboBoxLoggerDef";
             this.comboBoxLoggerDef.Size = new System.Drawing.Size(357, 21);
             this.comboBoxLoggerDef.TabIndex = 13;
@@ -143,7 +144,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 124);
+            this.label1.Location = new System.Drawing.Point(12, 168);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(46, 13);
             this.label1.TabIndex = 14;
@@ -152,7 +153,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 164);
+            this.label2.Location = new System.Drawing.Point(12, 208);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(60, 13);
             this.label2.TabIndex = 15;
@@ -161,17 +162,30 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 204);
+            this.label4.Location = new System.Drawing.Point(12, 248);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(66, 13);
             this.label4.TabIndex = 16;
             this.label4.Text = "Logger DTD";
             // 
+            // checkBoxUseDef
+            // 
+            this.checkBoxUseDef.AutoSize = true;
+            this.checkBoxUseDef.Enabled = false;
+            this.checkBoxUseDef.Location = new System.Drawing.Point(232, 56);
+            this.checkBoxUseDef.Name = "checkBoxUseDef";
+            this.checkBoxUseDef.Size = new System.Drawing.Size(115, 17);
+            this.checkBoxUseDef.TabIndex = 17;
+            this.checkBoxUseDef.Text = "Use ECUFlash Def";
+            this.checkBoxUseDef.UseVisualStyleBackColor = true;
+            this.checkBoxUseDef.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // XMLtoIDC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(381, 291);
+            this.ClientSize = new System.Drawing.Size(381, 335);
+            this.Controls.Add(this.checkBoxUseDef);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -208,5 +222,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkBoxUseDef;
     }
 }

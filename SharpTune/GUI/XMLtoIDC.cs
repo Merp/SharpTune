@@ -46,26 +46,39 @@ namespace SharpTune.GUI
                 //TODO ERROR HANDLING, CLEAR OUTPUT FILES FIRST??
                 if (romTablesCheckBox.Checked && ExtParamsCheckBox.Checked && ssmParamsCheckBox.Checked)
                 {
+                    
                     string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_XmlToIdc.idc";
                     spath.deleteFile();
+                    
                     Trace.WriteLine("Writing SSM param IDC file to " + spath);
-                    NSFW.XMLtoIDC.GuiRun(new string[] { "makeall", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                    if (checkBoxUseDef.Checked)
+                        NSFW.XMLtoIDC.MakeAll(SharpTuner.ActiveImage, ssmBaseTextBox.Text, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex], spath);
+                    else
+                        NSFW.XMLtoIDC.MakeAll(SharpTuner.ActiveImage, ssmBaseTextBox.Text, ecudefs[comboBoxEcuDef.SelectedIndex], loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex], spath);
+                    
+                    //NSFW.XMLtoIDC.GuiRun(new string[] { "makeall", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                 }
                 else
                 {
                     if (romTablesCheckBox.Checked)
                     {
+                        
                         string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_romtables.idc";
                         spath.deleteFile();
                         Trace.WriteLine("Writing Rom Table IDC file to " + spath);
-                        NSFW.XMLtoIDC.GuiRun(new string[] { "tables", SharpTuner.ActiveImage.CalId }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], null, null);
+                        if (checkBoxUseDef.Checked)
+                            NSFW.XMLtoIDC.MakeRomTables(SharpTuner.ActiveImage, spath);
+                        else
+                            NSFW.XMLtoIDC.MakeRomTables(SharpTuner.ActiveImage, ecudefs[comboBoxEcuDef.SelectedIndex], spath);
+                                //NSFW.XMLtoIDC.GuiRun(new string[] { "tables", SharpTuner.ActiveImage.CalId }, spath, ecudefs[comboBoxEcuDef.SelectedIndex], null, null);
                     }
                     if (ExtParamsCheckBox.Checked)
                     {
                         string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_extparams.idc";
                         spath.deleteFile();
                         Trace.WriteLine("Writing extended RAM param IDC file to " + spath);
-                        NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "ecu", SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString() }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                        NSFW.XMLtoIDC.MakeExtParams(SharpTuner.ActiveImage, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex], spath);
+                            //NSFW.XMLtoIDC.GuiRun(new string[] { "extparam", "32", "ecu", SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString() }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                     }
                     if (ssmParamsCheckBox.Checked)
                     {
@@ -74,7 +87,8 @@ namespace SharpTune.GUI
                             string spath = d.SelectedPath.ToString() + @"\" + SharpTuner.ActiveImage.CalId + @"_ssmparams.idc";
                             spath.deleteFile();
                             Trace.WriteLine("Writing SSM param IDC file to " + spath);
-                            NSFW.XMLtoIDC.GuiRun(new string[] { "stdparam", "32", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
+                            NSFW.XMLtoIDC.MakeStdParams(SharpTuner.ActiveImage, ssmBaseTextBox.Text, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex], spath);
+                            //NSFW.XMLtoIDC.GuiRun(new string[] { "stdparam", "32", "ecu", SharpTuner.ActiveImage.CalId, ssmBaseTextBox.Text }, spath, null, loggerdefs[comboBoxLoggerDef.SelectedIndex], loggerdtds[comboBoxLoggerDTD.SelectedIndex]);
                         }
                         else
                         {
@@ -175,10 +189,18 @@ namespace SharpTune.GUI
                 try
                 {
                     //rominfo = SharpTuner.activeImage.Definition.carInfo.ToString() + System.Environment.NewLine;
-                    rominfo += "FileName:  " + SharpTuner.ActiveImage.FileName + System.Environment.NewLine;
-                    foreach (var s in SharpTuner.ActiveImage.Definition.CarInfo)
+
+                    if (SharpTuner.ActiveImage.Definition != null)
                     {
-                        rominfo += s.Key.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
+                        checkBoxUseDef.Enabled = true;
+                        checkBoxUseDef.Checked = true;
+                        comboBoxEcuDef.Enabled = false;
+                    }
+
+                    rominfo += "FileName:  " + SharpTuner.ActiveImage.FileName + System.Environment.NewLine;
+                    foreach (var s in SharpTuner.ActiveImage.Definition.MetaData.EcuFlashXml.Elements())//TODO: use a dictionary instead.
+                    {
+                        rominfo += s.Name.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
                     }
                 }
                 catch (Exception er)
@@ -219,6 +241,14 @@ namespace SharpTune.GUI
                     break; //gives precedence to def with CALID
                 }
             }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxUseDef.Checked == false)
+                comboBoxEcuDef.Enabled = true;
+            else
+                comboBoxEcuDef.Enabled = false;
         }
 
     }

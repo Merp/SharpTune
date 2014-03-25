@@ -32,12 +32,13 @@ namespace SharpTuneCore
 
         public Table3D()
         {
+            this.type = "3D";
         }
 
-        public Table3D(XElement xel, Definition d, bool b)
-            : base(xel, d, b)
+        public Table3D(XElement xel, Definition def, Table basetable)
+            : base(xel, def, basetable)
         {
-
+            this.type = "3D";
         }
 
 
@@ -51,8 +52,8 @@ namespace SharpTuneCore
             clone.Tag = Tag;
             clone.category = category;
             clone.description = description;
-            clone.tableTypeString = tableTypeString;
-            clone.tableTypeHex = tableTypeHex;
+            clone.storageTypeString = storageTypeString;
+            clone.storageTypeHex = storageTypeHex;
             //clone.scalingName { get; set; }
             //clone.level = level;
             //clone.address = address;
@@ -90,7 +91,7 @@ namespace SharpTuneCore
             ty.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
             ty.SetAttributeValue("elements", lut.rows);
             xml.Add(ty);
-            return TableFactory.CreateTable(xml, d);
+            return TableFactory.CreateTable(xml, name, d);
             //TODO also set attirbutes and split this up! Copy to table2D!!
         }
 
@@ -172,8 +173,8 @@ namespace SharpTuneCore
     public class RamTable3D : Table3D
     {
 
-        public RamTable3D(XElement xel, Definition d, bool b)
-            : base(xel,d,b)
+        public RamTable3D(XElement xel, Definition def, Table basetable)
+            : base(xel,def, basetable)
         {
 
         }

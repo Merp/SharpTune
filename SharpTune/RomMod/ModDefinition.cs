@@ -735,7 +735,7 @@ namespace SharpTune.RomMod
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("length").Value = length.ToString();
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel,null));
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel,name,null));
         }
         #endregion
 

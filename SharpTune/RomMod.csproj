@@ -68,6 +68,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AvailableDevices.cs" />
+    <Compile Include="Core\Checksum\IChecksumModule.cs" />
+    <Compile Include="Core\Checksum\ChecksumSubaruDBW.cs" />
+    <Compile Include="Core\DefinitionMetaData.cs" />
+    <Compile Include="Core\FlashMethod\IFlashMethod.cs" />
+    <Compile Include="Core\MemoryModel\IMemoryModel.cs" />
     <Compile Include="DefinitionTools.cs" />
     <Compile Include="EcuMapTools\EcuMapTool.cs" />
     <Compile Include="EcuMapTools\EcuLoc.cs" />
@@ -144,6 +149,7 @@
     <Compile Include="GUI\XMLtoIDC.Designer.cs">
       <DependentUpon>XMLtoIDC.cs</DependentUpon>
     </Compile>
+    <Compile Include="ObjectCopier.cs" />
     <Compile Include="RAMDump.cs" />
     <Compile Include="GUI\TableView.cs" />
     <Compile Include="GUI\TableView.Designer.cs">
@@ -264,12 +270,14 @@
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot
 Copy ..\..\..\..\MerpMod\MerpMod\TestRom\oem.bin oem.bin
-Copy oem.bin patched.bin</PreBuildEvent>
+Copy oem.bin patched.bin
+xcopy "..\..\..\..\MerpMod\Release" "..\..\Resources\Mods\" /s /e /k /y
+xcopy "..\..\..\..\SubaruDefs\ECUFlash\subaru standard" "..\..\Resources\Defs\" /s /e /k /y</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\SharpTune.exe"
-xcopy "..\..\..\..\MerpMod\Release" "..\..\Resources\Mods\" /s /e /k /y
-xcopy "..\..\..\..\SubaruDefs\ECUFlash\subaru standard" "..\..\Resources\Defs\" /s /e /k /y</PostBuildEvent>
+
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

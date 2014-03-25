@@ -22,8 +22,8 @@ namespace SharpTune.GUI
         private void buttonMap_Click(object sender, EventArgs e)
         {
             string ecuid;
-            if (SharpTuner.ActiveImage != null && SharpTuner.ActiveImage.Definition.CarInfo.ContainsKey("ecuid"))
-                ecuid = SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString();
+            if (SharpTuner.ActiveImage != null && SharpTuner.ActiveImage.Definition.EcuId != null)
+                ecuid = SharpTuner.ActiveImage.Definition.EcuId.ToString();
             else
                 ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
             ofd.Filter = "MAP Files (*.map)|*.map";
@@ -33,7 +33,7 @@ namespace SharpTune.GUI
                 //try
                 //{
                     SharpTuner.ActiveImage.Definition.ImportMapFile(ofd.FileName,SharpTuner.ActiveImage);//TODO: clean up creation of XML whitespace sucks ass.
-                    SharpTuner.ActiveImage.Definition.ExportXML();
+                    SharpTuner.ActiveImage.Definition.ExportEcuFlashXML();
                     ModDefinition.DefineRRLogEcuFromMap(ofd.FileName, ecuid);//TODO: import RR stuff to definnition class and deprecate this??
                     MessageBox.Show("Success!");
                     this.Close();
@@ -55,14 +55,14 @@ namespace SharpTune.GUI
         private void buttonText_Click(object sender, EventArgs e)
         {
             string ecuid;
-          if (SharpTuner.ActiveImage != null && SharpTuner.ActiveImage.Definition.CarInfo.ContainsKey("ecuid"))
-                ecuid = SharpTuner.ActiveImage.Definition.CarInfo["ecuid"].ToString();
+          if (SharpTuner.ActiveImage != null && SharpTuner.ActiveImage.Definition.EcuId != null)
+                ecuid = SharpTuner.ActiveImage.Definition.EcuId;
             else
                 ecuid = SimplePrompt.ShowDialog("Enter ECU Identifier (logger identifier)", "Enter EcuId");
             try
             {
                 SharpTuner.ActiveImage.Definition.ImportMapText(textBox1.Text, SharpTuner.ActiveImage);//TODO: clean up creation of XML whitespace sucks ass.
-                SharpTuner.ActiveImage.Definition.ExportXML();
+                SharpTuner.ActiveImage.Definition.ExportEcuFlashXML();
                 ModDefinition.DefineRRLogEcuFromText(textBox1.Text, ecuid);
                 MessageBox.Show("Success!");
                 this.Close();

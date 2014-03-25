@@ -52,51 +52,27 @@ namespace SharpTuneCore
 
             return new Axis(xel, table);
         }
+
+        public static Axis CreateAxis(XElement axis1, Table table, Axis axis2)
+        {
+            Axis axis = CreateAxis(axis1, table);
+            axis.parentAxis = axis2;
+            return axis;
+        }
     }
 
-    public class Axis
+    public class Axis : Table
     {
+
+        public Axis parentAxis; //todo: resolve accessibility!
+
         private bool isXAxis { get; set; }
 
         public bool isStatic { get; private set; }
 
-        public int address { get; private set; }
-
-        public int elements { get; private set; }
-
-        public string name { get; set; }
-
-        public string type { get; private set; }
-
-        public string endian { get; private set; }
-
         private List<float> floatList { get; set; }
 
         public List<string> staticList { get; private set; }
-
-        public Dictionary<string, string> properties { get; set; }
-
-        public List<byte[]> byteValues { get; set; }
-
-        public List<float> floatValues { get; set; }
-
-        public List<string> displayValues { get; set; }
-
-        public Scaling defaultScaling { get; set; }
-
-        public Scaling scaling { get; set; }
-
-        public string units { get; set; }
-
-        public string frexpr { get; set; }
-
-        public float min { get; set; }
-
-        public float max { get; set; }
-
-        public float inc { get; set; }
-
-        public Table parentTable { get; private set; }
 
         public DataTable dataTable { get; set; }
 
@@ -106,14 +82,14 @@ namespace SharpTuneCore
         /// <param name="xel"></param>
         public Axis(XElement xel, Table table)
         {
-            this.properties = new Dictionary<string, string>();
+
             this.name = "base";
             this.elements = new int();
             this.address = new int();
             this.type = "generic axis";
             this.staticList = new List<string>();
             this.floatList = new List<float>();
-            this.parentTable = table;
+            this.baseTable = table;
 
 
             //try
@@ -121,10 +97,12 @@ namespace SharpTuneCore
 
             foreach (XAttribute attribute in xel.Attributes())
             {
-                this.properties.Add(attribute.Name.ToString(), attribute.Value.ToString());
+
                 switch (attribute.Name.ToString())
                 {
                     case "name":
+                        if (parentAxis != null && parentAxis.name != null)
+                            break;
                         this.name = attribute.Value.ToString();
                         continue;
 
@@ -134,30 +112,6 @@ namespace SharpTuneCore
 
                     case "elements":
                         this.elements = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer);
-                        continue;
-
-                    case "endian":
-                        this.endian = attribute.Value.ToString();
-                        continue;
-
-                    case "units":
-                        this.units = attribute.Value.ToString();
-                        continue;
-
-                    case "frexpr":
-                        this.frexpr = attribute.Value.ToString();
-                        continue;
-
-                    case "min":
-                        this.min = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Float);
-                        continue;
-
-                    case "max":
-                        this.max = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Float);
-                        continue;
-
-                    case "inc":
-                        this.inc = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Float);
                         continue;
 
                     case "scaling":
@@ -237,7 +191,7 @@ namespace SharpTuneCore
 
         public virtual void Write()
         {
-            DeviceImage image = this.parentTable.parentImage;
+            DeviceImage image = this.baseTable.parentImage;
             lock (image.imageStream)
             {
                 image.imageStream.Seek(this.address, SeekOrigin.Begin);
