@@ -9,7 +9,8 @@ namespace SharpTune.Core.FlashMethod
     {
         string name { get; }
     }
-    
+
+    [Serializable]
     public class FlashMethodWRX02 : IFlashMethod
     {
         public string name{
@@ -17,27 +18,31 @@ namespace SharpTune.Core.FlashMethod
         }
     }
 
+    [Serializable]
     public class FlashMethodWRX04 : IFlashMethod
     {
         public string name{
             get{return "wrx04";}
         }
     }
-    
+
+    [Serializable]
     public class FlashMethodSTI04 : IFlashMethod
     {
         public string name{
             get{return "sti04";}
         }
     }
-    
+
+    [Serializable]
     public class FlashMethodSTI05 : IFlashMethod
     {
         public string name{
             get{return "sti05";}
         }
     }
-    
+
+    [Serializable]
     public class FlashMethodSubaruCAN : IFlashMethod
     {
         public string name{
@@ -45,6 +50,7 @@ namespace SharpTune.Core.FlashMethod
         }
     }
 
+    [Serializable]
     public class FlashMethodSubaruBRZ : IFlashMethod
     {
         public string name{
@@ -52,6 +58,7 @@ namespace SharpTune.Core.FlashMethod
         }
     }
 
+    [Serializable]
     public static class FlashMethods{
 
         public static IFlashMethod GetFlashMethod(string n){

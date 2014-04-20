@@ -77,9 +77,17 @@ namespace SharpTune.Core
             get{
                 return _ecuIdString;}
              private set{
-                 _ecuIdString = value;
-                 _ecuIdHexString = value.ConvertStringToHex(memoryModel.encoding);
-                 _ecuIdHexBytes = value.ConvertStringToBytes(memoryModel.encoding);
+                 try
+                 {
+                     _ecuIdString = value;
+                     _ecuIdHexString = value.ConvertStringToHex(memoryModel.encoding);
+                     _ecuIdHexBytes = value.ConvertStringToBytes(memoryModel.encoding);
+                 }
+                 catch (Exception crap)
+                 {
+                     Trace.WriteLine(string.Format("Error setting ECUID string in definition: {0} , ecuid: {1}", this.xmlid, value));
+                     Trace.WriteLine(crap.Message);
+                 }
              }
         }
 
@@ -88,9 +96,17 @@ namespace SharpTune.Core
                 return _ecuIdHexString;
             }
             private set{
-                _ecuIdHexString = value;
-                _ecuIdString = value.ConvertHexToString(memoryModel.encoding);
-                _ecuIdHexBytes = value.ToByteArray();
+                try
+                {
+                    _ecuIdHexString = value;
+                    _ecuIdString = value.ConvertHexToString(memoryModel.encoding);
+                    _ecuIdHexBytes = value.ToByteArray();
+                }
+                catch (Exception crap)
+                {
+                    Trace.WriteLine(string.Format("Error setting ECUID HEX string in definition: {0} , ecuid: {1}", this.xmlid, value));
+                    Trace.WriteLine(crap.Message);
+                }
             }
         }
 
@@ -131,6 +147,8 @@ namespace SharpTune.Core
 
         public void UpdateFromMod(RomMod.Mod mod)
         {
+            if(memoryModel == null)
+                memoryModel =MemoryModels._Default;
             include = mod.InitialCalibrationId;
             CalibrationIdAddress = mod.ModIdentAddress;
             CalibrationIdString = mod.ModIdent.ToString();

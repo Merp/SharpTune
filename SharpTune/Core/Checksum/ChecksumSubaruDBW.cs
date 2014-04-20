@@ -5,6 +5,7 @@ using System.Text;
 
 namespace SharpTune.Core.Checksum
 {
+    [Serializable]
     public class ChecksumSubaruDBW : IChecksumModule
     {
         public string Name

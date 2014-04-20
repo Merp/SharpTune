@@ -13,6 +13,7 @@ namespace SharpTune.Core.MemoryModel
         System.Text.Encoding encoding { get;}
     }
 
+    [Serializable]
     public class MemoryModelDefault : IMemoryModel
     {
         public string name{
@@ -29,6 +30,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelSubaruSH7055 : IMemoryModel
     {
         public string name{
@@ -45,6 +47,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelSubaruSH7058 : IMemoryModel
     {
         public string name{
@@ -61,6 +64,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelSubaruSH72531 : IMemoryModel
     {
         public string name{
@@ -77,6 +81,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelSubaruHC16 : IMemoryModel
     {
         public string name{
@@ -93,6 +98,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelMitsubishiH8539F : IMemoryModel
     {
         public string name{
@@ -109,6 +115,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelMitsubishiSH7052 : IMemoryModel
     {
         public string name{
@@ -125,6 +132,7 @@ namespace SharpTune.Core.MemoryModel
         }
     }
 
+    [Serializable]
     public class MemoryModelMitsubishiM32186F8 : IMemoryModel
     {
         public string name{
