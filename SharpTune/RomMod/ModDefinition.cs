@@ -22,6 +22,8 @@ namespace SharpTune.RomMod
 
         private const string filepath = "ModDefTemplate.xml";
         private const uint defMetadataAddress = 0x00F00000;
+
+        private const uint cookieMin = 0x43210000;
         private const uint OpIdent = 0x43210000;
         private const uint OpIdentAddr = 0x43210001;
         private const uint OpTable1d = 0x43210002;
@@ -31,6 +33,11 @@ namespace SharpTune.RomMod
         private const uint OpY = 0x43210006;
         private const uint OpStaticY = 0x43210007;
         private const uint OpRAM = 0x43210008;
+        private const uint OpRAMBit = 0x43210010;
+        private const uint OpRAMAllBits = 0x43210011;
+        private const uint cookieMax = 0x43210012;
+
+        private const uint cookieEnd = 0x00090009;
 
         public List<Lut> RomLutList {get; private set;}
         public Dictionary<string,Table> RamTableList { get; private set; }
@@ -56,29 +63,45 @@ namespace SharpTune.RomMod
 
         #region Patch ReadingCode
         /// <summary>
-        /// Cycles through the template definition and replaces "0" addresses with addresses from the patch file.
-        /// TODO: Replace template with inheritance from 32BITBASE Tables and a patch parameter that specifies the child template to use.
+        /// 
         /// </summary>
         /// <returns></returns>
-        public bool TryReadDefs(String defPath)//TODO remove defpath and ref the static global
+        public bool TryReadDefs(String defPath)
         {
-            List<Blob> blobs = parentMod.blobList.Blobs;
-            Blob metadataBlob;
-            if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
+            try
             {
-                Trace.WriteLine("This patch file does not contain metadata.");
-                return false;
+                Trace.WriteLine("Attempting to read patch definition metadata");
+                List<Blob> blobs = parentMod.blobList.Blobs;
+                Blob metadataBlob;
+                if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
+                {
+                    Trace.WriteLine("This patch file does not contain metadata.");
+                    return false;
+                }
+                this.defBlob = metadataBlob;
+                int offs = 0;
+
+                if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
+
+                definition = new Definition(defPath, this.parentMod);
             }
-            this.defBlob = metadataBlob;
-            int offs = 0;
-
-            if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
-
-            definition = new Definition(defPath, this.parentMod);
-
-            //TODO: move RR stuff into definition?
-            //prompt to select logger type
-            NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.ModBuild + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(), parentMod.FinalEcuId.ToString());
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error parsing definition metadata for {0}", this.parentMod.ModIdent);
+                throw crap;
+            }
+            try
+            {
+                Trace.WriteLine("Attempting inheriting RR log def template");
+                //TODO: move RR stuff into definition?
+                //prompt to select logger type
+                NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.ModBuild + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(), parentMod.FinalEcuId.ToString());
+            }
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error inheriting RR log def template");
+                throw crap;
+            }
             return true;
         }
 
@@ -161,6 +184,60 @@ namespace SharpTune.RomMod
                         return false;
                     }
                 }
+                else if (cookie == OpRAMAllBits)
+                {
+                    string paramName = null;
+                    string paramId = null;
+                    uint paramOffset = 0;
+                    uint paramLength = 0;
+                    if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
+                    {
+                        if (this.TryReadDefData(metadata, out paramName, out paramLength, ref offset))
+                        {
+                            // found modName, output to string!
+                            int len = (int)paramLength;
+                            uint address = paramOffset;
+                            for(int i=0;i<len;i++)
+                            {
+                                
+                                for(int j=0;j<8;j++){
+                                    int bit = ((j)+(8*(i)));
+                                    string bitstring = bit.ToString();
+                                    KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName + " Bit " + bitstring , (int)address, paramId, j);
+                                    if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+                               
+                                }
+                                address++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Trace.WriteLine("Invalid definition found.");
+                        return false;
+                    }
+                }
+                else if (cookie == OpRAMBit)
+                {
+                    string paramName = null;
+                    string paramId = null;
+                    uint paramOffset = 0;
+                    uint paramBit = 0;
+                    if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
+                    {
+                        if (this.TryReadDefData(metadata, out paramName, out paramBit, ref offset))
+                        {
+                            int bit = bit = Utils.SingleBitBitmaskToBit((int)paramBit);
+                            // found modName, output to string!
+                            KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName, (int)paramOffset, paramId, bit);
+                            if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+                        }
+                    }
+                    else
+                    {
+                        Trace.WriteLine("Invalid definition found.");
+                        return false;
+                    }
                 else if (cookie == Mod.endoffile)
                 {
                     break;
@@ -189,9 +266,9 @@ namespace SharpTune.RomMod
             while ((metadata.Content.Count > offset + 8) &&
                 metadata.TryGetUInt32(ref cookie, ref offset))
             {
-                if ((cookie < 0x43210010 && cookie > 0x43210000) || cookie == 0x00090009)
+                if ((cookie < cookieMax && cookie > cookieMin) || cookie == cookieEnd)
                 {
-                    if (cookie != 0x00090009)
+                    if (cookie != cookieEnd)
                     {
                         offset -= 4;
                     }
