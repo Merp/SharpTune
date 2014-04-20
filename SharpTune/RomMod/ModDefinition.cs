@@ -59,6 +59,7 @@ namespace SharpTune.RomMod
             this.parentMod = parent;
             RomLutList = new List<Lut>();
             RamTableList = new Dictionary<string, Table>();
+            definition = new Definition();
         }
 
         #region Patch ReadingCode
@@ -238,6 +239,7 @@ namespace SharpTune.RomMod
                         Trace.WriteLine("Invalid definition found.");
                         return false;
                     }
+                }
                 else if (cookie == Mod.endoffile)
                 {
                     break;
@@ -538,9 +540,9 @@ namespace SharpTune.RomMod
                 FileInfo outpfi = new FileInfo(outPath);
                 Directory.CreateDirectory(outpfi.Directory.FullName);
                 XDocument xmlDoc = SelectGetRRLogDef();
+                Dictionary<string, string> ExtIdentifiers = ReadRRLogDefExtIdentifiers(xmlDoc);
                 InheritRRLogger(ref xmlDoc, outPath, inheritIdent, ident);
-                AddRRLogDefBase(ref xmlDoc, outPath, ramTableList, template);
-                PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident);
+                PopulateRRLogDefTables(ref xmlDoc, outPath, ramTableList, ident, ExtIdentifiers);
                 Trace.WriteLine("Attempting to write RR logger definition file to: " + outPath);
                 xmlDoc.SaveToFile(outPath);
             }
@@ -595,7 +597,8 @@ namespace SharpTune.RomMod
             {
                 Dictionary<string, string> addMap = new Dictionary<string, string>();
                 string defPath = SharpTuner.RRLoggerDefPath + defFile;
-                Dictionary<string, string> defMap = ReadRRLogDefExtTables(defPath);
+                XDocument xmlD = XDocument.Load(defPath);
+                Dictionary<string, string> defMap = ReadRRLogDefExtIdentifiers(xmlD);
                 foreach (KeyValuePair<string, string> def in inputMap)
                 {
                     foreach (KeyValuePair<string, string> table in defMap)
@@ -625,26 +628,6 @@ namespace SharpTune.RomMod
             }
         }
 
-        private static Dictionary<string, string> ReadRRLogDefExtTables()
-        {
-            string ld = SelectRRLogDef();
-            return ReadRRLogDefExtTables(ld);
-        }
-
-        private static Dictionary<string,string> ReadRRLogDefExtTables(string ld)
-        {
-            Dictionary<string, string> ls = new Dictionary<string, string>();
-            XDocument xmlDoc = XDocument.Load(ld);//, LoadOptions.PreserveWhitespace);
-            string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
-            IEnumerable<XElement> xbase = xmlDoc.XPathSelectElements(bxp);
-
-            foreach (XElement xb in xbase)
-            {
-                ls.Add(xb.Attribute("id").Value.ToString(), xb.Attribute("name").Value.ToString());
-            }
-            return ls;
-        }
-
         private static List<string> GetRRLoggerDefs()
         {
             List<string> loggerdefs = new List<string>();
@@ -662,38 +645,44 @@ namespace SharpTune.RomMod
             return loggerdefs;
         }
 
-        private static string SelectRRLogDef()
-        {
-            return SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetRRLoggerDefs());
-        }
-
         private static XDocument SelectGetRRLogDef()
         {
-            string ld = SelectRRLogDef();
+            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetRRLoggerDefs());
             XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
             XDocument xmlDoc2 = new XDocument(xmlDoc);
             return xmlDoc2;
         }
 
-        private static void AddRRLogDefBase(ref XDocument xmlDoc, string outPath, Dictionary<string,Table> ramTableList, string templatePath)
+        private static Dictionary<string,string> ReadRRLogDefExtIdentifiers(XDocument xd)
         {
-            XDocument xmlBase = XDocument.Load(templatePath);//, LoadOptions.PreserveWhitespace);
+            Dictionary<string, string> ls = new Dictionary<string, string>();
             string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";
-            IEnumerable<XElement> xbase = xmlBase.XPathSelectElements(bxp);
+            IEnumerable<XElement> xbase = xd.XPathSelectElements(bxp);
 
             foreach (XElement xb in xbase)
             {
-                if (ramTableList.ContainsKeyCI(xb.Attribute("name").Value))
-                {
-                    xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(xb);
-                }
+                ls.Add(xb.Attribute("id").Value.ToString(), xb.Attribute("name").Value.ToString());
             }
-            xmlDoc.SaveToFile(outPath);
+            
+            return ls;
         }
 
         //TODO: USE table ID instead
-        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, Table> ramTableList, string ident)
+        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, Table> ramTableList, string ident, Dictionary<string,string> ExtIdentifiers)
         {
+            var items = from pair in ExtIdentifiers
+                        where pair.Value.ContainsCI("merpmod")
+		                orderby pair.Key descending
+		                select pair.Key;
+
+            List<string> list = new List<string>();
+            list.AddRange(items);
+            int lastMerpModExt;
+            if(list.Count > 0)
+                lastMerpModExt = ((int.Parse(list[0].Replace("E","")) +100) / 10 ) * 10 ;
+            else
+                lastMerpModExt = 2000;
+
             foreach (KeyValuePair<string, Table> table in ramTableList)
             {
                 string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
@@ -709,12 +698,39 @@ namespace SharpTune.RomMod
                     XElement check = exp.XPathSelectElement(ch);
                     if (check != null)
                     {
-                        if (check.Value != table.Value.xml.Value)
+                        if (check.Value != table.Value.RomRaiderXML().Value)
                             check.Remove();
                         else
                             continue;
                     }
-                    cexp.AddBeforeSelf(table.Value.xml);
+                    cexp.AddBeforeSelf(table.Value.RomRaiderXML());
+                }
+                else
+                {
+                    /*<ecuparam id="E21511" name="MerpMod TEST char4" desc="E2000" target="1">
+                          <ecu id="14418178FF">
+                            <address length="1">0xFF97B7</address>
+                          </ecu>
+                          <conversions>
+                            <conversion units="rawdata" expr="x" format="0" />
+                          </conversions>
+                        </ecuparam>*/
+                    XElement newParam = new XElement("ecuparam");
+                    newParam.SetAttributeValue("id","E"+lastMerpModExt);
+                    newParam.SetAttributeValue("name", table.Key);
+                    newParam.SetAttributeValue("desc", "E"+lastMerpModExt);
+                    newParam.SetAttributeValue("target","1");
+
+                    XElement conv = XElement.Parse(@"
+                            <conversions>
+                                <conversion units=""rawdata"" expr=""x"" format=""0"" />
+                          </conversions>");
+
+                    newParam.Add(table.Value.RomRaiderXML());
+                    newParam.Add(conv);
+
+                    xmlDoc.XPathSelectElement("./logger/protocols/protocol/ecuparams").Add(newParam);
+                    lastMerpModExt++;
                 }
             }
             xmlDoc.SaveToFile(outPath);
@@ -793,11 +809,34 @@ namespace SharpTune.RomMod
             }
         }
 
+        private KeyValuePair<string, Table> CreateRomRaiderRamTableBit(string name, int offset, string id, int bit)
+        {
+            
+            XElement xel = XElement.Parse(@"
+                <ecu id="""">
+                    <address bit=""""></address>
+                </ecu>
+            ");
+
+            xel.Attribute("id").Value = this.parentMod.FinalEcuId;
+            string ts = offset.ToString("X6");
+            ts = ts.Substring(2, ts.Length - 2);
+            if (ts.Length < 6 && ts.Substring(0, 2) != "FF")
+            {
+                Trace.WriteLine("!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!");
+                Trace.WriteLine("WARNING! bad ram table: " + name + " with offset: " + offset.ToString("X"));
+            }
+            xel.Element("address").Value = "0x" + ts;
+            xel.Element("address").Attribute("bit").Value = bit.ToString();
+
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel, name, this.definition));
+        }
+
         private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
         {
             XElement xel = XElement.Parse(@"
                 <ecu id="""">
-                    <address length=""""></address>
+                    <address></address>
                 </ecu>
             ");
 
@@ -810,9 +849,10 @@ namespace SharpTune.RomMod
                 Trace.WriteLine("WARNING! bad ram table: " + name + " with offset: " + offset.ToString("X"));
             }
             xel.Element("address").Value = "0x" + ts;
-            xel.Element("address").Attribute("length").Value = length.ToString();
+            if(length > 1) 
+                xel.Element("address").SetAttributeValue("length",length.ToString());
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateTable(xel,name,null));
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel,name,this.definition));
         }
         #endregion
 
