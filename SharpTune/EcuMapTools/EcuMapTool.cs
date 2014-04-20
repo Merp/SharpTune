@@ -107,6 +107,7 @@ namespace SharpTune.EcuMapTools
                 }
 
                 FindAndWriteDefines(headerFileName, Build, Config, def.calibrationlId, def.EcuId);
+                FindAndWriteSections(linkerScriptFileName);
                 Trace.WriteLine("Target header update success!!");
             }
             else
