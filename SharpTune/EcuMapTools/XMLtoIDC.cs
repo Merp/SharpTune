@@ -255,7 +255,6 @@ namespace NSFW
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-
                 string calId = rom.CalId.ToUpper();
                 string functionName = "Tables_" + calId;
                 WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
@@ -268,7 +267,8 @@ namespace NSFW
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
-                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; Trace.Listeners.Add(twtl);
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+                Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
                 string calId = rom.CalId.ToUpper();
                 string functionName = "Tables_" + calId;
@@ -282,7 +282,8 @@ namespace NSFW
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
-                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; Trace.Listeners.Add(twtl);
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+                Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
                 string cpu = rom.Definition.CpuBits;
                 string target = "ecu";
@@ -303,7 +304,8 @@ namespace NSFW
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
-                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; Trace.Listeners.Add(twtl);
+                twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; 
+                Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
                 string cpu = rom.Definition.CpuBits;
                 string target = "ecu";
@@ -323,6 +325,8 @@ namespace NSFW
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; string target = "ecu";
+                Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
                 string calId = rom.CalId.ToUpper();
                 string ssmBaseString = ssmbase.ToUpper();
                 string functionName1 = "Tables";
@@ -345,6 +349,8 @@ namespace NSFW
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; string target = "ecu";
+                Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
                 string calId = rom.CalId.ToUpper();
                 string ssmBaseString = ssmbase.ToUpper();
                 string functionName1 = "Tables";
