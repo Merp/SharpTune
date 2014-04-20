@@ -32,7 +32,7 @@ namespace SharpTune.Core.MemoryModel
     public class MemoryModelSubaruSH7055 : IMemoryModel
     {
         public string name{
-            get{return "sh7055";}
+            get{return "SH7055";}
         }
         public int cpubits{
             get{return 32;}
@@ -48,7 +48,7 @@ namespace SharpTune.Core.MemoryModel
     public class MemoryModelSubaruSH7058 : IMemoryModel
     {
         public string name{
-            get{return "sh7058";}
+            get{return "SH7058";}
         }
         public int cpubits{
             get{return 32;}
@@ -64,7 +64,7 @@ namespace SharpTune.Core.MemoryModel
     public class MemoryModelSubaruSH72531 : IMemoryModel
     {
         public string name{
-            get{return "sh72531";}
+            get{return "SH72531";}
         }
         public int cpubits{
             get{return 32;}
@@ -80,7 +80,7 @@ namespace SharpTune.Core.MemoryModel
     public class MemoryModelSubaruHC16 : IMemoryModel
     {
         public string name{
-            get{return "68hc16y5";}
+            get{return "68HC16Y5";}
         }
         public int cpubits{
             get{return 16;}
