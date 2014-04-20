@@ -260,21 +260,36 @@ namespace SharpTune.Core
             get
             {
                 XElement x = new XElement("romid");
-                x.Add(new XElement("xmlid", xmlid));
-                x.Add(new XElement("caseid", caseid));
-                x.Add(new XElement("filesize", filesize));
-                x.Add(new XElement("memorymodel", memoryModel.name));
-                x.Add(new XElement("flashmethod", flashMethod.name));
-                x.Add(new XElement("checksummodule", checksumModule.Name));
-                x.Add(new XElement("internalidaddress", CalibrationIdAddress.ConvertLongToHexString()));
-                x.Add(new XElement("internalid", CalibrationIdString));
-                x.Add(new XElement("ecuid", EcuIdHexString));
-                x.Add(new XElement("year", year));
-                x.Add(new XElement("market", market));
-                x.Add(new XElement("make", make));
-                x.Add(new XElement("model", model));
-                x.Add(new XElement("submodel", submodel));
-                x.Add(new XElement("transmission", transmission));
+                if(xmlid != null)
+                    x.Add(new XElement("xmlid", xmlid));
+                if(caseid != null)
+                    x.Add(new XElement("caseid", caseid));
+                if (filesize != null)
+                    x.Add(new XElement("filesize", filesize));
+                if (memoryModel != null && memoryModel.name != null)
+                    x.Add(new XElement("memmodel", memoryModel.name));
+                if(flashMethod != null && flashMethod.name != null)
+                    x.Add(new XElement("flashmethod", flashMethod.name));
+                if(checksumModule!= null && checksumModule.Name != null)
+                    x.Add(new XElement("checksummodule", checksumModule.Name));
+                if(CalibrationIdAddress != null)
+                    x.Add(new XElement("internalidaddress", CalibrationIdAddress.ConvertLongToHexString()));
+                if(CalibrationIdString != null)
+                    x.Add(new XElement("internalidstring", CalibrationIdString));//TODO: conditionally output hex??
+                if(EcuIdHexString != null)
+                    x.Add(new XElement("ecuid", EcuIdHexString));
+                if(year != null)
+                    x.Add(new XElement("year", year));
+                if(market != null)
+                    x.Add(new XElement("market", market));
+                if(make != null)
+                    x.Add(new XElement("make", make));
+                if(model != null)
+                    x.Add(new XElement("model", model));
+                if(submodel != null)
+                    x.Add(new XElement("submodel", submodel));
+                if(transmission != null)
+                    x.Add(new XElement("transmission", transmission));
                 return x;
             }            
         }
