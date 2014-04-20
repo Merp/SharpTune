@@ -236,21 +236,30 @@ namespace SharpTuneCore
         /// <param name="include"></param>
         /// <param name="xromt"></param>
         /// <param name="xramt"></param>
-        public Definition(string filepath, Mod mod) : this()
+        public Definition(string fp, Mod mod) : this()
         {
-            filePath = filepath;
-
-            MetaData = mod.modDef.definition.MetaData.Clone();
-            MetaData.UpdateFromMod(mod);
-            
-            Inherit();
-
-            //TODO: ADD THE TABLES FROM MOD
-            //mod.modDef.
-            foreach (var rt in mod.modDef.RomLutList)
+            try
             {
-                //do something with each lut.
-                ExposeTable(rt.Name, rt); //TODO: Fix this redundancy?
+                this.filePath = fp;
+
+                MetaData = SharpTuner.AvailableDevices.DefDictionary[mod.InitialCalibrationId].MetaData.Clone();
+                MetaData.UpdateFromMod(mod); 
+                
+                Inherit();
+
+                //TODO: ADD THE TABLES FROM MOD
+                //mod.modDef.
+                foreach (var rt in mod.modDef.RomLutList)
+                {
+                    //do something with each lut.
+                    ExposeTable(rt.Name, rt); //TODO: Fix this redundancy?
+                }
+                //TODO: Add RAM tables!
+            }
+            catch (Exception crap)
+            {
+                Trace.Write("Error creating definition OBJECT at " + fp);
+                throw crap;
             }
         }
 
@@ -302,7 +311,7 @@ namespace SharpTuneCore
                 Clear();
                 if (include != null)
                     Inherit();
-                if (ReadXML(filePath) && include != null)
+                if (ReadXML(filePath))
                     return true;
             }
             return false;
@@ -315,7 +324,7 @@ namespace SharpTuneCore
                 dd[include].Populate();
 
             if(SharpTuner.AvailableDevices.DefDictionary[include].inheritList.Count > 0)
-                inheritList.AddRange(SharpTuner.AvailableDevices.getDef(include).inheritList);
+                inheritList.AddRange(SharpTuner.AvailableDevices.DefDictionary[include].inheritList);
 
             inheritList.Add(SharpTuner.AvailableDevices.DefDictionary[include]);
             inheritList.Reverse();
@@ -340,43 +349,66 @@ namespace SharpTuneCore
             XDocument xmlDoc = XDocument.Load(path, LoadOptions.PreserveWhitespace);
 
             //Read Scalings
-            var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
-                               //where table.Ancestors("table").First().IsEmpty
-                               select sc;
-            foreach (XElement scaling in scalingQuery)
+            try
             {
-                //skip scalings with no name
-                if (scaling.Attribute("name") == null) continue;
-                string scalingname = scaling.Attribute("name").Value.ToString();
-                if (!this.ScalingList.ContainsKey(scalingname))
+                var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
+                                   //where table.Ancestors("table").First().IsEmpty
+                                   select sc;
+                foreach (XElement scaling in scalingQuery)
                 {
-                    this.ScalingList.Add(scalingname, ScalingFactory.CreateScaling(scaling));
+                    //skip scalings with no name
+                    if (scaling.Attribute("name") == null) continue;
+                    string scalingname = scaling.Attribute("name").Value.ToString();
+                    if (!this.ScalingList.ContainsKey(scalingname))
+                    {
+                        this.ScalingList.Add(scalingname, ScalingFactory.CreateScaling(scaling));
+                    }
                 }
+            }
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error reading scaling in " + path);
+                throw crap;
             }
 
             // ROM table fetches here!
-            var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
-                             select t;
-            foreach (XElement table in tableQuery)
+            try
             {
-                if (table.Attribute("name") == null) 
-                    continue;
-                string tablename = table.Attribute("name").Value.ToString();
-                AddRomTable(TableFactory.CreateTable(table,tablename,this));
+                var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
+                                 select t;
+                foreach (XElement table in tableQuery)
+                {
+                    if (table.Attribute("name") == null)
+                        continue;
+                    string tablename = table.Attribute("name").Value.ToString();
+                    AddRomTable(TableFactory.CreateTable(table, tablename, this));
+                }
+            }
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error reading tables in " + path);
+                throw crap;
             }
 
             // RAM table feteches here!
-            var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
-                                select t;
-            foreach (XElement table in ramtableQuery)
+            try
             {
-                if (table.Attribute("name") == null) 
-                    continue;
-                string tablename = table.Attribute("name").Value.ToString();
+                var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
+                                    select t;
+                foreach (XElement table in ramtableQuery)
+                {
+                    if (table.Attribute("name") == null)
+                        continue;
+                    string tablename = table.Attribute("name").Value.ToString();
 
-                AddRamTable(TableFactory.CreateTable(table,tablename,this));
+                    AddRamTable(TableFactory.CreateTable(table, tablename, this));
+                }
             }
-            
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error reading RAM tables in " + path);
+                throw crap;
+            }
             return true;
         }
 
@@ -661,7 +693,15 @@ namespace SharpTuneCore
 
                         foreach (Table table in romExportList)
                         {
-                            table.xml.WriteTo(writer);
+                            try
+                            {
+                                table.xml.WriteTo(writer);
+                            }
+                            catch (Exception crap)
+                            {
+                                Trace.WriteLine("Error exporting xml for table {0}", table.name);
+                                throw crap;
+                            }
                         }
                     }
                     writer.WriteEndDocument();
@@ -670,6 +710,7 @@ namespace SharpTuneCore
             }
             catch (Exception e)
             {
+                Trace.WriteLine("Error exporting xml for mod {0}", filepath);
                 Trace.WriteLine(e.Message);
                 return false;
             }

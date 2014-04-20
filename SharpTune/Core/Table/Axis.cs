@@ -19,6 +19,7 @@ using SharpTune;
 using System.IO;
 using System.Data;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace SharpTuneCore
 {
@@ -36,26 +37,20 @@ namespace SharpTuneCore
             if (xel.Attribute("type") != null)
             {
                 if (xel.Attribute("type").Value.ToString().ContainsCI("static"))
-                {
-                    //TODO Add function to handle X or Y static?
-                    return new StaticYAxis(xel, table);
-                }
-                else if (xel.Attribute("type").Value.ToString().ContainsCI("y"))
-                {
-                    return new YAxis(xel, table);
-                }
-                else
-                {
-                    return new XAxis(xel, table);
-                }
+                    return new StaticAxis(xel, table);
+                return new Axis(xel, table);
             }
-
-            return new Axis(xel, table);
+            return null;
         }
 
         public static Axis CreateAxis(XElement axis1, Table table, Axis axis2)
         {
-            Axis axis = CreateAxis(axis1, table);
+            Axis axis;
+            if(axis2.type.ContainsCI("static"))
+                axis = new StaticAxis(axis1, table);
+            else
+                axis = new Axis(axis1, table);
+
             axis.parentAxis = axis2;
             return axis;
         }
@@ -66,13 +61,9 @@ namespace SharpTuneCore
 
         public Axis parentAxis; //todo: resolve accessibility!
 
-        private bool isXAxis { get; set; }
+        protected bool isXAxis { get; set; }
 
-        public bool isStatic { get; private set; }
-
-        private List<float> floatList { get; set; }
-
-        public List<string> staticList { get; private set; }
+        protected List<float> floatList { get; set; }
 
         public DataTable dataTable { get; set; }
 
@@ -82,77 +73,91 @@ namespace SharpTuneCore
         /// <param name="xel"></param>
         public Axis(XElement xel, Table table)
         {
-
-            this.name = "base";
-            this.elements = new int();
-            this.address = new int();
-            this.type = "generic axis";
-            this.staticList = new List<string>();
-            this.floatList = new List<float>();
-            this.baseTable = table;
-
-
-            //try
-            //{
-
-            foreach (XAttribute attribute in xel.Attributes())
+            try
             {
+                this.isXAxis = true;
+                this.name = "base";
+                this.elements = new int();
+                this.address = new int();
+                this.type = "generic axis";
+                this.floatList = new List<float>();
+                this.baseTable = table;
+                this.parentDef = table.parentDef;
 
-                switch (attribute.Name.ToString())
+                foreach (XAttribute attribute in xel.Attributes())
                 {
-                    case "name":
-                        if (parentAxis != null && parentAxis.name != null)
-                            break;
-                        this.name = attribute.Value.ToString();
-                        continue;
 
-                    case "address":
-                        this.address = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
-                        continue;
+                    switch (attribute.Name.ToString())
+                    {
+                        case "name":
+                            if (parentAxis != null && parentAxis.name != null)
+                                break;
+                            this.name = attribute.Value.ToString();
+                            continue;
 
-                    case "elements":
-                        this.elements = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer);
-                        continue;
+                        case "address":
+                            this.address = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
+                            continue;
 
-                    case "scaling":
-                        this.defaultScaling = new Scaling();
-                        this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name == attribute.Value.ToString());
+                        case "elements":
+                            this.elements = System.Int32.Parse(attribute.Value.ToString(), System.Globalization.NumberStyles.Integer);
+                            continue;
+
+                        case "scaling":
+                            Scaling sca = new Scaling();
+                            if (this.parentDef.ScalingList.TryGetValue(attribute.Value, out sca))
+                                this.defaultScaling = sca;
+                            else
+                                Trace.WriteLine("Error finding scaling " + attribute.Value);
+                            continue;
                         //TODO FIX: this.endian = this.defaultScaling.endian;
-                        continue;
 
-                    case "type":
-                        this.type = attribute.Value.ToString();
-                        if (this.type.ToString().Contains("static"))
-                        {
-                            this.isStatic = true;
-                        }
-                        continue;
+                        case "type":
+                            this.type = attribute.Value.ToString();
+                            if (this.type.ToString().Contains("y"))
+                            {
+                                this.isXAxis = false;
+                            }
+                            continue;
 
-                    default:
-                        continue;
+                        default:
+                            continue;
+                    }
                 }
             }
-
-            foreach (XElement child in xel.Elements())
+            catch (Exception crap)
             {
-                string name = child.Name.ToString();
-
-                switch (name)
-                {
-                    case "data":
-                        this.staticList.Add(child.Value.ToString());
-                        break;
-
-                    default:
-                        break;
-                }
+                Trace.WriteLine("Error creating axis in " + table);
+                Trace.WriteLine("XML: " + xel.ToString());
+                throw crap;
             }
-            //}
-            //catch (System.Exception excpt)
-            //{
-            //    Trace.WriteLine(excpt.Message);
-            //}
+        }
 
+        protected override XElement CreateECUFlashXML(){
+            XElement xel = new XElement("table");
+            if (isBase)
+            {
+                xel.SetAttributeValue("name", name);
+                xel.SetAttributeValue("type", type);
+                xel.SetAttributeValue("elements", elements);
+            }
+            else
+            {
+                if (!isXAxis)
+                    xel.SetAttributeValue("name", "Y");
+                else
+                    xel.SetAttributeValue("name", "X");
+
+                if(_address != null)
+                    xel.SetAttributeValue("address", addressHexString);
+
+                if (_scaling != null && _scaling != baseTable.scaling)
+                    xel.SetAttributeValue("scaling", _scaling);
+
+                if (_elements != null && _elements != baseTable.elements)
+                    xel.SetAttributeValue("elements", _elements);
+            }
+            return xel;
         }
 
         public virtual void Read(DeviceImage image)
@@ -171,11 +176,6 @@ namespace SharpTuneCore
 
                 for (int i = 0; i < this.elements; i++)
                 {
-                    if (this.isStatic)
-                    {
-                        this.displayValues = this.staticList;
-                        break;
-                    }
                     byte[] b = new byte[this.scaling.storageSize];
                     image.imageStream.Read(b, 0, this.scaling.storageSize);
                     if (this.endian == "big")
@@ -215,40 +215,74 @@ namespace SharpTuneCore
         }
     }
 
-
-    public class YAxis : Axis
-    {
-        public YAxis(XElement xel, Table table)
-            : base(xel, table)
-        {
-        }
-
-
-
-
-
-    }
-
-    public class XAxis : Axis
-    {
-        public XAxis(XElement xel, Table table)
-            : base(xel, table)
-        {
-        }
-
-    }
     /// <summary>
     /// Static Axes SubClass
     /// </summary>
-    public class StaticYAxis : YAxis
+    public class StaticAxis : Axis
     {
+        protected List<string> StaticData { get; set; }
 
-        protected List<float> StaticData { get; set; }
-
-        public StaticYAxis(XElement xel, Table table)
-            : base(xel, table)
+        public StaticAxis(XElement xel, Table table)
+            : base(xel,table)
         {
+            try
+            {
+                StaticData = new List<string>();
+                foreach (XElement child in xel.Elements())
+                {
+                    string nam = child.Name.ToString();
 
+                    switch (nam)
+                    {
+                        case "data":
+                            this.StaticData.Add(child.Value.ToString());
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error creating static axis in " + table);
+                Trace.WriteLine("XML: " + xel.ToString());
+                throw crap;
+            }
+        }
+
+        protected override XElement CreateECUFlashXML()
+        {
+            XElement xel = new XElement("table");
+            if (isBase)
+            {
+                xel.SetAttributeValue("name", name);
+                xel.SetAttributeValue("type", type);
+                xel.SetAttributeValue("elements", elements);
+            }
+            else
+            {
+                if (!isXAxis)
+                    xel.SetAttributeValue("name", "Y");
+                else
+                    xel.SetAttributeValue("name", "X");
+
+                if (_address != null)
+                    xel.SetAttributeValue("address", _address);
+
+                if (_scaling != null && _scaling != baseTable.scaling)
+                    xel.SetAttributeValue("scaling", _scaling);
+
+                if (_elements != null && _elements != baseTable.elements)
+                    xel.SetAttributeValue("elements", _elements);
+            }
+            foreach (string stat in StaticData)
+            {
+                XElement data = new XElement("data");
+                data.SetValue(stat);
+                xel.Add(stat);
+            }
+            return xel;
         }
 
         public override void Read(DeviceImage image)
@@ -258,7 +292,7 @@ namespace SharpTuneCore
             //remove "scaling" reference -> populate object during construction
             this.scaling = this.defaultScaling;
             this.displayValues = new List<string>();
-            foreach (string value in this.staticList)
+            foreach (string value in this.StaticData)
             {
                 this.displayValues.Add(value.ToString());
             }
@@ -270,8 +304,6 @@ namespace SharpTuneCore
             //do nothing!
             return;
         }
-
-
 
         public override string GetScalingDisplayName()
         {

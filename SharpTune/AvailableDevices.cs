@@ -81,7 +81,18 @@ namespace SharpTuneCore
             }
             catch (System.Exception excpt)
             {
+                Trace.WriteLine("Error reading ECUFlash definitions!!");
                 Trace.WriteLine(excpt.Message);
+            }
+
+            //Read RomRaider definitions
+            try
+            {
+
+            }catch(Exception crap)
+            {
+                Trace.WriteLine("Error reading RomRaider definitions!!");
+                Trace.WriteLine(crap.Message);
             }
             
         }

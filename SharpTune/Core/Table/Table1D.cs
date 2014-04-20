@@ -34,20 +34,6 @@ namespace SharpTuneCore
             : base(xel, def, basetable)
         { this.type = "1D"; }
 
-        public override Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
-
-            return this;
-        }
-
         public override Table CreateChild(Lut lut,Definition d)
         {
             return base.CreateChild(lut,d);
@@ -107,21 +93,6 @@ namespace SharpTuneCore
             : base(xel, def, basetable)
         {
 
-        }
-
-
-        public override Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
-
-            return this;
         }
 
         public override void Read()

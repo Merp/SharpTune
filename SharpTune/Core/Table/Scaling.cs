@@ -28,27 +28,35 @@ namespace SharpTuneCore
     {
         public static Scaling CreateScaling(XElement xel)
         {
-            switch (xel.Attribute("storagetype").Value.ToString())
+            try
             {
-                case "bloblist":
-                    return new BlobScaling(xel);
-                case "float":
-                    return new FloatScaling(xel);
-                case "uint8":
-                    return new Uint8Scaling(xel);
-                case "uint16":
-                    return new Uint16Scaling(xel);
-                case "uint32":
-                    return new Uint32Scaling(xel);
-                case "int8":
-                    return new Int8Scaling(xel);
-                case "int16":
-                    return new Int16Scaling(xel);
-                case "int32":
-                    return new Int32Scaling(xel);
-                default:
-                    return null;
+                switch (xel.Attribute("storagetype").Value.ToString())
+                {
+                    case "bloblist":
+                        return new BlobScaling(xel);
+                    case "float":
+                        return new FloatScaling(xel);
+                    case "uint8":
+                        return new Uint8Scaling(xel);
+                    case "uint16":
+                        return new Uint16Scaling(xel);
+                    case "uint32":
+                        return new Uint32Scaling(xel);
+                    case "int8":
+                        return new Int8Scaling(xel);
+                    case "int16":
+                        return new Int16Scaling(xel);
+                    case "int32":
+                        return new Int32Scaling(xel);
+                    default:
+                        return null;
 
+                }
+            }
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error creating scaling " + xel.ToString());
+                throw crap;
             }
         }
     }

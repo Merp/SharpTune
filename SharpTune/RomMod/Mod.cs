@@ -64,12 +64,10 @@ namespace SharpTune.RomMod
         public string FileName { get; private set; }
         public string FilePath { get; private set; }
 
-        public string CalId { get; private set; }//todo get rid of this, only need init/final
         public uint CalIdAddress { get; private set; }
         public uint CalIdLength { get; private set; }
 
         public bool isApplied { get; set; }
-            //IDEA: set this based on calid match to activeimage
         public bool isResource { get; private set; }
         public bool isCompat { get; private set; }
         public bool isAuthd { get; private set; }
@@ -99,8 +97,33 @@ namespace SharpTune.RomMod
         private readonly SRecordReader reader;
         public uint EcuIdAddress { get; private set; }
         public uint EcuIdLength { get; private set; }
-        public string InitialEcuId { get; private set; }
-        public string FinalEcuId { get; private set; }
+
+        private string _InitialEcuId;
+        public string InitialEcuId
+        {
+            get
+            {
+                return _InitialEcuId;
+            }
+            private set
+            {
+                _InitialEcuId = value.ToUpper();
+            }
+        }
+
+        private string _FinalEcuId;
+        public string FinalEcuId
+        {
+            get
+            {
+                return _FinalEcuId;
+            }
+            private set
+            {
+                _FinalEcuId = value.ToUpper();
+            }
+        }
+
         public List<Patch> patchList;
         public List<Patch> unPatchList;
         public ModDefinition modDef { get; private set; }
@@ -115,40 +138,12 @@ namespace SharpTune.RomMod
             this.patchList = new List<Patch>();
             this.ModAuthor = "Unknown Author";
             this.ModBuild = "Unknown Build";
-            //MemoryStream modMemStream = new MemoryStream();
-            //using (FileStream fileStream = File.OpenRead(modPath))
-            //{
-            //    modMemStream.SetLength(fileStream.Length);
-            //    fileStream.Read(modMemStream.GetBuffer(), 0, (int)fileStream.Length);
-            //}
             FileInfo f = new FileInfo(modPath);
             FileSize = f.Length;
             FileName = f.Name;
             FilePath = modPath;
             isResource = false;
-            reader = new SRecordReader(modPath);//modMemStream, modPath);
-            TryReadPatches();
-            TryReversePatches();
-        }
-
-        public Mod(string modPath, string build)
-        {
-            isAuthd = false;
-            this.patchList = new List<Patch>();
-            this.ModAuthor = "Unknown Author";
-            this.ModBuild = build;
-            //MemoryStream modMemStream = new MemoryStream();
-            //using (FileStream fileStream = File.OpenRead(modPath))
-            //{
-            //    modMemStream.SetLength(fileStream.Length);
-            //    fileStream.Read(modMemStream.GetBuffer(), 0, (int)fileStream.Length);
-            //}
-            FileInfo f = new FileInfo(modPath);
-            FileSize = f.Length;
-            FileName = f.Name;
-            FilePath = modPath;
-            isResource = false;
-            reader = new SRecordReader(modPath);//modMemStream, modPath);
+            reader = new SRecordReader(modPath);
             TryReadPatches();
             TryReversePatches();
         }
@@ -173,13 +168,43 @@ namespace SharpTune.RomMod
             TryReversePatches();
         }
         
+        /// <summary>
+        /// Constructor for partial-patches
+        /// </summary>
+        /// <param name="modPath"></param>
+        /// <param name="build"></param>
+        public Mod(string modPath, string build)
+        {
+            isAuthd = false;
+            this.patchList = new List<Patch>();
+            this.ModAuthor = "Unknown Author";
+            this.ModBuild = build;
+            FileInfo f = new FileInfo(modPath);
+            FileSize = f.Length;
+            FileName = f.Name;
+            FilePath = modPath;
+            isResource = false;
+            reader = new SRecordReader(modPath);
+            TryReadPatches();
+            TryReversePatches();
+        }
+
         public bool TryDefinition(string defPath)
         {
             try
             {
+                Trace.WriteLine("Attempting ModDefinition of " + this.ModIdent);
                 this.modDef = new ModDefinition(this);
                 if (!modDef.TryReadDefs(defPath)) return false;
-
+                Trace.WriteLine("ModDefinition complete, exporting xml");
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Error in ModDefinition Process for " + this.ModIdent);
+                Trace.WriteLine(e.Message);
+                return false;
+            }
+            try { 
                 if (ModBuild != null)
                     defPath = defPath + "/MerpMod/" + ModBuild + "/";
                 Directory.CreateDirectory(defPath);
@@ -190,10 +215,11 @@ namespace SharpTune.RomMod
             }
             catch (Exception e)
             {
-                Trace.WriteLine("Error writing ECUFlash definition to: " + defPath);
+                Trace.WriteLine("Error in Definition Export for " + this.ModIdent);
                 Trace.WriteLine(e.Message);
                 return false;
             }
+           
         }
 
         public bool TryCheckApplyMod(string romPath, string outPath, bool apply, bool commit)

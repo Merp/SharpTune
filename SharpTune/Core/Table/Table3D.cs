@@ -41,72 +41,25 @@ namespace SharpTuneCore
             this.type = "3D";
         }
 
-
-        public Table3D DeepClone()
-        {
-            Table3D clone = new Table3D();
-            clone.xml = new XElement(xml);
-            clone.dataTable = dataTable.Clone();
-            clone.name = name;
-            clone.type = type;
-            clone.Tag = Tag;
-            clone.category = category;
-            clone.description = description;
-            clone.storageTypeString = storageTypeString;
-            clone.storageTypeHex = storageTypeHex;
-            //clone.scalingName { get; set; }
-            //clone.level = level;
-            //clone.address = address;
-            //clone.dataScaling = dataScaling;
-            //clone.colorMin = colorMin;
-            //clone.colorMax = colorMax;
-            //clone.elements = elements;
-            //clone.xAxis
-            //TODO FINISH THESEclone.yAxis { get; set; }
-            //clone.properties = new Dictionary<string, string>(properties);
-            // clone.endian = endian;
-            // clone.byteValues = new List<byte[]>(byteValues);
-            //clone.floatValues = new List<float>(floatValues);
-            //clone.displayValues = new List<string>(displayValues);
-            //clone.defaultScaling 
-            //clone.scaling { get; set; }
-            //clone.parentImage = parentImage;
-            //clone.Attributes = new List<string>(Attributes);
-            return clone;
-        }
-
         public override Table CreateChild(Lut ilut,Definition d)
         {
+            XElement xel;
             Lut3D lut = (Lut3D)ilut;
-            xml = new XElement("table");
-            xml.SetAttributeValue("name", name);
-            xml.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
+            xel = new XElement("table");
+            xel.SetAttributeValue("name", name);
+            xel.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
             XElement tx = new XElement("table");
             tx.SetAttributeValue("name", "X");
             tx.SetAttributeValue("address", lut.colsAddress.ToString("X"));
             tx.SetAttributeValue("elements", lut.cols);
-            xml.Add(tx);
+            xel.Add(tx);
             XElement ty = new XElement("table");
             ty.SetAttributeValue("name", "Y");
             ty.SetAttributeValue("address", lut.rowsAddress.ToString("X"));
             ty.SetAttributeValue("elements", lut.rows);
-            xml.Add(ty);
-            return TableFactory.CreateTable(xml, name, d);
+            xel.Add(ty);
+            return TableFactory.CreateTable(xel, name, d);
             //TODO also set attirbutes and split this up! Copy to table2D!!
-        }
-
-        public override Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
-            {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
-                {
-                    this.properties.Add(property.Key, property.Value);
-                }
-            }
-
-            return this;
         }
 
         /// <summary>

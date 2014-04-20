@@ -23,6 +23,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using SharpTune.Core;
 using System.Runtime.Serialization;
+using System.Diagnostics;
 
 
 namespace SharpTuneCore
@@ -48,7 +49,7 @@ namespace SharpTuneCore
             if (xel.Attribute("address") == null)
                 basetable = null;//sure???
 
-            return CreateTableWithDimension(xel, def, basetable );
+            return CreateTableWithDimension(xel, def, basetable);
         }
 
         public static Table CreateTableWithDimension(XElement xel, Definition def, Table basetable)
@@ -75,6 +76,49 @@ namespace SharpTuneCore
             return new Table(xel,def, basetable);
         }
 
+        /// <summary>
+        /// Handles creation of different table types
+        /// Passes XElement to the proper table
+        /// </summary>
+        /// <param name="xel"></param>
+        /// <returns></returns>
+        public static Table CreateRamTable(XElement xel, string tablename, Definition def)
+        {
+            Table basetable = null;
+            //if (def.GetBaseRamTable(tablename, out basetable))
+            //{
+                //has a base table!! therefore not a base!
+
+            //}
+            if (xel.Attribute("address") == null)
+                basetable = null;//sure???
+
+            return CreateRamTableWithDimension(xel, def, basetable);
+        }
+
+        public static Table CreateRamTableWithDimension(XElement xel, Definition def, Table basetable)
+        {
+            string type = null;
+            if (xel.Attribute("type") != null)
+                type = xel.Attribute("type").Value.ToString();
+            else if (basetable != null && basetable.type != null)
+                type = basetable.type;
+            if (type != null)
+            {
+                switch (type)
+                {
+                    case "1D":
+                        return new RamTable1D(xel, def, basetable);
+                    case "2D":
+                        return new RamTable2D(xel, def, basetable);
+                    case "3D":
+                        return new RamTable3D(xel, def, basetable);
+                    default:
+                        break;
+                }
+            }
+            return new RamTable(xel, def, basetable);
+        }
         public static Scaling NewScalingHandler(XElement xel)
         {
             if (xel.Attribute("storagetype") != null)
@@ -106,13 +150,25 @@ namespace SharpTuneCore
 
         public List<Table> InheritanceList { get; private set; }
 
-        public XElement xml { get; set; }//TODO WRITE SETTER
+        protected XElement _xml;
+        public XElement xml {
+            get
+            {
+                _xml = this.CreateECUFlashXML();
+                return _xml;
+            }
+            set
+            {
+                _xml = value;
+            }
+        }
+
         public Dictionary<string, string> properties { get; set; }
 
         public Table baseTable { get; protected set; }
 
         public DeviceImage parentImage { get; private set; }
-        public Definition parentDef { get; private set; }
+        public Definition parentDef { get; protected set; }
 
         public DataTable dataTable { get; set; }
         public List<byte[]> byteValues { get; set; }
@@ -333,10 +389,10 @@ namespace SharpTuneCore
 
         public virtual Table CreateChild(Lut lut, Definition d)
         {
-            XElement xml = new XElement("table");
-            xml.SetAttributeValue("name", name);
-            xml.SetAttributeValue("address", lut.dataAddress.ToString("X"));
-            return TableFactory.CreateTable(xml,name, d);
+            XElement xel = new XElement("table");
+            xel.SetAttributeValue("name", name);
+            xel.SetAttributeValue("address", lut.dataAddress.ToString("X"));
+            return TableFactory.CreateTable(xel,name, d);
             //TODO also set attirbutes and split this up!
         }
 
@@ -353,108 +409,88 @@ namespace SharpTuneCore
         /// <param name="xel"></param>
         public Table(XElement xel, Definition def, Table basetable)
         {
-            parentDef = def;
-
-            if (basetable != null)
+            try
             {
-                baseTable = basetable;
-                isBase = false;
-            }
-            else
-                isBase = true;
+                parentDef = def;
 
-            if(xel.Attribute("name") != null)
-                name = xel.Attribute("name").Value.ToString();
-
-            xml = xel;
-
-            dataTable = new DataTable();
-
-            properties = new Dictionary<string, string>();
-
-            foreach (XAttribute attribute in xel.Attributes())
-            {
-                switch (attribute.Name.ToString().ToLower())
+                if (basetable != null)
                 {
-                    case "name":
-                        this.name = attribute.Value.ToString();
-                        continue;
+                    baseTable = basetable;
+                    isBase = false;
+                }
+                else
+                    isBase = true;
 
-                    case "address":
-                        this.address = attribute.Value.ConvertHexToInt();
-                        continue;
+                if (xel.Attribute("name") != null)
+                    name = xel.Attribute("name").Value.ToString();
 
-                    case "elements":
-                        this.elements = attribute.Value.ConvertStringToInt();
-                        continue;
+                xml = xel;
 
-                    case "scaling":
-                        this.scaling = new Scaling();
-                        this.scaling = SharpTuner.DataScalings.Find(s => s.name.ToLower() == attribute.Value.ToString().ToLower());
-                        continue;
+                dataTable = new DataTable();
 
-                    case "type":
-                        this.type = attribute.Value.ToString();
-                        continue;
+                properties = new Dictionary<string, string>();
 
-                    case "category":
-                        this.category = attribute.Value.ToString();
-                        continue;
+                foreach (XAttribute attribute in xel.Attributes())
+                {
+                    switch (attribute.Name.ToString().ToLower())
+                    {
+                        case "name":
+                            this.name = attribute.Value.ToString();
+                            continue;
 
-                    default:
-                        continue;
+                        case "address":
+                            this.address = attribute.Value.ConvertHexToInt();
+                            continue;
+
+                        case "elements":
+                            this.elements = attribute.Value.ConvertStringToInt();
+                            continue;
+
+                        case "scaling":
+                            Scaling sca = new Scaling();
+                            if (this.parentDef.ScalingList.TryGetValue(attribute.Value, out sca))
+                                this.scaling = sca;
+                            else
+                                Trace.WriteLine("Error finding scaling " + attribute.Value);
+                            continue;
+
+                        case "type":
+                            this.type = attribute.Value.ToString();
+                            continue;
+
+                        case "category":
+                            this.category = attribute.Value.ToString();
+                            continue;
+
+                        default:
+                            continue;
+                    }
+                }
+
+                foreach (XElement child in xel.Elements())
+                {
+                    string cname = child.Name.ToString();
+
+                    switch (cname)
+                    {
+                        case "table":
+                            this.AddAxis(child);
+                            break;
+
+                        case "description":
+                            this.description = child.Value.ToString();
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
             }
-
-            foreach (XElement child in xel.Elements())
+            catch (Exception crap)
             {
-                string cname = child.Name.ToString();
-
-                switch (cname)
-                {
-                    case "table":
-                        this.AddAxis(child);
-                        break;
-
-                    case "description":
-                        this.description = child.Value.ToString();
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public void ReadProperties(List<Scaling> scalinglist)
-        {
-
-            foreach (KeyValuePair<string, string> property in this.properties)
-            {
-                switch (property.Key)
-                {
-                    case "name":
-                        this.name = property.Value;
-                        this.Tag = this.name + ".table";
-                        break;
-                    case "category":
-                        this.category = property.Value;
-                        break;
-                    case "type":
-                        this.storageTypeString = property.Value;
-                        break;
-                    case "level":
-                        this.level = System.Int32.Parse(property.Value.ToString());
-                        break;
-                    case "scaling":
-                        this.defaultScaling = scalinglist.Find(s => s.name == property.Value);
-                        break;
-                    case "address":
-                        this.address = System.Int32.Parse(property.Value.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
-                        break;
-                    default:
-                        break;
-                }
+                Trace.WriteLine("Error creating table " + this.name);
+                Trace.WriteLine("XML: " + xel.ToString());
+                throw crap;
             }
         }
 
@@ -463,10 +499,20 @@ namespace SharpTuneCore
             if(this.baseTable != null && axis.Attribute("name") != null)
             {
                     string name = axis.Attribute("name").Value;
-                    if(name.EqualsCI("x") || name.ContainsCI("x axis") || (baseTable.xAxis != null && name.EqualsCI(baseTable.xAxis.name)))
-                        this.xAxis = AxisFactory.CreateAxis(axis, this, baseTable.xAxis);
-                    else if(name.EqualsCI("y") || name.ContainsCI("y axis") || (baseTable.yAxis != null && name.EqualsCI(baseTable.yAxis.name)))
-                        this.yAxis = AxisFactory.CreateAxis(axis, this, baseTable.yAxis);
+                    if (name.EqualsCI("x") || name.ContainsCI("x axis"))
+                    {
+                        if (baseTable.xAxis != null)// && name.EqualsCI(baseTable.xAxis.name)))
+                            this.xAxis = AxisFactory.CreateAxis(axis, this, baseTable.xAxis);
+                        else if (baseTable.yAxis != null)
+                            this.xAxis = AxisFactory.CreateAxis(axis, this, baseTable.yAxis);
+                    }
+                    else if (name.EqualsCI("y") || name.ContainsCI("y axis"))
+                    {
+                        if (baseTable.yAxis != null) //&& name.EqualsCI(baseTable.yAxis.name)))
+                            this.yAxis = AxisFactory.CreateAxis(axis, this, baseTable.yAxis);
+                        else if (baseTable.xAxis != null)
+                            this.yAxis = AxisFactory.CreateAxis(axis, this, baseTable.xAxis);
+                    }
             }
             else if (axis.Attribute("type") != null)
             {
@@ -486,18 +532,37 @@ namespace SharpTuneCore
 
         }
 
-        public virtual Table MergeTables(Table basetable)
-        {
-            foreach (KeyValuePair<string, string> property in basetable.properties)
+        protected virtual XElement CreateECUFlashXML(){
+            XElement xel = new XElement("table");
+            xel.SetAttributeValue("name",this.name);
+            if (isBase)
             {
-                //If property doesn't exist in the child, add it from the base!
-                if (!this.properties.ContainsKey(property.Key))
+                xel.SetAttributeValue("elements",this.elements);
+                xel.SetAttributeValue("type",this.type);
+                xel.SetAttributeValue("category",this.category);
+                xel.SetAttributeValue("scaling",this.scaling.name);
+                XElement description = new XElement("description");
+                description.SetValue(this.description);
+                xel.Add(description);
+            }
+            else
+            {
+
+                xel.SetAttributeValue("address", this.address.ToString("X"));
+
+                if(_elements != null && _elements != baseTable.elements)
+                    xel.SetAttributeValue("elements",_elements);
+
+                if(_xAxis != null)
                 {
-                    this.properties.Add(property.Key, property.Value);
+                    xel.Add(_xAxis.CreateECUFlashXML());
+                }
+                if(_yAxis != null)
+                {
+                    xel.Add(_yAxis.CreateECUFlashXML());
                 }
             }
-
-            return this;
+            return xel;
         }
 
         public virtual void Read()
@@ -507,7 +572,62 @@ namespace SharpTuneCore
         public virtual void Write()
         {
         }
+
+        public virtual XElement RomRaiderXML()
+        {
+            return null;
+        }
     }
 
+    public class RamTable : Table
+    {
+        private XElement RRXML;
 
+        public RamTable(XElement xel, Definition def, Table basetable)// DeviceImage image)
+            : base(xel, def, basetable)
+        {
+            RRXML = xel;
+        }
+
+        public override XElement RomRaiderXML()
+        {
+            return RRXML;
+        }
+
+        public override void Read()
+        {
+            DeviceImage image = this.parentImage;
+            this.elements = 1;
+            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
+            this.scaling = this.defaultScaling;
+
+            ////Check SSM interface ID vs the device ID
+            //if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)
+            //{
+            //    throw new System.Exception("Device Image does not match connected device!");
+            //}
+
+            //SsmInterface ssmInterface = SharpTuner.ssmInterface;
+
+            //May have an issue with this while logging???
+            //Is it necessary??
+            //TODO: Find out
+            //lock (ssmInterface)
+            //{
+            //    this.byteValues = new List<byte[]>();
+            //    this.displayValues = new List<string>();
+
+            //    byte[] b = new byte[this.scaling.storageSize];
+            //    IAsyncResult result = ssmInterface.BeginBlockRead(this.address, this.scaling.storageSize, null, null);
+            //    result.AsyncWaitHandle.WaitOne();
+            //    b = ssmInterface.EndBlockRead(result);
+            //    if (this.scaling.endian == "big")
+            //    {
+            //        b.ReverseBytes();
+            //    }
+            //    this.byteValues.Add(b);
+            //    this.displayValues.Add(this.scaling.toDisplay(b));
+            //}
+        }
+    }
 }
