@@ -125,7 +125,12 @@ namespace SharpTune
                 Directory.CreateDirectory(Settings.Default.PluginPath);
 
             if (Settings.Default.SubaruDefsRepoPath == null | Settings.Default.SubaruDefsRepoPath == "")
-                Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
+            {
+                if (Debugger.IsAttached || Environment.CurrentDirectory.ContainsCI("merpmod"))
+                    Settings.Default.SubaruDefsRepoPath = userdir + @"\Dev\SubaruDefs";
+                else
+                    Settings.Default.SubaruDefsRepoPath = Settings.Default.SettingsPath + @"\SubaruDefs";
+            }
 
             if (!Directory.Exists(Settings.Default.SubaruDefsRepoPath))
                 Directory.CreateDirectory(Settings.Default.SubaruDefsRepoPath);
