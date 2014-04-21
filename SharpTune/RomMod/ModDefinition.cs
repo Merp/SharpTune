@@ -69,40 +69,21 @@ namespace SharpTune.RomMod
         /// <returns></returns>
         public bool TryReadDefs(String defPath)
         {
-            try
+            Trace.WriteLine("Attempting to read patch definition metadata");
+            List<Blob> blobs = parentMod.blobList.Blobs;
+            Blob metadataBlob;
+            if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
             {
-                Trace.WriteLine("Attempting to read patch definition metadata");
-                List<Blob> blobs = parentMod.blobList.Blobs;
-                Blob metadataBlob;
-                if (!this.parentMod.TryGetMetaBlob(defMetadataAddress, 10, out metadataBlob, blobs))
-                {
-                    Trace.WriteLine("This patch file does not contain metadata.");
-                    return false;
-                }
-                this.defBlob = metadataBlob;
-                int offs = 0;
+                Trace.WriteLine("This patch file does not contain metadata.");
+                return false;
+            }
+            this.defBlob = metadataBlob;
+            int offs = 0;
 
-                if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
+            if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
-                definition = new Definition(defPath, this.parentMod);
-            }
-            catch (Exception crap)
-            {
-                Trace.WriteLine("Error parsing definition metadata for {0}", this.parentMod.ModIdent);
-                throw crap;
-            }
-            try
-            {
-                Trace.WriteLine("Attempting inheriting RR log def template");
-                //TODO: move RR stuff into definition?
-                //prompt to select logger type
-                NewRRLogDefInheritWithTemplate(this.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + parentMod.ModBuild + @"\" + parentMod.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", parentMod.InitialEcuId.ToString(), parentMod.FinalEcuId.ToString());
-            }
-            catch (Exception crap)
-            {
-                Trace.WriteLine("Error inheriting RR log def template");
-                throw crap;
-            }
+            definition = new Definition(defPath, this.parentMod);
+
             return true;
         }
 
@@ -593,7 +574,7 @@ namespace SharpTune.RomMod
 
         private static void DefineRRLogEcu(Dictionary<string, string> inputMap, string ident)
         {
-            foreach (var defFile in GetRRLoggerDefs())
+            foreach (var defFile in GetDefs(SharpTuner.RRLoggerDefPath))
             {
                 Dictionary<string, string> addMap = new Dictionary<string, string>();
                 string defPath = SharpTuner.RRLoggerDefPath + defFile;
@@ -628,12 +609,12 @@ namespace SharpTune.RomMod
             }
         }
 
-        private static List<string> GetRRLoggerDefs()
+        private static List<string> GetDefs(string path)
         {
             List<string> loggerdefs = new List<string>();
             List<string> remlist = new List<string>();
 
-            loggerdefs.AddRange(Directory.GetFiles(SharpTuner.RRLoggerDefPath));
+            loggerdefs.AddRange(Directory.GetFiles(path));
             loggerdefs.FilterOnly(".xml");
 
             for (int i = 0; i < loggerdefs.Count; i++)
@@ -647,10 +628,17 @@ namespace SharpTune.RomMod
 
         private static XDocument SelectGetRRLogDef()
         {
-            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetRRLoggerDefs());
+            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetDefs(SharpTuner.RRLoggerDefPath));
             XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
             XDocument xmlDoc2 = new XDocument(xmlDoc);
             return xmlDoc2;
+        }
+
+        private static XDocument SelectGetRREcuDef()
+        {
+            string ldl = SimpleCombo.ShowDialog("Select ecu base", "Select ecu base", GetDefs(SharpTuner.RREcuDefPath));
+            XDocument ecuXml = XDocument.Load(SharpTuner.RREcuDefPath + ldl);
+            return ecuXml;
         }
 
         private static Dictionary<string,string> ReadRRLogDefExtIdentifiers(XDocument xd)
@@ -856,6 +844,22 @@ namespace SharpTune.RomMod
         }
         #endregion
 
+
+        public void PopulateRREcuDefStub(string outPath)
+        {
+            XDocument ecuXml = SelectGetRREcuDef();
+
+            XElement newRom = new XElement("rom");
+            newRom.SetAttributeValue("base",this.parentMod.InitialCalibrationId);
+            newRom.Add(this.definition.MetaData.EcuFlashXml);
+
+
+            string paramxp = "./roms";
+            XElement pexp = ecuXml.XPathSelectElement(paramxp);
+            pexp.Add(newRom);
+            ecuXml.SaveToFile(outPath);
+
+        }
     }
 }
 

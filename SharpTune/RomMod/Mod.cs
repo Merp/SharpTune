@@ -191,31 +191,71 @@ namespace SharpTune.RomMod
 
         public bool TryDefinition(string defPath)
         {
+            //Read metadata
             try
             {
-                Trace.WriteLine("Attempting ModDefinition of " + this.ModIdent);
+                Trace.WriteLine("Attempting to read definition metadata");
                 this.modDef = new ModDefinition(this);
                 if (!modDef.TryReadDefs(defPath)) return false;
-                Trace.WriteLine("ModDefinition complete, exporting xml");
+                Trace.WriteLine("Success reading definition meatdata");
             }
             catch (Exception e)
             {
-                Trace.WriteLine("Error in ModDefinition Process for " + this.ModIdent);
+                Trace.WriteLine("Error reading definition metadata");
                 Trace.WriteLine(e.Message);
                 return false;
             }
+
+            //Create RR logger def
+            try
+            {
+                Trace.WriteLine("Attempting to create RR logger definition");
+                //TODO: move RR stuff into definition?
+                //prompt to select logger type
+                ModDefinition.NewRRLogDefInheritWithTemplate(this.modDef.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + this.ModBuild + @"\" + this.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", this.InitialEcuId.ToString(), this.FinalEcuId.ToString());
+                Trace.WriteLine("Success creating RR logger definition");
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Error creating RR logger definition");
+                Trace.WriteLine(e.Message);
+                return false;
+            }
+            
+            //Create RR ecu def
+            try
+            {
+                Trace.WriteLine("Attempting to create RR ecu definition");
+                //TODO: move RR stuff into definition?
+                //prompt to select logger type
+                string path = SharpTuner.RREcuDefPath + @"\MerpMod\" + this.ModBuild + @"\";
+                Directory.CreateDirectory(path);
+                path += this.ModIdent + ".xml";
+                modDef.PopulateRREcuDefStub(path);
+                    
+                Trace.WriteLine("Success creating RR ecu definition");
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Error creating RR ecu definition");
+                Trace.WriteLine(e.Message);
+                return false;
+            }
+
+            //Create ECUFlash definition
             try { 
                 if (ModBuild != null)
                     defPath = defPath + "/MerpMod/" + ModBuild + "/";
                 Directory.CreateDirectory(defPath);
                 defPath += ModIdent.ToString() + ".xml";
-                Trace.WriteLine("Attempting to write ECUFlash definition to: " + defPath);
+                Trace.WriteLine("Attempting to export ECUFlash definition to: " + defPath);
                 modDef.definition.ExportEcuFlashXML(defPath);
+                Trace.WriteLine("Success exporting ECUFlash definition");
                 return true;
             }
             catch (Exception e)
             {
-                Trace.WriteLine("Error in Definition Export for " + this.ModIdent);
+                Trace.WriteLine("Error exporting ECUFlash definition");
                 Trace.WriteLine(e.Message);
                 return false;
             }
