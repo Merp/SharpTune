@@ -775,16 +775,14 @@ namespace SharpTune.RomMod
                 {
                     if (xel.Elements("ecu") != null)
                     {
-
                         foreach (XElement xecu in xel.Elements("ecu"))
                         {
                             string id = xecu.Attribute("id").Value.ToString();
-                            if (id == inheritIdent)//parentMod.InitialEcuId.ToString())
+                            string[] ids = id.Split(',');
+                            if(ids.Contains<string>(inheritIdent))
                             {
-                                //found hit, copy the ecu xel
-                                XElement newxecu = new XElement(xecu);
-                                newxecu.Attribute("id").SetValue(newIdent);///parentMod.FinalEcuId.ToString());
-                                xel.AddFirst(newxecu);
+                                id += "," + newIdent;
+                                xecu.Attribute("id").Value = id;
                             }
                         }
                     }
