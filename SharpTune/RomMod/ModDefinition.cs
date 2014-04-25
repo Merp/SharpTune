@@ -100,12 +100,21 @@ namespace SharpTune.RomMod
                 {
                     string metaString = null;
                     uint metaOffset = 0;
-                    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
+                    if (metadata.TryGetUInt32(ref metaOffset, ref offset))
                     {
-                        Blob tableBlob;
-                        this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        Lut3D lut = new Lut3D(metaString,tableBlob, metaOffset);
-                        if (metaString != null) RomLutList.Add(lut);
+                        if (this.TryReadDefString(metadata, out metaString, ref offset))
+                        {
+                        
+                            Blob tableBlob;
+                            this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
+                            Lut3D lut = new Lut3D(metaString, tableBlob, metaOffset);
+                            if (metaString != null) RomLutList.Add(lut);
+                        }
+                        else
+                        {
+                            Trace.WriteLine("Invalid definition found.");
+                            return false;
+                        }
                     }
                     else
                     {
@@ -117,12 +126,21 @@ namespace SharpTune.RomMod
                 {
                     string metaString = null;
                     uint metaOffset = 0;
-                    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
+                    if (metadata.TryGetUInt32(ref metaOffset, ref offset))
                     {
-                        Blob tableBlob;
-                        this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                        Lut2D lut = new Lut2D(metaString,tableBlob, metaOffset);
-                        if (metaString != null) RomLutList.Add(lut);
+                        if (this.TryReadDefString(metadata, out metaString, ref offset))
+                        {
+                        
+                            Blob tableBlob;
+                            this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
+                            Lut2D lut = new Lut2D(metaString, tableBlob, metaOffset);
+                            if (metaString != null) RomLutList.Add(lut);
+                        }
+                        else
+                        {
+                            Trace.WriteLine("Invalid definition found.");
+                            return false;
+                        }
                     }
                     else
                     {
@@ -134,10 +152,19 @@ namespace SharpTune.RomMod
                 {
                     string metaString = null;
                     uint metaOffset = 0;
-                    if (this.TryReadDefData(metadata, out metaString, out metaOffset, ref offset))
+                    if (metadata.TryGetUInt32(ref metaOffset, ref offset))
                     {
-                        Lut lut = new Lut(metaString,metaOffset);
-                        if (metaString != null) RomLutList.Add(lut);
+                        if (this.TryReadDefString(metadata, out metaString, ref offset))
+                        {
+                        
+                            Lut lut = new Lut(metaString, metaOffset);
+                            if (metaString != null) RomLutList.Add(lut);
+                        }
+                        else
+                        {
+                            Trace.WriteLine("Invalid definition found.");
+                            return false;
+                        }
                     }
                     else
                     {
@@ -149,15 +176,37 @@ namespace SharpTune.RomMod
                 {
                     string paramName = null;
                     string paramId = null;
+                    string paramType = null;
                     uint paramOffset = 0;
-                    uint paramLenght = 0;
-                    if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
+
+                    if (metadata.TryGetUInt32(ref paramOffset, ref offset))
                     {
-                        if (this.TryReadDefData(metadata, out paramName, out paramLenght, ref offset))
+                        if (this.TryReadDefString(metadata, out paramId, ref offset))
                         {
-                            // found modName, output to string!
-                            KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, (int)paramLenght);
-                            if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+                            if (this.TryReadDefString(metadata, out paramType, ref offset))
+                            {
+                                if (this.TryReadDefString(metadata, out paramName, ref offset))
+                                {
+                                    // found modName, output to string!
+                                    KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, paramType);
+                                    if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+                                }
+                                else
+                                {
+                                    Trace.WriteLine("Invalid definition found.");
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                Trace.WriteLine("Invalid definition found.");
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            Trace.WriteLine("Invalid definition found.");
+                            return false;
                         }
                     }
                     else
@@ -170,27 +219,50 @@ namespace SharpTune.RomMod
                 {
                     string paramName = null;
                     string paramId = null;
+                    string paramType = null;
                     uint paramOffset = 0;
-                    uint paramLength = 0;
-                    if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
+                    if (metadata.TryGetUInt32(ref paramOffset, ref offset))
                     {
-                        if (this.TryReadDefData(metadata, out paramName, out paramLength, ref offset))
+                        if (this.TryReadDefString(metadata, out paramId, ref offset))
                         {
-                            // found modName, output to string!
-                            int len = (int)paramLength;
-                            uint address = paramOffset;
-                            for(int i=0;i<len;i++)
+                            if (this.TryReadDefString(metadata, out paramType, ref offset))
                             {
+                                if (this.TryReadDefString(metadata, out paramName, ref offset))
+                                {
                                 
-                                for(int j=0;j<8;j++){
-                                    int bit = ((j)+(8*(i)));
-                                    string bitstring = bit.ToString();
-                                    KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName + " Bit " + bitstring , (int)address, paramId, j);
-                                    if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
-                               
+                                    // found modName, output to string!
+                                    int len = Utils.ConvertStorageTypeToIntBytes(paramType);
+                                    uint address = paramOffset;
+                                    for (int i = 0; i < len; i++)
+                                    {
+
+                                        for (int j = 0; j < 8; j++)
+                                        {
+                                            int bit = ((j) + (8 * (i)));
+                                            string bitstring = bit.ToString();
+                                            KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName + " Bit " + bitstring, (int)address, paramId, j);
+                                            if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+
+                                        }
+                                        address++;
+                                    }
                                 }
-                                address++;
+                                else
+                                {
+                                    Trace.WriteLine("Invalid definition found.");
+                                    return false;
+                                }
                             }
+                            else
+                            {
+                                Trace.WriteLine("Invalid definition found.");
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            Trace.WriteLine("Invalid definition found.");
+                            return false;
                         }
                     }
                     else
@@ -205,14 +277,35 @@ namespace SharpTune.RomMod
                     string paramId = null;
                     uint paramOffset = 0;
                     uint paramBit = 0;
-                    if (this.TryReadDefData(metadata, out paramId, out paramOffset, ref offset))
+                    if (metadata.TryGetUInt32(ref paramOffset, ref offset))
                     {
-                        if (this.TryReadDefData(metadata, out paramName, out paramBit, ref offset))
+                        if (this.TryReadDefString(metadata, out paramId, ref offset))
                         {
-                            int bit = bit = Utils.SingleBitBitmaskToBit((int)paramBit);
-                            // found modName, output to string!
-                            KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName, (int)paramOffset, paramId, bit);
-                            if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+                            if (metadata.TryGetUInt32(ref paramBit, ref offset))
+                            {
+                                if (this.TryReadDefString(metadata, out paramName, ref offset))
+                                {
+                                    int bit = bit = Utils.SingleBitBitmaskToBit((int)paramBit);
+                                    // found modName, output to string!
+                                    KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName, (int)paramOffset, paramId, bit);
+                                    if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
+                                }
+                                else
+                                {
+                                    Trace.WriteLine("Invalid definition found.");
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                Trace.WriteLine("Invalid definition found.");
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            Trace.WriteLine("Invalid definition found.");
+                            return false;
                         }
                     }
                     else
@@ -230,6 +323,7 @@ namespace SharpTune.RomMod
             return true;
         }
     
+
         /// <summary>
         /// Read a single string from the metadata blob.
         /// </summary>
@@ -237,14 +331,11 @@ namespace SharpTune.RomMod
         /// Consider returning false, printing error message.  But, need to 
         /// be certain to abort the whole process at that point...
         /// </remarks>
-        public bool TryReadDefData(Blob metadata, out string metaString, out uint metaOffset, ref int offset)
+        public bool TryReadDefString(Blob metadata, out string metaString, ref int offset)
         {
             metaString = null;
-            metaOffset = 0;
             UInt32 cookie = 0;
             List<byte> tempbytelist = new List<byte>();
-            metadata.TryGetUInt32(ref metaOffset, ref offset);
-
 
             while ((metadata.Content.Count > offset + 8) &&
                 metadata.TryGetUInt32(ref cookie, ref offset))
@@ -714,6 +805,9 @@ namespace SharpTune.RomMod
                                 <conversion units=""rawdata"" expr=""x"" format=""0"" />
                           </conversions>");
 
+                    if(table.Value.storageTypeString.EqualsCI("float"))
+                        conv.Element("conversion").SetAttributeValue("storagetype", "float");
+
                     newParam.Add(table.Value.RomRaiderXML());
                     newParam.Add(conv);
 
@@ -815,10 +909,10 @@ namespace SharpTune.RomMod
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("bit").Value = bit.ToString();
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel, name, this.definition));
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel, name, "uint8", this.definition));
         }
 
-        private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, int length)
+        private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, string type)
         {
             XElement xel = XElement.Parse(@"
                 <ecu id="""">
@@ -835,10 +929,12 @@ namespace SharpTune.RomMod
                 Trace.WriteLine("WARNING! bad ram table: " + name + " with offset: " + offset.ToString("X"));
             }
             xel.Element("address").Value = "0x" + ts;
-            if(length > 1) 
+
+            int length = Utils.ConvertStorageTypeToIntBytes(type); 
+            if(length > 1)
                 xel.Element("address").SetAttributeValue("length",length.ToString());
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel,name,this.definition));
+            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel,name,type,this.definition));
         }
         #endregion
 

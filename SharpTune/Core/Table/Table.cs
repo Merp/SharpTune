@@ -82,7 +82,7 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Table CreateRamTable(XElement xel, string tablename, Definition def)
+        public static Table CreateRamTable(XElement xel, string tablename, string type, Definition def)
         {
             Table basetable = null;
             //if (def.GetBaseRamTable(tablename, out basetable))
@@ -93,11 +93,12 @@ namespace SharpTuneCore
             if (xel.Attribute("address") == null)
                 basetable = null;//sure???
 
-            return CreateRamTableWithDimension(xel, def, basetable);
+            return CreateRamTableWithDimension(xel, type, def, basetable);
         }
 
-        public static Table CreateRamTableWithDimension(XElement xel, Definition def, Table basetable)
+        public static Table CreateRamTableWithDimension(XElement xel, string storageType, Definition def, Table basetable)
         {
+            Table tempTable = null;
             string type = null;
             if (xel.Attribute("type") != null)
                 type = xel.Attribute("type").Value.ToString();
@@ -108,16 +109,23 @@ namespace SharpTuneCore
                 switch (type)
                 {
                     case "1D":
-                        return new RamTable1D(xel, def, basetable);
+                        tempTable = new RamTable1D(xel, def, basetable);
+                        break;
                     case "2D":
-                        return new RamTable2D(xel, def, basetable);
+                        tempTable = new RamTable2D(xel, def, basetable);
+                        break;
                     case "3D":
-                        return new RamTable3D(xel, def, basetable);
+                        tempTable = new RamTable3D(xel, def, basetable);
+                        break;
                     default:
+                        tempTable = new RamTable(xel, def, basetable);
                         break;
                 }
             }
-            return new RamTable(xel, def, basetable);
+            if (tempTable == null)
+                tempTable = new RamTable(xel, def, basetable);
+            tempTable.storageTypeString = storageType;
+            return tempTable;
         }
         public static Scaling NewScalingHandler(XElement xel)
         {
@@ -234,7 +242,7 @@ namespace SharpTuneCore
                 else
                     return "unknown storageTypeString";
             }
-            protected set { _storageTypeString = value; }
+            set { _storageTypeString = value; }
         }
 
         private StorageType _storageTypeHex;

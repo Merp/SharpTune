@@ -623,6 +623,28 @@ namespace SharpTune
             }
         }
 
+        public static int ConvertStorageTypeToIntBytes(string storageType)
+        {
+            switch (storageType.ToLower())
+            {
+                case "uint8":
+                    return 1;
+
+                case "uint16":
+                    return 2;
+
+                case "uint32":
+                    return 4;
+
+                case "float":
+                    return 4;
+
+                default:
+                    return 1;
+            }
+
+        }
+
         public static int SingleBitBitmaskToBit(int bit)
         {
             switch (bit.ConvertIntToHexString())
