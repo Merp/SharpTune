@@ -859,27 +859,15 @@ namespace SharpTune.RomMod
 
         private static void InheritRRLogger(ref XDocument xmlDoc, string outPath, string inheritIdent, string newIdent)
         {
-            //inherit from a base file
-            //todo add list of exemptions to skip???
-            string paramxp = "./logger/protocols/protocol/ecuparams";
-            XElement pexp = xmlDoc.XPathSelectElement(paramxp);
             try
             {
-                foreach (XElement xel in pexp.Elements())
+                //inherit from a base file
+                //todo add list of exemptions to skip???
+                string path = "/logger/protocols/protocol[@id='SSM']/ecuparams/ecuparam/ecu[contains(@id, '" + inheritIdent + "')]";
+                IEnumerable<XElement> pexp = xmlDoc.XPathSelectElements(path);
+                foreach (XElement xel in pexp)
                 {
-                    if (xel.Elements("ecu") != null)
-                    {
-                        foreach (XElement xecu in xel.Elements("ecu"))
-                        {
-                            string id = xecu.Attribute("id").Value.ToString();
-                            string[] ids = id.Split(',');
-                            if(ids.Contains<string>(inheritIdent))
-                            {
-                                id += "," + newIdent;
-                                xecu.Attribute("id").Value = id;
-                            }
-                        }
-                    }
+                    xel.Attribute("id").Value += ',' + newIdent;
                 }
                 xmlDoc.SaveToFile(outPath);
             }
