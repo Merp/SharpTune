@@ -861,7 +861,7 @@ namespace NSFW
             {
                 XPathDocument doc = new XPathDocument(stream);
                 XPathNavigator nav = doc.CreateNavigator();
-                string path = "/logger/protocols/protocol[@id='SSM']/ecuparams/ecuparam/ecu[@id='" + ecuid + "']/address";
+                string path = "/logger/protocols/protocol[@id='SSM']/ecuparams/ecuparam/ecu[contains(@id, '" + ecuid + "')]/address";
                 XPathNodeIterator iter = nav.Select(path);
                 while (iter.MoveNext())
                 {
