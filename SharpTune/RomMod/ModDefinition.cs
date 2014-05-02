@@ -802,7 +802,7 @@ namespace SharpTune.RomMod
 
                     XElement conv = XElement.Parse(@"
                             <conversions>
-                                <conversion units=""rawdata"" expr=""x"" format=""0"" />
+                                <conversion units=""rawdata"" expr=""x"" format=""0.00"" />
                           </conversions>");
 
                     if(table.Value.storageTypeString.EqualsCI("float"))
