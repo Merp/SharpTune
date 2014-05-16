@@ -259,7 +259,7 @@ namespace SharpTuneCore
             catch (Exception crap)
             {
                 Trace.Write("Error creating definition OBJECT at " + fp);
-                throw crap;
+                throw;
             }
         }
 
@@ -368,7 +368,7 @@ namespace SharpTuneCore
             catch (Exception crap)
             {
                 Trace.WriteLine("Error reading scaling in " + path);
-                throw crap;
+                throw;
             }
 
             // ROM table fetches here!
@@ -387,7 +387,7 @@ namespace SharpTuneCore
             catch (Exception crap)
             {
                 Trace.WriteLine("Error reading tables in " + path);
-                throw crap;
+                throw;
             }
 
             // RAM table feteches here!
@@ -407,7 +407,7 @@ namespace SharpTuneCore
             catch (Exception crap)
             {
                 Trace.WriteLine("Error reading RAM tables in " + path);
-                throw crap;
+                throw;
             }
             return true;
         }
@@ -700,7 +700,7 @@ namespace SharpTuneCore
                             catch (Exception crap)
                             {
                                 Trace.WriteLine("Error exporting xml for table {0}", table.name);
-                                throw crap;
+                                throw;
                             }
                         }
                     }

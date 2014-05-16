@@ -56,7 +56,7 @@ namespace SharpTuneCore
             catch (Exception crap)
             {
                 Trace.WriteLine("Error creating scaling " + xel.ToString());
-                throw crap;
+                throw;
             }
         }
     }

@@ -129,7 +129,7 @@ namespace SharpTuneCore
             {
                 Trace.WriteLine("Error creating axis in " + table);
                 Trace.WriteLine("XML: " + xel.ToString());
-                throw crap;
+                throw;
             }
         }
 
@@ -247,7 +247,7 @@ namespace SharpTuneCore
             {
                 Trace.WriteLine("Error creating static axis in " + table);
                 Trace.WriteLine("XML: " + xel.ToString());
-                throw crap;
+                throw;
             }
         }
 
