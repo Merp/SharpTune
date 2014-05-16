@@ -1,6 +1,6 @@
 ﻿namespace SharpTune.GUI
 {
-    partial class XMLtoIDC
+    partial class XMLtoIDCGUI
     {
         /// <summary>
         /// Required designer variable.

@@ -33,18 +33,43 @@ namespace SharpTuneCore
             this.type = "2D";
         }
 
-        public override Table CreateChild(Lut lut,Definition d)
+        public override Table CreateChild(Lut ilut,Definition d)
         {
-            return base.CreateChild(lut,d);
+            //TODO: This is a major KLUDGE.
+            if (ilut.GetType() != typeof(Lut2D))
+                return base.CreateChild(ilut, d);
+
+            XElement xel;
+            Lut2D lut = (Lut2D)ilut;
+            xel = new XElement("table");
+            xel.SetAttributeValue("name", name);
+            xel.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
+            if (this.xAxis != null)
+            {
+                XElement tx = new XElement("table");
+                tx.SetAttributeValue("name", "X");
+                tx.SetAttributeValue("address", lut.colsAddress.ToString("X"));
+                tx.SetAttributeValue("elements", lut.cols);
+                xel.Add(tx);
+            }
+            else
+            {
+                XElement ty = new XElement("table");
+                ty.SetAttributeValue("name", "Y");
+                ty.SetAttributeValue("address", lut.colsAddress.ToString("X"));
+                ty.SetAttributeValue("elements", lut.cols);
+                xel.Add(ty);
+            }
+            return TableFactory.CreateTable(xel, name, d);
+            //TODO also set attirbutes and split this up! Copy to table2D!!
+            //return base.CreateChild(lut,d);
             //TODO FIX?? AND CHECK FOR STATIC AXES!!
         }
 
         public override void Read()
         {
             DeviceImage image = this.parentImage;
-            this.elements = this.yAxis.elements;    // * this.yAxis.elements;
-            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
-            this.scaling = this.defaultScaling;
+            this.elements = this.yAxis.elements;    // * this.yAxis.elements;TODO WTF
 
             lock (image.imageStream)
             {

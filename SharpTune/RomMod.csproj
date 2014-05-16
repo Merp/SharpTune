@@ -73,11 +73,11 @@
     <Compile Include="Core\DefinitionMetaData.cs" />
     <Compile Include="Core\FlashMethod\IFlashMethod.cs" />
     <Compile Include="Core\MemoryModel\IMemoryModel.cs" />
-    <Compile Include="DefinitionTools.cs" />
     <Compile Include="EcuMapTools\EcuMapTool.cs" />
     <Compile Include="EcuMapTools\EcuLoc.cs" />
     <Compile Include="EcuMapTools\EcuLocCandidate.cs" />
     <Compile Include="EcuMapTools\EcuMap.cs" />
+    <Compile Include="EcuMapTools\SSMBase.cs" />
     <Compile Include="EcuMapTools\XMLtoIDC.cs" />
     <Compile Include="Core\Definition.cs" />
     <Compile Include="Core\DeviceImage.cs" />

@@ -19,6 +19,8 @@ using SharpTune;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using SharpTune.Properties;
+using SharpTuneCore;
 
 namespace SharpTune.RomMod
 {
@@ -189,13 +191,13 @@ namespace SharpTune.RomMod
             TryReversePatches();
         }
 
-        public bool TryDefinition(string defPath)
+        public bool TryDefinition(AvailableDevices ad, string defPath)
         {
             //Read metadata
             try
             {
                 Trace.WriteLine("Attempting to read definition metadata");
-                this.modDef = new ModDefinition(this);
+                this.modDef = new ModDefinition(ad, this);
                 if (!modDef.TryReadDefs(defPath)) return false;
                 Trace.WriteLine("Success reading definition meatdata");
             }
@@ -212,7 +214,7 @@ namespace SharpTune.RomMod
                 Trace.WriteLine("Attempting to create RR logger definition");
                 //TODO: move RR stuff into definition?
                 //prompt to select logger type
-                ModDefinition.NewRRLogDefInheritWithTemplate(this.modDef.RamTableList, SharpTuner.RRLoggerDefPath + @"\MerpMod\" + this.ModBuild + @"\" + this.ModIdent + ".xml", SharpTuner.RRLoggerDefPath + @"\MerpMod\base.xml", this.InitialEcuId.ToString(), this.FinalEcuId.ToString());
+                modDef.NewRRLogDefInheritWithTemplate(this.modDef.RamTableList, Settings.Default.RomRaiderLoggerDefPath + @"\MerpMod\" + this.ModBuild + @"\" + this.ModIdent + ".xml", Settings.Default.RomRaiderLoggerDefPath + @"\MerpMod\base.xml", this.InitialEcuId.ToString(), this.FinalEcuId.ToString());
                 Trace.WriteLine("Success creating RR logger definition");
             }
             catch (Exception e)
@@ -228,7 +230,7 @@ namespace SharpTune.RomMod
                 Trace.WriteLine("Attempting to create RR ecu definition");
                 //TODO: move RR stuff into definition?
                 //prompt to select logger type
-                string path = SharpTuner.RREcuDefPath + @"\MerpMod\" + this.ModBuild + @"\";
+                string path = Settings.Default.RomRaiderEcuDefPath + @"\MerpMod\" + this.ModBuild + @"\"; //TODO: use settings???
                 Directory.CreateDirectory(path);
                 path += this.ModIdent + ".xml";
                 modDef.PopulateRREcuDefStub(path);
@@ -362,7 +364,7 @@ namespace SharpTune.RomMod
 
                 if (!ModBuild.ContainsCI("debug"))// && !isAuthd)//todo field 'isdebug'
                 {
-                    Process.Start(SharpTuner.DonateUrl);
+                    Process.Start(Settings.Default.DonateUrl);
                     MessageBox.Show("Please consider donating, this work has been provided to you for free after years of hard work. Professional Tuners: distributing this work, including flashing a customer's car, is a violation of the license terms. Professional Tuners must obtain authorization to distribute this work by donation on a per-vehicle basis.", "Please Donate");
                 }
 
@@ -1518,11 +1520,11 @@ namespace SharpTune.RomMod
 
             if (mismatches == 0)
             {
-                Trace.WriteLine("Valid.");
+                Trace.WriteLine("Valid Patch. Baseline matches actual data: " + buffer.Take(64).ToArray<byte>().ConvertBytesToHexString());
                 return true;
             }
 
-            Trace.WriteLine("Invalid.");
+            Trace.WriteLine("Invalid Patch. Baseline does not match actual data: " + buffer.ConvertBytesToHexString());
             Trace.WriteLine(String.Format("{0} bytes (of {1}) do not meet expectations.", mismatches, patchLength));
             return false;
         }

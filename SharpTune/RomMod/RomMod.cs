@@ -31,7 +31,7 @@ namespace SharpTune.RomMod
         /// <summary>
         /// Determines which command to run.
         /// </summary>
-        public static bool Run(string[] args)
+        public static bool Run(AvailableDevices availableDevices, string[] args)
         {
             if (args.Length == 2 && args[0] == "help")
             {
@@ -64,15 +64,15 @@ namespace SharpTune.RomMod
             }
             else if (args.Length == 4 && args[0] == "baselinedefine")
             {
-                return RomMod.TryBaselineAndDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+                return RomMod.TryBaselineAndDefine(availableDevices, args[1], args[2], args[3],Settings.Default.EcuFlashDefRepoPath);
             }
             else if (args.Length == 4 && args[0] == "define")
             {
-                return RomMod.TryDefine(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+                return RomMod.TryDefine(availableDevices, args[1], args[2], args[3], Settings.Default.EcuFlashDefRepoPath);
             }
             else if (args.Length == 4 && args[0] == "hewbuild")
             {
-                return RomMod.TryHewBuild(args[1], args[2], args[3], SharpTuner.EcuFlashDefRepoPath);
+                return RomMod.TryHewBuild(availableDevices, args[1], args[2], args[3], Settings.Default.EcuFlashDefRepoPath);
             }
             PrintHelp();
             return false;
@@ -147,7 +147,7 @@ namespace SharpTune.RomMod
 
         private static bool TryApply(string patchPath, string romPath, bool apply, bool commit)
         {
-            Mod currentMod = new Mod(patchPath);
+            Mod currentMod = new Mod(patchPath);//TODO: KING KLUDGE!
             return currentMod.TryCheckApplyMod(romPath, romPath, apply, commit);
         }
     
@@ -199,7 +199,7 @@ namespace SharpTune.RomMod
             }
         }
 
-        private static bool TryBaselineAndDefine(string patchPath, string romPath, string build, string defPath)
+        private static bool TryBaselineAndDefine(AvailableDevices ad, string patchPath, string romPath, string build, string defPath)
         {
             using (Stream romStream = File.OpenRead(romPath))
             {
@@ -207,22 +207,22 @@ namespace SharpTune.RomMod
 
                 if (!patcher.TryReadPatches()) 
                     return false;
-                if (!patcher.TryDefinition(defPath)) 
+                if (!patcher.TryDefinition(ad, defPath)) 
                     return false;
                 return patcher.TryPrintBaselines(patchPath,romStream);
             }
         }
 
-        public static bool TryDefine(string patchPath, string romPath, string bc, string defPath)
+        public static bool TryDefine(AvailableDevices ad, string patchPath, string romPath, string bc, string defPath)
         {
             using (Stream romStream = File.OpenRead(romPath))
             {
                 Mod mod = new Mod(patchPath, bc);
-                return mod.TryDefinition(defPath);
+                return mod.TryDefinition(ad, defPath);
             }
         }
 
-        public static bool TryHewBuild(string patchPath, string romPath, string bc, string defPath)
+        public static bool TryHewBuild(AvailableDevices ad, string patchPath, string romPath, string bc, string defPath)
         {
             Mod mod = new Mod(patchPath, bc);
             using (Stream romStream = File.OpenRead(romPath))
@@ -267,7 +267,7 @@ namespace SharpTune.RomMod
                 return false;
             }
             Trace.WriteLine("Attempting to define patch");
-            if (!mod.TryDefinition(defPath))
+            if (!mod.TryDefinition(ad, defPath))
             {
                 PrintError("WRITING DEFINITIONS");
                 return false;

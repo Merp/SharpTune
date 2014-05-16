@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using SharpTune.EcuMapTools;
 using SharpTune.Core;
 using System.Diagnostics;
+using SharpTune.Properties;
 
 namespace SharpTune.RomMod
 {
@@ -54,12 +55,15 @@ namespace SharpTune.RomMod
 
         public Definition definition { get; private set; }
 
-        public ModDefinition(Mod parent)
+        private readonly AvailableDevices availableDevices;
+
+        public ModDefinition(AvailableDevices ad, Mod parent)
         {
-            this.parentMod = parent;
+            availableDevices = ad;
+            parentMod = parent;
             RomLutList = new List<Lut>();
             RamTableList = new Dictionary<string, Table>();
-            definition = new Definition();
+            definition = new Definition(availableDevices);
         }
 
         #region Patch ReadingCode
@@ -82,7 +86,7 @@ namespace SharpTune.RomMod
 
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
-            definition = new Definition(defPath, this.parentMod);
+            definition = new Definition(availableDevices, defPath, this.parentMod);
 
             return true;
         }
@@ -605,7 +609,7 @@ namespace SharpTune.RomMod
 
         #region RR XML Code
         
-        public static void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
+        public void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
         {
             try
             {
@@ -625,7 +629,7 @@ namespace SharpTune.RomMod
             }
         }
 
-        public static void DefineRRLogEcuFromMap(string mapFile, string ident)
+        public void DefineRRLogEcuFromMap(string mapFile, string ident)
         {
             EcuMap im = new EcuMap();
             im.ImportFromMapFileOrText(mapFile);
@@ -633,7 +637,7 @@ namespace SharpTune.RomMod
         }
 
         //TODO: Maybe this belongs in IdaMap Class?
-        public static void DefineRRLogEcuFromText(string text, string ident)
+        public void DefineRRLogEcuFromText(string text, string ident)
         {
             Dictionary<string, string> inputMap = new Dictionary<string, string>();
             using (StringReader reader = new StringReader(text))
@@ -663,12 +667,12 @@ namespace SharpTune.RomMod
             DefineRRLogEcu(inputMap, ident);
         }
 
-        private static void DefineRRLogEcu(Dictionary<string, string> inputMap, string ident)
+        private void DefineRRLogEcu(Dictionary<string, string> inputMap, string ident)
         {
-            foreach (var defFile in GetDefs(SharpTuner.RRLoggerDefPath))
+            foreach (var defFile in GetDefs(Settings.Default.RomRaiderLoggerDefPath))
             {
                 Dictionary<string, string> addMap = new Dictionary<string, string>();
-                string defPath = SharpTuner.RRLoggerDefPath + defFile;
+                string defPath = Settings.Default.RomRaiderLoggerDefPath + defFile;
                 XDocument xmlD = XDocument.Load(defPath);
                 Dictionary<string, string> defMap = ReadRRLogDefExtIdentifiers(xmlD);
                 foreach (KeyValuePair<string, string> def in inputMap)
@@ -717,22 +721,22 @@ namespace SharpTune.RomMod
             return loggerdefs;
         }
 
-        private static XDocument SelectGetRRLogDef()
+        private XDocument SelectGetRRLogDef()
         {
-            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetDefs(SharpTuner.RRLoggerDefPath));
-            XDocument xmlDoc = XDocument.Load(SharpTuner.RRLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
+            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetDefs(Settings.Default.RomRaiderLoggerDefPath));
+            XDocument xmlDoc = XDocument.Load(Settings.Default.RomRaiderLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
             XDocument xmlDoc2 = new XDocument(xmlDoc);
             return xmlDoc2;
         }
 
-        private static XDocument SelectGetRREcuDef()
+        private XDocument SelectGetRREcuDef()
         {
-            string ldl = SimpleCombo.ShowDialog("Select ecu base", "Select ecu base", GetDefs(SharpTuner.RREcuDefPath));
-            XDocument ecuXml = XDocument.Load(SharpTuner.RREcuDefPath + ldl);
+            string ldl = SimpleCombo.ShowDialog("Select ecu base", "Select ecu base", GetDefs(Settings.Default.RomRaiderEcuDefPath));
+            XDocument ecuXml = XDocument.Load(Settings.Default.RomRaiderEcuDefPath + ldl);
             return ecuXml;
         }
 
-        private static Dictionary<string,string> ReadRRLogDefExtIdentifiers(XDocument xd)
+        private Dictionary<string,string> ReadRRLogDefExtIdentifiers(XDocument xd)
         {
             Dictionary<string, string> ls = new Dictionary<string, string>();
             string bxp = "./logger/protocols/protocol/ecuparams/ecuparam";

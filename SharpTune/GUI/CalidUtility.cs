@@ -29,12 +29,12 @@ namespace SharpTune
     public partial class CalidUtility : Form
     {
         private DeviceImage currentImage { get; set; }
-        private MainWindow mainWindow { get; set; }
+        private readonly SharpTuner sharpTuner;
 
-        public CalidUtility(MainWindow window)
+        public CalidUtility(SharpTuner st, MainWindow mw)
         {
-            this.mainWindow = window;
-            this.currentImage = SharpTuner.ActiveImage;
+            this.sharpTuner = st;
+            this.currentImage = st.activeImage;
             InitializeComponent();
         }
 
@@ -109,7 +109,7 @@ namespace SharpTune
                 MessageBox.Show("ID is not long enough!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (SharpTuner.AvailableDevices.IdentList.ContainsCI(newcalidbox.Text.ToString()))
+            if (sharpTuner.AvailableDevices.IdentList.ContainsCI(newcalidbox.Text.ToString()))
             {
                 MessageBox.Show("ID is already defined!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;

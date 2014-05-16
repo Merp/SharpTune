@@ -15,13 +15,15 @@ namespace SharpTune.GUI
 {
     public partial class UndefinedWindow : Form
     {
+        private readonly SharpTuner sharpTuner;
 
         private Definition def;
         private string filePath;
         private List<string> defList;
 
-        public UndefinedWindow(string f)
+        public UndefinedWindow(SharpTuner st, string f)
         {
+            sharpTuner = st;
             InitializeComponent();
             filePath = f;
         }
@@ -33,8 +35,8 @@ namespace SharpTune.GUI
 
         private void UndefinedWindow_Load(object sender, EventArgs e)
         {
-            defList = new List<string>(SharpTuner.AvailableDevices.IdentList.OrderBy(x => x.ToString()).ToList());
-            def = new Definition();
+            defList = new List<string>(sharpTuner.AvailableDevices.IdentList.OrderBy(x => x.ToString()).ToList());
+            def = new Definition(sharpTuner.AvailableDevices);
             List<string> dss = new List<string>();
             dss.Add("DEFAULT");
             dss.AddRange(defList);
@@ -109,7 +111,7 @@ namespace SharpTune.GUI
 
         private void comboBoxIncludeDef_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxIncludeDef.SelectedItem.ToString()))
+            if (sharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxIncludeDef.SelectedItem.ToString()))
                 def.MetaData.include = comboBoxIncludeDef.SelectedItem.ToString();
             else
                 def.MetaData.include = null;
@@ -117,10 +119,10 @@ namespace SharpTune.GUI
 
         private void buttonSave_Click(object sender, EventArgs e)
         { 
-            if (checkBox1.Checked && SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
+            if (checkBox1.Checked && sharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].Populate();
-                def.CopyTables(SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()]);//copy tables
+                sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].Populate();
+                def.CopyTables(sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()]);//copy tables
             }
             //Save the definition XML
             try
@@ -129,7 +131,7 @@ namespace SharpTune.GUI
                 def.MetaData.ParseEcuFlashXml(xe,comboBoxIncludeDef.SelectedValue.ToString());
             
             StringBuilder path = new StringBuilder();
-            path.Append(SharpTuner.EcuFlashDefRepoPath + "/");
+            path.Append(Settings.Default.EcuFlashDefRepoPath + "/");
             if (def.MetaData.model != null)
             {
                 path.Append(def.MetaData.model.ToString());
@@ -158,7 +160,7 @@ namespace SharpTune.GUI
             def.filePath = path.ToString();
             def.ExportEcuFlashXML();
             MessageBox.Show("Successfully saved definition to " + def.filePath);
-            SharpTuner.PopulateAvailableDevices();
+            sharpTuner.PopulateAvailableDevices();
             this.Dispose();
             }
             catch (Exception er)
@@ -190,9 +192,9 @@ namespace SharpTune.GUI
 
         private void updateXml()
         {
-            if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
+            if (sharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                textBoxDefXml.Text = SharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].MetaData.EcuFlashXml.ToString();
+                textBoxDefXml.Text = sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].MetaData.EcuFlashXml.ToString();
                 comboBoxIncludeDef.SelectedItem = comboBoxCopyDef.SelectedItem;
             }
             else

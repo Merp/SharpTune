@@ -30,11 +30,6 @@ namespace SharpTuneCore
     {
         private Scaling xAxisScaling { get; set; }
 
-        public Table3D()
-        {
-            this.type = "3D";
-        }
-
         public Table3D(XElement xel, Definition def, Table basetable)
             : base(xel, def, basetable)
         {
@@ -70,8 +65,6 @@ namespace SharpTuneCore
         {
             DeviceImage image = this.parentImage;
             this.elements = this.xAxis.elements * this.yAxis.elements;
-            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
-            this.scaling = this.defaultScaling;
 
             lock (image.imageStream)
             {

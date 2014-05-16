@@ -15,13 +15,14 @@ namespace SharpTune.EcuMapTools
 {
     public class EcuMapTool
     {
-        public static Dictionary<string, List<EcuLoc>> Defines;
-        public static Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
-        public static EcuMap ecuMap;
+        private Dictionary<string, List<EcuLoc>> Defines;
+        private Dictionary<KeyValuePair<string,List<string>>, List<string>> Sections;
+        private EcuMap ecuMap;
+        private readonly AvailableDevices availableDevices;
 
-
-        public EcuMapTool()
+        public EcuMapTool(AvailableDevices ad)
         {
+            availableDevices = ad;
             Defines = new Dictionary<string, List<EcuLoc>>();
             Sections = new Dictionary<KeyValuePair<string,List<string>>, List<string>>();
             ecuMap = new EcuMap();
@@ -36,12 +37,12 @@ namespace SharpTune.EcuMapTools
             Trace.WriteLine("Convert .h file to IDC script: IDAtoHEW <file.h> <file.idc>");
         }
 
-        public static bool Run(string[] args)
+        public static bool Run(AvailableDevices ad, string[] args)
         {
             try
             {
 
-                EcuMapTool prog = new EcuMapTool();
+                EcuMapTool prog = new EcuMapTool(ad);//TODO: get rid of static?
 
                 if (args.Length < 1 || args[0].EqualsCI("-h") || args[0].EqualsCI("-help"))
                 {
@@ -98,8 +99,8 @@ namespace SharpTune.EcuMapTools
             {
                 Definition def;
 
-                if (SharpTuner.AvailableDevices.DefDictionary.ContainsKey(romCalId))
-                    def = SharpTuner.AvailableDevices.DefDictionary[romCalId];
+                if (availableDevices.DefDictionary.ContainsKey(romCalId))
+                    def = availableDevices.DefDictionary[romCalId];
                 else
                 {
                     Trace.WriteLine("Error, rom calid not found!!");

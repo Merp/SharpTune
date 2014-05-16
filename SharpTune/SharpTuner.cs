@@ -35,62 +35,56 @@ namespace SharpTune
     /// <summary>
     /// Container for a sharptune instance
     /// </summary>
-    public static class SharpTuner
+    public class SharpTuner
     {
-        public const string GitHelpUrl = "https://github.com/Merp/SharpTune/blob/master/README.md";
-        public const string DonateUrl = "https://github.com/Merp/SharpTune/blob/master/DONATE.md";
-        public const string HomeUrl = "http://romraider.com";
-        public const string ForumUrl = "http://romraider.com";
+        public MainWindow mainWindow { get; private set; } 
 
-        public static MainWindow Window { get; set; }
-
-        private static DeviceImage actImg;
-
-        private static IPlugin[] Plugins;
-        private static PluginContainer PluginHost = new PluginContainer();
-
-        public static DeviceImage ActiveImage 
+        private IPlugin[] Plugins;
+        private PluginContainer PluginHost = new PluginContainer();
+        
+        private DeviceImage _activeImage;
+        public DeviceImage activeImage 
         {
-            get { return actImg; }
+            get { return _activeImage; }
             set
             {
-                actImg = value;
+                _activeImage = value;
                 //TODO update the mainwindow!!!
-                Window.Refresh();
+                mainWindow.Refresh();
             }
         }
 
-        public static List<DeviceImage> ImageList { get; set; }
+        public List<DeviceImage> ImageList { get; set; }
 
-        public static AvailableDevices AvailableDevices { get; set; }
+        public AvailableDevices AvailableDevices { get; set; }
 
-        public static List<Mod> AvailableMods { get; private set; }
+        public  List<Mod> AvailableMods { get; set; }
 
-        public static List<Scaling> DataScalings {get; set; }
-        public static List<Scaling> UnitScalings { get; set; }
+        public List<Scaling> DataScalings {get; set; }
+        public List<Scaling> UnitScalings { get; set; }
 
-        public static string DefRepoPath;
-        public static string EmbeddedDefRepoPath;
-        public static string EcuFlashDefRepoPath;
-        public static string RRDefRepoPath;
-        public static string RREcuDefPath;
-        public static string RRLoggerDefPath;
+        public string ActivePort { get; set; }
 
-        public static string ActivePort { get; set; }
-
-        public static SerialPort Port { get; set; }
+        public SerialPort Port { get; set; }
 
         //public static SsmInterface ssmInterface { get; set; }
 
-        public static bool fileQueued { get; set; }
+        public bool fileQueued { get; set; }
 
-        public static string QueuedFilePath { get; set; }
+        public string QueuedFilePath { get; set; }
 
-        public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        static SharpTuner(){}
+        // Explicit static constructor to tell C# compiler
+        // not to mark type as beforefieldinit
+        static SharpTuner() { }
 
-        public static void Init()
+        public SharpTuner()
+        {
+            mainWindow = new MainWindow(this);
+        }
+
+        public void Init()
         {
             InitSettings();
             InitTraces();
@@ -105,7 +99,7 @@ namespace SharpTune
             Trace.WriteLine("<--Finished Initializing SharpTuner --->");
         }
 
-        public static void InitSettings()
+        public void InitSettings()
         {
             string userdir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             Console.WriteLine("Found user directory: " + userdir);
@@ -147,36 +141,41 @@ namespace SharpTune
              if (!Directory.Exists(Settings.Default.LogFilePath))
                     Directory.CreateDirectory(Settings.Default.LogFilePath);
 
-            DefRepoPath = Settings.Default.SubaruDefsRepoPath;
-            Trace.WriteLine("Using Definition Repo Path: " + DefRepoPath);
-            EmbeddedDefRepoPath = Settings.Default.SettingsPath + @"\EmbeddedDefs";
-            EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
-            RRDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
-            RREcuDefPath = RRDefRepoPath + @"\ecu\standard\";
-            RRLoggerDefPath = RRDefRepoPath + @"\logger\";
+            Settings.Default.EmbeddedDefRepoPath = Settings.Default.SettingsPath + @"\EmbeddedDefs";
+            Settings.Default.EcuFlashDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\ECUFlash\subaru standard";//TODO support metric
+            Settings.Default.RomRaiderDefRepoPath = Settings.Default.SubaruDefsRepoPath + @"\RomRaider";
+            Settings.Default.RomRaiderEcuDefPath = Settings.Default.RomRaiderDefRepoPath + @"\ecu\standard\";
+            Settings.Default.RomRaiderLoggerDefPath = Settings.Default.RomRaiderDefRepoPath + @"\logger\";
+            Trace.WriteLine("Using SubaruDefs Repo Path: " + Settings.Default.SubaruDefsRepoPath);
+            
+            Settings.Default.GitHelpUrl = "https://github.com/Merp/SharpTune/blob/master/README.md";
+            Settings.Default.DonateUrl = "https://github.com/Merp/SharpTune/blob/master/DONATE.md";
+            Settings.Default.HomeUrl = "http://romraider.com";
+            Settings.Default.ForumUrl = "http://romraider.com";
+
             Settings.Default.Save();
         }
 
-        public static void PopulateAvailableDevices()
+        public void PopulateAvailableDevices()
         {
             AvailableDevices = new AvailableDevices();
-            if (Directory.Exists(EcuFlashDefRepoPath) && (Directory.GetDirectories(EcuFlashDefRepoPath).Length > 0 || Directory.GetFiles(EcuFlashDefRepoPath).Length < 1 ))
+            if (Directory.Exists(Settings.Default.EcuFlashDefRepoPath) && (Directory.GetDirectories(Settings.Default.EcuFlashDefRepoPath).Length > 0 || Directory.GetFiles(Settings.Default.EcuFlashDefRepoPath).Length < 1 ))
             {
-                Trace.WriteLine("Loading definitions from: " + EcuFlashDefRepoPath);
-                AvailableDevices.Populate(EcuFlashDefRepoPath);
+                Trace.WriteLine("Loading definitions from: " + Settings.Default.EcuFlashDefRepoPath);
+                AvailableDevices.Populate(Settings.Default.EcuFlashDefRepoPath);
             }
             else
             {
-                if (!Directory.Exists(EmbeddedDefRepoPath))
-                    Directory.CreateDirectory(EmbeddedDefRepoPath);
-                if (Directory.GetFiles(EmbeddedDefRepoPath).Length < 1)
+                if (!Directory.Exists(Settings.Default.EmbeddedDefRepoPath))
+                    Directory.CreateDirectory(Settings.Default.EmbeddedDefRepoPath);
+                if (Directory.GetFiles(Settings.Default.EmbeddedDefRepoPath).Length < 1)
                     CopyEmbeddedDefs();
-                Trace.WriteLine("Loading definitions from: " + EmbeddedDefRepoPath);
-                AvailableDevices.Populate(EmbeddedDefRepoPath);
+                Trace.WriteLine("Loading definitions from: " + Settings.Default.EmbeddedDefRepoPath);
+                AvailableDevices.Populate(Settings.Default.EmbeddedDefRepoPath);
             }
         }
 
-        public static void CopyEmbeddedDefs()
+        public void CopyEmbeddedDefs()
         {
             var assembly = Assembly.GetExecutingAssembly();
             string[] resources = assembly.GetManifestResourceNames();
@@ -186,7 +185,7 @@ namespace SharpTune
                     
                     using(Stream ResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(res))
                     {
-                        string writePath = SharpTuner.EmbeddedDefRepoPath.ToString() + @"\" + res;
+                        string writePath = Settings.Default.EmbeddedDefRepoPath.ToString() + @"\" + res;
                         using(Stream ExternalFile = File.OpenWrite(writePath))
                             ResourceStream.CopyTo(ExternalFile);
                     }                
@@ -198,20 +197,20 @@ namespace SharpTune
         //    ssmInterface = s;
         //}
 
-        public static void AddImage(DeviceImage d)
+        public void AddImage(DeviceImage d)
         {
             ImageList.Add(d);
-            ActiveImage = d;
+            activeImage = d;
         }
 
-        public static void LoadMods()
+        public void LoadMods()
         {
             AvailableMods = new List<Mod>();
             LoadResourceMods();
             LoadExternalMods();
         }
 
-        public static void LoadPlugins()
+        public void LoadPlugins()
         {
             Trace.WriteLine("Settings dir: " + Settings.Default.SettingsPath);
             Trace.WriteLine("Loading plugins from " + Settings.Default.PluginPath);
@@ -264,7 +263,7 @@ namespace SharpTune
                     if (ObjType != null)
                     {
                         Plugins[i] = (IPlugin)Activator.CreateInstance(ObjType);
-                        Plugins[i].Host = (IPluginHost)SharpTuner.PluginHost;
+                        Plugins[i].Host = (IPluginHost)PluginHost;
                         Trace.WriteLine("Loaded Plugin " + args);
                     }
                 }
@@ -319,7 +318,7 @@ namespace SharpTune
         /// <summary>
         /// Gets mods from embedded resources
         /// </summary>
-        private static void LoadResourceMods()
+        private void LoadResourceMods()
         {
             int i = 0;
             var assembly = Assembly.GetExecutingAssembly();
@@ -348,7 +347,7 @@ namespace SharpTune
             //}
         }
 
-        private static void LoadExternalMods()
+        private void LoadExternalMods()
         {
             int i = 0;
             string[] terms = { ".patch" };
@@ -370,7 +369,7 @@ namespace SharpTune
                 Trace.WriteLine("No external mods found");
         }
 
-        public static List<Mod> GetValidMods(this DeviceImage d)
+        public List<Mod> GetValidMods(DeviceImage d)
         {
             List<Mod> tm = new List<Mod>();
             foreach (Mod m in AvailableMods)
@@ -390,15 +389,16 @@ namespace SharpTune
             return tm;
         }
 
-        public static void RefreshImages()
+        public void RefreshImages()
         {
             foreach (DeviceImage d in ImageList)
             {
                 d.Refresh();
             }
-            Window.Refresh();
+            mainWindow.Refresh();
         }
-                    public static void InitTraces(){
+                    
+        public  void InitTraces(){
 
         // First step: create the trace source object
         TraceSource ts = new TraceSource("myTraceSource");

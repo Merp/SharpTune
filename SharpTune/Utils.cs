@@ -273,6 +273,14 @@ namespace SharpTune
             return offs.ToString("X");
         }
 
+        public static string ConvertIntToHexString(this int? offs)
+        {
+            if (offs != null)
+                return ConvertIntToHexString((int)offs);
+            else
+                return null;
+        }
+
         public static string ConvertLongToHexString(this long offs)
         {
             return offs.ToString("X");
@@ -280,7 +288,7 @@ namespace SharpTune
 
         public static string ConvertBytesToHexString(this Byte[] input)
         {
-            return BitConverter.ToString(input);
+            return BitConverter.ToString(input).Replace("-", "");
         }
 
         public static string ConvertBytesToString(this Byte[] input, System.Text.Encoding encoding)

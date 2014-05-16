@@ -30,8 +30,11 @@ namespace SharpTune.GUI
         private Dictionary<string,Table> BaseTables;
         private Dictionary<string,Table> Exposed;
 
-        public DefinitionEditor()
+        private readonly SharpTuner sharpTuner;
+
+        public DefinitionEditor(SharpTuner st)
         {
+            sharpTuner = st;
             InitializeComponent();
 
             //When this initializes, check for existing device and auto-select
@@ -43,7 +46,7 @@ namespace SharpTune.GUI
 
         private void DefinitionEditor_Load(object sender, EventArgs e)
         {
-            Def = SharpTuner.ActiveImage.Definition;
+            Def = sharpTuner.activeImage.Definition;
             Exposed = Def.AggregateExposedRomTables;
             BaseTables = Def.AggregateBaseRomTables;
 

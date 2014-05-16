@@ -173,7 +173,23 @@ namespace SharpTuneCore
 
         public Dictionary<string, string> properties { get; set; }
 
-        public Table baseTable { get; protected set; }
+        protected Table _baseTable;
+        public Table baseTable { 
+            get
+            {
+                return _baseTable;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    _baseTable = value;
+                    isBase = false;
+                }
+                else
+                    isBase = true;
+            }
+        }
 
         public DeviceImage parentImage { get; private set; }
         public Definition parentDef { get; protected set; }
@@ -260,32 +276,34 @@ namespace SharpTuneCore
             protected set { _storageTypeHex = value; }
         }
 
-        protected int _level;
-        public int level
+        protected int? _level;
+        public int? level
         {
             get
             {
                 if (_level != null)
                     return _level;
-                else if (baseTable.level != null)
+                else if (baseTable != null)
                     return baseTable.level;
                 else
-                    return 0;
+                    return null;
             }
             protected set { _level = value; }
         }
 
-        protected int _address;
+        protected int? _address;
         public int address
         {
             get
             {
                 if (_address != null)
-                    return _address;
-                else if (baseTable.address != null)
+                    return (int)_address;
+                else if (baseTable != null)
                     return baseTable.address;
                 else
-                    return 0;
+                {
+                    throw new Exception("Error, no address found for table: " + this.name + " in definition: " + this.parentDef.calibrationlId);
+                }
             }
             protected set { _address = value; }
         }
@@ -294,17 +312,17 @@ namespace SharpTuneCore
             get { return address.ConvertIntToHexString(); }
         }
 
-        protected int _elements;
-        public int elements
+        protected int? _elements;
+        public int? elements
         {
             get
             {
                 if (_elements != null)
                     return _elements;
-                else if (baseTable.elements != null)
+                else if (baseTable != null)
                     return baseTable.elements;
                 else
-                    return 0;
+                    return null;
             }
             protected set { _elements = value; }
         }
@@ -369,9 +387,12 @@ namespace SharpTuneCore
                 else if (baseTable.defaultScaling != null)
                     return baseTable.defaultScaling;
                 else
-                    return null;
+                {
+                    Trace.WriteLine(String.Format("Error, scaling not found in table: {0} of defintion: {1}", name, parentDef.calibrationlId));
+                    return new Scaling();
+                }
             }
-            protected set { _defaultScaling = value; }
+            protected set { _defaultScaling = value; scaling = value; }
         }
 
         protected Scaling _scaling;
@@ -381,19 +402,19 @@ namespace SharpTuneCore
             {
                 if (_scaling != null)
                     return _scaling;
-                else
+                else if (defaultScaling != null)
                     return defaultScaling;
+                else
+                {
+                    Trace.WriteLine(String.Format("Error, scaling not found in table: {0} of defintion: {1}", name, parentDef.calibrationlId));
+                    return new Scaling();
+                }
             }
             set
             {
                 _scaling = value;
             }
         } 
-
-        public Table()
-        {
-            //TODO INIT STUFF
-        }
 
         public virtual Table CreateChild(Lut lut, Definition d)
         {
@@ -411,33 +432,39 @@ namespace SharpTuneCore
         {
         }
 
+
+        protected Table()
+        {
+            dataTable = new DataTable();
+            properties = new Dictionary<string, string>();
+        }
+
         /// <summary>
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
-        public Table(XElement xel, Definition def, Table basetable)
-        {
+        public Table(XElement xel, Definition def, Table bt)
+        :this(){
             try
             {
                 parentDef = def;
-
-                if (basetable != null)
-                {
-                    baseTable = basetable;
-                    isBase = false;
-                }
-                else
-                    isBase = true;
-
-                if (xel.Attribute("name") != null)
-                    name = xel.Attribute("name").Value.ToString();
-
+                baseTable = bt;
                 xml = xel;
 
-                dataTable = new DataTable();
+                ParseAttributes(xel);
+                ParseChildren(xel);
+            }
+            catch (Exception crap)
+            {
+                Trace.WriteLine("Error creating table " + this.name);
+                Trace.WriteLine("XML: " + xel.ToString());
+                Trace.WriteLine(crap.Message);
+            }
+        }
 
-                properties = new Dictionary<string, string>();
-
+        private void ParseAttributes(XElement xel){
+            try
+            {
                 foreach (XAttribute attribute in xel.Attributes())
                 {
                     switch (attribute.Name.ToString().ToLower())
@@ -457,7 +484,10 @@ namespace SharpTuneCore
                         case "scaling":
                             Scaling sca = new Scaling();
                             if (this.parentDef.ScalingList.TryGetValue(attribute.Value, out sca))
+                            {
                                 this.scaling = sca;
+                                this.defaultScaling = sca;
+                            }
                             else
                                 Trace.WriteLine("Error finding scaling " + attribute.Value);
                             continue;
@@ -474,7 +504,17 @@ namespace SharpTuneCore
                             continue;
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Exception ne = new Exception("Error parsing table xml attributes", e);
+                throw;
+            }
+        }
 
+        private void ParseChildren(XElement xel){
+            try
+            {
                 foreach (XElement child in xel.Elements())
                 {
                     string cname = child.Name.ToString();
@@ -494,18 +534,20 @@ namespace SharpTuneCore
                     }
                 }
             }
-            catch (Exception crap)
+            catch (Exception e)
             {
-                Trace.WriteLine("Error creating table " + this.name);
-                Trace.WriteLine("XML: " + xel.ToString());
-                throw crap;
+                Exception ne = new Exception("Error parsing table xml child elements", e);
+                throw;
             }
         }
 
         public void AddAxis(XElement axis)
         {
-            if(this.baseTable != null && axis.Attribute("name") != null)
+            try
             {
+
+                if (this.baseTable != null && axis.Attribute("name") != null)
+                {
                     string name = axis.Attribute("name").Value;
                     if (name.EqualsCI("x") || name.ContainsCI("x axis"))
                     {
@@ -521,23 +563,28 @@ namespace SharpTuneCore
                         else if (baseTable.xAxis != null)
                             this.yAxis = AxisFactory.CreateAxis(axis, this, baseTable.xAxis);
                     }
+                }
+                else if (axis.Attribute("type") != null)
+                {
+                    if (axis.Attribute("type").Value.ToString().ContainsCI("y"))
+                        this.yAxis = AxisFactory.CreateAxis(axis, this);
+                    else
+                        this.xAxis = AxisFactory.CreateAxis(axis, this);
+                }
+                else if (axis.Attribute("name") != null)
+                {
+                    string name = axis.Attribute("name").Value;
+                    if (name.EqualsCI("x") || name.ContainsCI("x axis"))
+                        this.xAxis = AxisFactory.CreateAxis(axis, this);
+                    else if (name.EqualsCI("y") || name.ContainsCI("y axis"))
+                        this.yAxis = AxisFactory.CreateAxis(axis, this);
+                }
             }
-            else if (axis.Attribute("type") != null)
+            catch (Exception e)
             {
-                if (axis.Attribute("type").Value.ToString().ContainsCI("y"))
-                    this.yAxis = AxisFactory.CreateAxis(axis, this);
-                else
-                    this.xAxis = AxisFactory.CreateAxis(axis, this);
+                Exception ne = new Exception("Error adding axis", e);
+                throw;
             }
-            else if(axis.Attribute("name") != null){
-                string name = axis.Attribute("name").Value;
-                if(name.EqualsCI("x") || name.ContainsCI("x axis"))
-                    this.xAxis = AxisFactory.CreateAxis(axis, this);
-                else if(name.EqualsCI("y") || name.ContainsCI("y axis"))
-                    this.yAxis = AxisFactory.CreateAxis(axis, this);
-
-            }
-
         }
 
         protected virtual XElement CreateECUFlashXML(){
@@ -558,7 +605,7 @@ namespace SharpTuneCore
 
                 xel.SetAttributeValue("address", this.address.ToString("X"));
 
-                if(_elements != null && _elements != baseTable.elements)
+                if(_elements != null && baseTable.elements != null && _elements != baseTable.elements) //TODO FIX KLUDGE!
                     xel.SetAttributeValue("elements",_elements);
 
                 if(_xAxis != null)
@@ -606,8 +653,13 @@ namespace SharpTuneCore
         {
             DeviceImage image = this.parentImage;
             this.elements = 1;
-            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
-            this.scaling = this.defaultScaling;
+            Scaling sc;
+            if (parentDef.ScalingList.TryGetValue(this.properties["scaling"].ToString(), out sc))
+            {
+                this.defaultScaling = sc;
+            }
+            else
+                throw new Exception(String.Format("Error, scaling {0} not found!", this.properties["scaling"].ToString()));
 
             ////Check SSM interface ID vs the device ID
             //if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)

@@ -42,9 +42,6 @@ namespace SharpTuneCore
         public override void Read()
         {
             DeviceImage image = this.parentImage;
-            this.elements = 1;
-            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
-            this.scaling = this.defaultScaling;
 
             lock (image.imageStream)
             {
@@ -97,10 +94,7 @@ namespace SharpTuneCore
 
         public override void Read()
         {
-            DeviceImage image = this.parentImage;
-            this.elements = 1;
-            this.defaultScaling = SharpTuner.DataScalings.Find(s => s.name.ToString().Contains(this.properties["scaling"].ToString()));
-            this.scaling = this.defaultScaling;
+
 
             ////Check SSM interface ID vs the device ID
             //if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)

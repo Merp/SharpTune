@@ -65,8 +65,6 @@ namespace SharpTuneCore
 
         protected List<float> floatList { get; set; }
 
-        public DataTable dataTable { get; set; }
-
         /// <summary>
         /// Constructor from XElement
         /// </summary>
@@ -151,11 +149,19 @@ namespace SharpTuneCore
                 if(_address != null)
                     xel.SetAttributeValue("address", addressHexString);
 
-                if (_scaling != null && _scaling != baseTable.scaling)
+                if (_scaling != null && baseTable.scaling != null && _scaling != baseTable.scaling)//TODO FIX THIS KLUDGE
                     xel.SetAttributeValue("scaling", _scaling);
 
-                if (_elements != null && _elements != baseTable.elements)
-                    xel.SetAttributeValue("elements", _elements);
+                if (_elements != null)
+                {
+                    if (baseTable.elements != null)
+                    {
+                        if (_elements != baseTable.elements)
+                        {//TODO FIX THIS KLUDGE
+                            xel.SetAttributeValue("elements", _elements);
+                        }
+                    }
+                }
             }
             return xel;
         }

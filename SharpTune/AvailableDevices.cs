@@ -25,12 +25,12 @@ using SharpTune;
 using System.Diagnostics;
 using System.Threading;
 using System.Reflection;
+using SharpTune.Properties;
 
 namespace SharpTuneCore
 {
     public class AvailableDevices
     {
-     
         public Dictionary<string, Definition> DefDictionary {get; private set;}
 
         public List<string> IdentList { get; private set; }
@@ -69,7 +69,7 @@ namespace SharpTuneCore
                         0);
 
                     if (deferr == DialogResult.Yes)
-                        Process.Start(SharpTuner.GitHelpUrl);
+                        Process.Start(Settings.Default.GitHelpUrl);
                         
                 }
                 else
@@ -137,7 +137,7 @@ namespace SharpTuneCore
                     {
                         try
                         {
-                            Definition d = new Definition(f);
+                            Definition d = new Definition(this, f);
                             if(d.isBase)
                                 d.Populate();
                             lock(DefDictionary)

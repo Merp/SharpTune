@@ -20,11 +20,14 @@ using SharpTune.RomMod;
 using System.IO;
 using SharpTune.EcuMapTools;
 using System.Text;
+using EcuMapTools;
+using SharpTuneCore;
 
 namespace SharpTune
 {
     public static class Program
     {
+        private static SharpTuner sharpTuner;
         /// <summary>
         /// Entry point.  Runs the utility with or without exception handling, depending on whether a debugger is attached.
         /// </summary>
@@ -58,37 +61,34 @@ namespace SharpTune
         /// Determines which command to run.
         /// </summary>
         private static bool Run(string[] args)
-        {        
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            sharpTuner = new SharpTuner();
+            sharpTuner.Init();
             if (args.Length < 1)
             {
                 SharpTune.Program.RomModGui();
                 return true;
             }
-
-            SharpTuner.Init();
-
             if (args[0] == "ecumaptool")
             {
-                return EcuMapTool.Run(Utils.ShiftLeftTruncate(args));
+                return EcuMapTool.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));
             }
             else if (args[0] == "rommod")
             {
-                return SharpTune.RomMod.RomMod.Run(Utils.ShiftLeftTruncate(args));
+                return SharpTune.RomMod.RomMod.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));
             }
-            else if (args[0] == "xmltoidc")
+            else if (args[0] == "xmlconvertor")
             {
-                //TODO FIX THIS!!
-                //NSFW.XMLtoIDC.Run(args);
+                DeviceImage di = new DeviceImage(sharpTuner, args[1]);
+                XMLtoIDC xti = new XMLtoIDC(di);
+                //TODO clean up this routine: xti.Run(args);
             }
             else if (args.Length == 2 && args[0] == "help")
             {
-                PrintHelp(args[1]);
+                PrintHelp_RomMod(args[1]);
                 return true;
-            }
-            else if (args[0] == "deftools")
-            {
-                Trace.WriteLine("Running definition tools!");
-                return DefinitionTools.DefinitionTool(args);
             }
             return false;
         }
@@ -96,9 +96,9 @@ namespace SharpTune
         /// <summary>
         /// Print generic usage instructions.
         /// </summary>
-        private static void PrintHelp()
+        private static void PrintHelp_RomMod()
         {
-            Trace.WriteLine("RomPatch Version " + SharpTune.RomMod.RomMod.Version);
+            Trace.WriteLine("SharpTune RomMod Version " + SharpTune.RomMod.RomMod.Version);
             Trace.WriteLine("Commands:");
             Trace.WriteLine("");
             Trace.WriteLine("test       - determine whether a patch is suitable for a ROM");
@@ -108,13 +108,13 @@ namespace SharpTune
             Trace.WriteLine("dump       - dump the contents of a patch file");
             Trace.WriteLine("baseline   - generate baseline data for a ROM and a partial patch");
             Trace.WriteLine("");
-            Trace.WriteLine("Use \"RomPatch help <command>\" to show help for that command.");
+            Trace.WriteLine("Use \"sharptune rommod help <command>\" to show help for that command.");
         }
 
         /// <summary>
         /// Print usage instructions for a particular command.
         /// </summary>
-        private static void PrintHelp(string command)
+        private static void PrintHelp_RomMod(string command)
         {
             switch (command)
             {
@@ -131,9 +131,7 @@ namespace SharpTune
         
         public static void RomModGui()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainWindow());
+            Application.Run(sharpTuner.mainWindow);
         }
 
     }

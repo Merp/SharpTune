@@ -19,26 +19,31 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Xml.Linq;
+using SharpTune;
+using SharpTuneCore;
+using SharpTune.EcuMapTools;
+using SharpTune.Properties;
 
-namespace NSFW
+namespace EcuMapTools
 {
     public class XMLtoIDC
     {
+        
         private static HashSet<string> names = new HashSet<string>();
         private static IDictionary<string, string> tableList = new Dictionary<string, string>();
         private static String DefPath = "";
         private static TextWriterTraceListener twtl;
 
+        private readonly DeviceImage deviceImage;
+        public string workingDir { get; set; }
 
-        public XMLtoIDC(string outpath)
+        public XMLtoIDC(DeviceImage di)
         {
-            twtl = new TextWriterTraceListener(outpath);
-            twtl.Name = "TextLogger";
-            twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+            deviceImage = di;
+            workingDir = deviceImage.FilePath;
         }
 
-
-        public static void GuiRun(string[] args, string outpath, string def, string loggerdef, string loggerdtd)
+        public void GuiRun(string[] args, string outpath, string def, string loggerdef, string loggerdtd)
         {
             
             using(TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
@@ -54,7 +59,7 @@ namespace NSFW
 
                 Trace.AutoFlush = true;
 
-                DefPath = SharpTune.SharpTuner.RRDefRepoPath; //Todo: switch to RR specific path, and automate a search for RR defs whenever the path is changed/loaded.
+                DefPath = Settings.Default.RomRaiderDefRepoPath; //Todo: switch to RR specific path, and automate a search for RR defs whenever the path is changed/loaded.
 
                 StringBuilder builder = new StringBuilder();
                 builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
@@ -248,29 +253,33 @@ namespace NSFW
         //    }
         //}
 
-        public static void MakeRomTables(SharpTuneCore.DeviceImage rom, string outpath){
+        public void MakeRomTables(){
+            string outpath = workingDir + @"\" + deviceImage.CalId + @"_romtables.idc";
+            outpath.deleteFile();
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-                string calId = rom.CalId.ToUpper();
+                string calId = deviceImage.CalId.ToUpper();
                 string functionName = "Tables_" + calId;
                 WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
-                DefineECUFlashTables(functionName, rom.Definition);
+                DefineECUFlashTables(functionName, deviceImage.Definition);
             }
             Trace.Listeners.Remove("TextLogger");
         }
 
-        public static void MakeRomTables(SharpTuneCore.DeviceImage rom, string ecudefs, string outpath){
+        public void MakeRomTables(string ecudefs){
+            string outpath = workingDir + @"\" + deviceImage.CalId + @"_romtables.idc";
+            outpath.deleteFile();
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-                string calId = rom.CalId.ToUpper();
+                string calId = deviceImage.CalId.ToUpper();
                 string functionName = "Tables_" + calId;
                 WriteHeader1(functionName, string.Format("Table definitions for {0}", calId));
                 DefineTables(functionName, calId, ecudefs);
@@ -278,16 +287,18 @@ namespace NSFW
             Trace.Listeners.Remove("TextLogger");
         }
 
-        public static void MakeStdParams(SharpTuneCore.DeviceImage rom, string ssmbase, string loggerdef, string loggerdtd, string outpath){
+        public void MakeStdParams(string ssmbase, string loggerdef, string loggerdtd){
+            string outpath = workingDir + @"\" + deviceImage.CalId + @"_stdparams.idc";
+            outpath.deleteFile(); 
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-                string cpu = rom.Definition.CpuBits;
+                string cpu = deviceImage.Definition.CpuBits;
                 string target = "ecu";
-                string calId = rom.CalId.ToUpper();
+                string calId = deviceImage.CalId.ToUpper();
                 string ssmBaseString = ssmbase;
                 string functionName = "StdParams_" + calId;
                 uint ssmBase = ConvertBaseString(ssmBaseString);
@@ -299,18 +310,20 @@ namespace NSFW
             Trace.Listeners.Remove("TextLogger");
         }
 
-        public static void MakeExtParams(SharpTuneCore.DeviceImage rom, string loggerdef, string loggerdtd, string outpath)
+        public void MakeExtParams(string loggerdef, string loggerdtd)
         {
+            string outpath = workingDir + @"\" + deviceImage.CalId + @"_extparams.idc";
+            outpath.deleteFile(); 
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; 
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-                string cpu = rom.Definition.CpuBits;
+                string cpu = deviceImage.Definition.CpuBits;
                 string target = "ecu";
-                string calId = rom.CalId.ToUpper();
-                string ecuId = rom.Definition.EcuId.ToUpper();
+                string calId = deviceImage.CalId.ToUpper();
+                string ecuId = deviceImage.Definition.EcuId.ToUpper();
                 string functionName = "ExtParams_" + ecuId;
                 WriteHeader1(functionName,
                              string.Format("Extended parameter definitions for {0} bit {1}: {2}",
@@ -320,14 +333,16 @@ namespace NSFW
             Trace.Listeners.Remove("TextLogger");
         }
                             
-        public static void MakeAll(SharpTuneCore.DeviceImage rom, string ssmbase, string loggerdef, string loggerdtd, string outpath){
+        public void MakeAll(string ssmbase, string loggerdef, string loggerdtd){
+            string outpath = workingDir + @"\" + deviceImage.CalId + @"_XmlToIdc.idc";
+            outpath.deleteFile(); 
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; string target = "ecu";
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-                string calId = rom.CalId.ToUpper();
+                string calId = deviceImage.CalId.ToUpper();
                 string ssmBaseString = ssmbase.ToUpper();
                 string functionName1 = "Tables";
                 string functionName2 = "StdParams";
@@ -336,7 +351,7 @@ namespace NSFW
                                 string.Format("All definitions for {0}: {1} with SSM read vector base {2}",
                                 target, calId, ssmBaseString));
                 string[] results = new string[2];
-                results = DefineECUFlashTables(functionName1, rom.Definition);
+                results = DefineECUFlashTables(functionName1, deviceImage.Definition);
                 uint ssmBase = ConvertBaseString(ssmBaseString);
                 DefineStandardParameters(functionName2, target, calId, ssmBase, results[1], loggerdef, loggerdtd);
                 DefineExtendedParameters(functionName3, target, results[0], results[1], loggerdef, loggerdtd);
@@ -344,14 +359,16 @@ namespace NSFW
             Trace.Listeners.Remove("TextLogger");
         }
 
-        public static void MakeAll(SharpTuneCore.DeviceImage rom, string ssmbase, string ecudefs, string loggerdef, string loggerdtd, string outpath){
+        public void MakeAll(string ssmbase, string ecudefs, string loggerdef, string loggerdtd){
+            string outpath = workingDir + @"\" + deviceImage.CalId + @"_XmlToIdc.idc";
+            outpath.deleteFile(); 
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(outpath))
             {
                 twtl.Name = "TextLogger";
                 twtl.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime; string target = "ecu";
                 Trace.Listeners.Add(twtl);
                 Trace.AutoFlush = true;
-                string calId = rom.CalId.ToUpper();
+                string calId = deviceImage.CalId.ToUpper();
                 string ssmBaseString = ssmbase.ToUpper();
                 string functionName1 = "Tables";
                 string functionName2 = "StdParams";
@@ -370,7 +387,7 @@ namespace NSFW
 
         #region DefineXxxx functions
 
-        private static string[] DefineECUFlashTables(string functionName, SharpTuneCore.Definition def)
+        private string[] DefineECUFlashTables(string functionName, SharpTuneCore.Definition def)
         {
             string[] results = new string[2];
             WriteHeader2(functionName);
@@ -379,7 +396,7 @@ namespace NSFW
             return results;
         }
 
-        private static string[] DefineTables(string functionName, string calId, string def)
+        private string[] DefineTables(string functionName, string calId, string def)
         {
             if (!File.Exists(def))
             {
@@ -397,7 +414,7 @@ namespace NSFW
             return results;
         }
 
-        private static void DefineStandardParameters(string functionName, string target, string calId, uint ssmBase, string cpu, string loggerdef, string loggerdtd)
+        private void DefineStandardParameters(string functionName, string target, string calId, uint ssmBase, string cpu, string loggerdef, string loggerdtd)
         {
             if (!File.Exists(loggerdef))
             {
@@ -427,7 +444,7 @@ namespace NSFW
             WriteFooter(functionName);
         }
 
-        private static void DefineExtendedParameters(string functionName, string target, string ecuId, string cpu, string loggerdef, string loggerdtd)
+        private void DefineExtendedParameters(string functionName, string target, string ecuId, string cpu, string loggerdef, string loggerdtd)
         {
             if (!File.Exists(loggerdef))
             {
@@ -460,7 +477,7 @@ namespace NSFW
 
         #endregion
 
-        private static string[] WriteEcuFlashTableNames(SharpTuneCore.Definition def)
+        private string[] WriteEcuFlashTableNames(SharpTuneCore.Definition def)
         {
             int tableCount = 0;
             Trace.WriteLine("auto referenceAddress;");
@@ -514,7 +531,7 @@ namespace NSFW
             return results;
         }
 
-        private static string[] WriteTableNames(string xmlId, string def)
+        private string[] WriteTableNames(string xmlId, string def)
         {
             Trace.WriteLine("auto referenceAddress;");
 
@@ -643,7 +660,12 @@ namespace NSFW
             return results;
         }
 
-        private static string GetRomBase(string xmlId, string def)
+        public string GetSSMBase()
+        {
+            return SSMBase.getSSMBase(deviceImage.imageStream);
+        }
+
+        private string GetRomBase(string xmlId, string def)
         {
             XDocument doc = XDocument.Load(def);
             string path = "/roms/rom[romid/xmlid='" + xmlId + "']";
@@ -654,7 +676,7 @@ namespace NSFW
             return null;
         }
 
-        private static void WriteIdcTableNames()
+        private void WriteIdcTableNames()
         {
             foreach (var pair in tableList)
             {
@@ -709,7 +731,7 @@ namespace NSFW
             }
         }
 
-        private static void WriteStandardParameters(string target, string ecuid, uint ssmBase, string cpu, string loggerdef)
+        private void WriteStandardParameters(string target, string ecuid, uint ssmBase, string cpu, string loggerdef)
         {
             Trace.WriteLine("auto addr;");
 
@@ -846,7 +868,7 @@ namespace NSFW
             }
         }
 
-        private static void WriteExtendedParameters(string target, string ecuid, string cpu, string loggerdef)
+        private void WriteExtendedParameters(string target, string ecuid, string cpu, string loggerdef)
         {
             if (target == "ecu" | target == "ECU")
             {
@@ -894,7 +916,7 @@ namespace NSFW
 
         #region Utility functions
 
-        private static void WriteHeader1(string functionName, string description)
+        private void WriteHeader1(string functionName, string description)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
@@ -908,7 +930,7 @@ namespace NSFW
             Trace.WriteLine(builder.ToString());
         }
 
-        private static void WriteHeader2(string functionName)
+        private void WriteHeader2(string functionName)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("static " + functionName + " ()");
@@ -917,7 +939,7 @@ namespace NSFW
             Trace.Write(builder.ToString());
         }
 
-        private static void WriteHeader3(string functionName1, string functionName2, string functionName3, string description)
+        private void WriteHeader3(string functionName1, string functionName2, string functionName3, string description)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("///////////////////////////////////////////////////////////////////////////////");
@@ -933,13 +955,13 @@ namespace NSFW
             Trace.WriteLine(builder.ToString());
         }
 
-        private static void WriteFooter(string functionName)
+        private void WriteFooter(string functionName)
         {
             Trace.WriteLine("}   // end of " + functionName);
             Trace.WriteLine("");
         }
 
-        private static void PrintSwitches(IDictionary<string, Array> switchList, uint ssmBase, string cpu)
+        private void PrintSwitches(IDictionary<string, Array> switchList, uint ssmBase, string cpu)
         {
             Trace.WriteLine("// Switch Bit Position Name format: Switches_b7_b6_b5_b4_b3_b2_b1_b0");
 
@@ -989,7 +1011,7 @@ namespace NSFW
             }
         }
 
-        private static void MakeName(string address, string name)
+        private void MakeName(string address, string name)
         {
             if (System.Text.RegularExpressions.Regex.IsMatch(address, @"\A\b(0[xX])?[0-9a-fA-F]+\b\Z") && !address.Contains("0x"))
                 address = "0x" + address;
@@ -1002,7 +1024,7 @@ namespace NSFW
             }
         }
 
-        private static void UpdateTableList(string name, string address)
+        private void UpdateTableList(string name, string address)
         {
             if (address.Length > 0 && name.Length > 0)
             {
@@ -1018,7 +1040,7 @@ namespace NSFW
             }
         }
 
-        private static string ConvertName(string original)
+        private string ConvertName(string original)
         {
             original = original.Replace(")(", "_");
 
@@ -1061,12 +1083,12 @@ namespace NSFW
             return name;
         }
 
-        private static bool CategoryIs(string[] args, string category)
+        private bool CategoryIs(string[] args, string category)
         {
             return string.Compare(args[0], category, StringComparison.OrdinalIgnoreCase) == 0;
         }
 
-        private static void FormatData(string address, string length)
+        private void FormatData(string address, string length)
         {
             string datatype = "";
             if (length == "" || length == "1")
@@ -1094,7 +1116,7 @@ namespace NSFW
             }
         }
 
-        private static uint ConvertBaseString(string ssmBaseString)
+        private uint ConvertBaseString(string ssmBaseString)
         {
 
             ssmBaseString = ssmBaseString.ToUpper();

@@ -36,6 +36,8 @@ namespace SharpTuneCore
     /// 
     public class DeviceImage
     {
+        private readonly SharpTuner sharpTuner;
+
         public long FileSize { get; private set; }
 
         public string FileName { get; private set; }
@@ -64,8 +66,9 @@ namespace SharpTuneCore
         /// Constructor
         /// </summary>
         /// 
-        public DeviceImage(string fPath)
+        public DeviceImage(SharpTuner st, string fPath)
         {
+            sharpTuner = st;
             FileInfo f = new FileInfo(fPath);
             this.FileSize = f.Length;
             this.FileName = f.Name;
@@ -76,7 +79,7 @@ namespace SharpTuneCore
 
             if (this.CalId == null)
             {
-                UndefinedWindow uw = new UndefinedWindow(fPath);
+                UndefinedWindow uw = new UndefinedWindow(sharpTuner, fPath);
                 uw.ShowDialog();
                 TryOpenRom(fPath);
             }
@@ -121,7 +124,7 @@ namespace SharpTuneCore
                 this.imageStream = memStream;
             }
 
-            foreach (KeyValuePair<string, Definition> device in SharpTuner.AvailableDevices.DefDictionary)
+            foreach (KeyValuePair<string, Definition> device in sharpTuner.AvailableDevices.DefDictionary)
             {
                 this.imageStream.Seek(device.Value.calibrationIdAddress, SeekOrigin.Begin);
 
@@ -142,7 +145,7 @@ namespace SharpTuneCore
                     //}
                     //this.imageTree = new TableTree(this);
                     this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
-                    ModList = this.GetValidMods();
+                    ModList = sharpTuner.GetValidMods(this); //FAN OUT
                     return true;
                 }
             }

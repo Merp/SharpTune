@@ -10,16 +10,19 @@ using System.IO;
 using SharpTune;
 using SharpTune.EcuMapTools;
 using System.Diagnostics;
+using SharpTuneCore;
 
 namespace SharpTune.GUI
 {
     public partial class IDAtoHEW : Form
     {
-        public IDAtoHEW()
+        public IDAtoHEW(AvailableDevices ad)
         {
+            availableDevices = ad;
             InitializeComponent();
         }
 
+        private readonly AvailableDevices availableDevices;
         public List<string> mapoutputs = new List<string>() {"HEW (C header & section file)","IDA (IDC script)"};
         public List<string> headeroutputs = new List<string>() {"IDA (IDC script)"};
         public string mode = null;
@@ -52,20 +55,20 @@ namespace SharpTune.GUI
             switch (mode)
             {
                 case "header":
-                    EcuMapTool.Run(new string[] { textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc" });
+                    EcuMapTool.Run(availableDevices, new string[] { textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc" });
                     //call header->idc
                     break;
 
                 case "map":
                     if (convertToComboBox.SelectedItem.ToString() == mapoutputs[0])
                     {
-                        EcuMapTool.Run(new string[] { translationTextBox.Text, textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.h", output + Path.GetFileName(textBox1.Text) + "_converted_sections.txt" } );
+                        EcuMapTool.Run(availableDevices, new string[] { translationTextBox.Text, textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.h", output + Path.GetFileName(textBox1.Text) + "_converted_sections.txt" } );
                         break;
                         //call map->hew
                     }
                     else
                     {
-                        EcuMapTool.Run(new string[] {textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc"});
+                        EcuMapTool.Run(availableDevices, new string[] {textBox1.Text, output + Path.GetFileName(textBox1.Text) + "_converted.idc"});
                         //cal map>idc
                         break;
                     }

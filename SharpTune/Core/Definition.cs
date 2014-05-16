@@ -192,11 +192,14 @@ namespace SharpTuneCore
 
         public List<Definition> inheritList { get; private set; }
 
+        private readonly AvailableDevices availableDevices;
+
         /// <summary>
         /// Constructor
         /// </summary>
-        public Definition()
+        public Definition(AvailableDevices ad)
         {
+            availableDevices = ad; 
             isBase = false;
             MetaData = new DefinitionMetaData();
             ExposedRomTables = new Dictionary<string, Table>();
@@ -213,16 +216,16 @@ namespace SharpTuneCore
         /// TODO: Include more information about inheritance in the class for def-editing
         /// </summary>
         /// <param name="calID"></param>
-        public Definition(string filepath)
-            : this()
+        public Definition(AvailableDevices ad, string filepath)
+            : this(ad)
         {
             filePath = filepath;
             //TODO: switch based on current definition schema
             ParseMetaData_ECUFlash();
         }
 
-        public Definition(string respath, bool isres)
-            : this()
+        public Definition(AvailableDevices ad, string respath, bool isres)
+            : this(ad)
         {
             filePath = respath;
             ParseMetaData_ECUFlash();
@@ -236,13 +239,13 @@ namespace SharpTuneCore
         /// <param name="include"></param>
         /// <param name="xromt"></param>
         /// <param name="xramt"></param>
-        public Definition(string fp, Mod mod) : this()
+        public Definition(AvailableDevices ad, string fp, Mod mod) : this(ad)
         {
             try
             {
                 this.filePath = fp;
 
-                MetaData = SharpTuner.AvailableDevices.DefDictionary[mod.InitialCalibrationId].MetaData.Clone();
+                MetaData = availableDevices.DefDictionary[mod.InitialCalibrationId].MetaData.Clone();
                 MetaData.UpdateFromMod(mod); 
                 
                 Inherit();
@@ -319,14 +322,14 @@ namespace SharpTuneCore
 
         private void Inherit()
         {
-            Dictionary<string, Definition> dd = SharpTuner.AvailableDevices.DefDictionary;
+            Dictionary<string, Definition> dd = availableDevices.DefDictionary;
             if (dd.ContainsKey(include) && dd[include].calibrationlId != null)
                 dd[include].Populate();
 
-            if(SharpTuner.AvailableDevices.DefDictionary[include].inheritList.Count > 0)
-                inheritList.AddRange(SharpTuner.AvailableDevices.DefDictionary[include].inheritList);
+            if(availableDevices.DefDictionary[include].inheritList.Count > 0)
+                inheritList.AddRange(availableDevices.DefDictionary[include].inheritList);
 
-            inheritList.Add(SharpTuner.AvailableDevices.DefDictionary[include]);
+            inheritList.Add(availableDevices.DefDictionary[include]);
             inheritList.Reverse();
         }
 
@@ -720,10 +723,10 @@ namespace SharpTuneCore
         {
             foreach (Definition d in inheritList)
             {
-                if (SharpTuner.AvailableDevices.DefDictionary[d.calibrationlId].AggregateBaseRomTables.ContainsKey(name))
-                    return SharpTuner.AvailableDevices.DefDictionary[d.calibrationlId].AggregateBaseRomTables[name];
-                else if (SharpTuner.AvailableDevices.DefDictionary[d.calibrationlId].AggregateBaseRamTables.ContainsKey(name))//TODO FIX RAMTABLES
-                    return SharpTuner.AvailableDevices.DefDictionary[d.calibrationlId].AggregateBaseRamTables[name];
+                if (availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRomTables.ContainsKey(name))
+                    return availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRomTables[name];
+                else if (availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRamTables.ContainsKey(name))//TODO FIX RAMTABLES
+                    return availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRamTables[name];
             }
             Trace.WriteLine("Warning: base table for " + name + " not found");
             return null;
