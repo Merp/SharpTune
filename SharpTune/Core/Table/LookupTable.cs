@@ -7,27 +7,27 @@ using System.IO;
 
 namespace SharpTune.Core
 {
-    public static class LutFactory
+    public static class LookupTableFactory
     {
-        public static Lut CreateLut(string name, uint address, Stream stream)
+        public static LookupTable CreateLookupTable(string name, uint address, Stream stream)
         {
             byte[] tba = new byte[32];
             stream.Read(tba,0,32);
             Blob tb = new Blob(address,tba);
-            Lut3D lut3d;
-            if (Lut3D.TrySynthesizeLut3D(out lut3d,name,tb,address))
+            LookupTable3D lut3d;
+            if (LookupTable3D.TrySynthesizeLut3D(out lut3d,name,tb,address))
                 return lut3d;
-            Lut2D lut2d;
-            if (Lut2D.TrySynthesizeLut2D(out lut2d,name,tb,address))
+            LookupTable2D lut2d;
+            if (LookupTable2D.TrySynthesizeLut2D(out lut2d,name,tb,address))
                 return lut2d;
-            Lut lut;
-            if (Lut.TrySynthesizeLut(out lut, name, address))
+            LookupTable lut;
+            if (LookupTable.TrySynthesizeLut(out lut, name, address))
                 return lut;
             throw new Exception("Bad lut address!!");
         }
     }
 
-    public class Lut
+    public class LookupTable
     {
         public readonly UInt16 rowColLimit = 35;
         public readonly UInt32 romLimit = 0x00018000;
@@ -45,19 +45,19 @@ namespace SharpTune.Core
 
         //TODO: FUCKING POLYMORPHISM
 
-        public Lut()
+        public LookupTable()
         {    
         }
 
-        public Lut(string name, uint da)
+        public LookupTable(string name, uint da)
         {
             Name = name;
             dataAddress = da;
         }
 
-        public static bool TrySynthesizeLut(out Lut lut, string name, uint da)
+        public static bool TrySynthesizeLut(out LookupTable lut, string name, uint da)
         {
-            lut = new Lut(name, da);
+            lut = new LookupTable(name, da);
             return lut.CheckData();
         }            
 
@@ -70,7 +70,7 @@ namespace SharpTune.Core
 
     }
 
-    public class Lut2D : Lut
+    public class LookupTable2D : LookupTable
     {
         public byte[] rawdata;
         public int length;
@@ -78,7 +78,7 @@ namespace SharpTune.Core
 
         public uint colsAddress;
         //for lookup tables
-        public Lut2D()
+        public LookupTable2D()
         {
         }
 
@@ -88,7 +88,7 @@ namespace SharpTune.Core
         /// <param name="blob"></param>
         /// <param name="address"></param>
 
-        public Lut2D(string name,Blob blob, uint address)
+        public LookupTable2D(string name,Blob blob, uint address)
         {
             Name = name;
             int addr = (int)(address - (uint)blob.StartAddress);
@@ -98,9 +98,9 @@ namespace SharpTune.Core
             blob.TryGetUInt32(ref dataAddress, ref addr);
         }
         
-        public static bool TrySynthesizeLut2D(out Lut2D lut, string name, Blob blob, uint addr)
+        public static bool TrySynthesizeLut2D(out LookupTable2D lut, string name, Blob blob, uint addr)
         {
-            lut = new Lut2D(name, blob, addr);
+            lut = new LookupTable2D(name, blob, addr);
             if(lut.CheckData())
                 return true;
             return false;
@@ -118,7 +118,7 @@ namespace SharpTune.Core
             return false;
         }
     }
-        public class Lut3D : Lut2D
+        public class LookupTable3D : LookupTable2D
     {
         public UInt16 rows;
         public uint tableType;
@@ -127,7 +127,7 @@ namespace SharpTune.Core
         public uint offset;
         
         //for lookup tables
-        public Lut3D()
+        public LookupTable3D()
         {
         }
 
@@ -138,7 +138,7 @@ namespace SharpTune.Core
         /// <param name="blob"></param>
         /// <param name="address"></param>
 
-        public Lut3D(string name, Blob blob, uint address)
+        public LookupTable3D(string name, Blob blob, uint address)
         {
             Name = name;
             int addr = (int)(address - (uint)blob.StartAddress);
@@ -152,9 +152,9 @@ namespace SharpTune.Core
             blob.TryGetUInt32(ref offset, ref addr);
         }
 
-        public static bool TrySynthesizeLut3D(out Lut3D lut,string name,Blob blob, uint addr)
+        public static bool TrySynthesizeLut3D(out LookupTable3D lut,string name,Blob blob, uint addr)
         {
-            lut = new Lut3D(name,blob, addr);
+            lut = new LookupTable3D(name,blob, addr);
             if(lut.CheckData())
                 return true;
             return false;

@@ -17,7 +17,7 @@ namespace SharpTune.GUI
     {
         private readonly SharpTuner sharpTuner;
 
-        private Definition def;
+        private ECUMetaData def;
         private string filePath;
         private List<string> defList;
 
@@ -36,7 +36,7 @@ namespace SharpTune.GUI
         private void UndefinedWindow_Load(object sender, EventArgs e)
         {
             defList = new List<string>(sharpTuner.AvailableDevices.IdentList.OrderBy(x => x.ToString()).ToList());
-            def = new Definition(sharpTuner.AvailableDevices);
+            def = new ECUMetaData(sharpTuner.AvailableDevices);
             List<string> dss = new List<string>();
             dss.Add("DEFAULT");
             dss.AddRange(defList);
@@ -76,7 +76,7 @@ namespace SharpTune.GUI
             try
             {
                 XElement xe = XElement.Parse(textBoxDefXml.Text);
-                def.MetaData.ParseEcuFlashXml(xe,def.include);
+                def.ident.ParseEcuFlashXml(xe,def.include);
             }
             catch (Exception er)
             {
@@ -98,8 +98,8 @@ namespace SharpTune.GUI
                 DialogResult dialogResult = MessageBox.Show("Found Identifier: " + id +". Use this??", "Identifier", MessageBoxButtons.YesNo);
                 if(dialogResult == DialogResult.Yes)
                 {
-                    def.MetaData.setIdForUndefined(id);
-                    textBoxDefXml.Text = def.MetaData.EcuFlashXml.ToString();
+                    def.ident.setIdForUndefined(id);
+                    textBoxDefXml.Text = def.ident.EcuFlashXml.ToString();
 
                 }
                 else if (dialogResult == DialogResult.No)
@@ -112,9 +112,9 @@ namespace SharpTune.GUI
         private void comboBoxIncludeDef_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (sharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxIncludeDef.SelectedItem.ToString()))
-                def.MetaData.include = comboBoxIncludeDef.SelectedItem.ToString();
+                def.ident.include = comboBoxIncludeDef.SelectedItem.ToString();
             else
-                def.MetaData.include = null;
+                def.ident.include = null;
         }
 
         private void buttonSave_Click(object sender, EventArgs e)
@@ -128,16 +128,16 @@ namespace SharpTune.GUI
             try
             {
                 XElement xe = XElement.Parse(textBoxDefXml.Text);
-                def.MetaData.ParseEcuFlashXml(xe,comboBoxIncludeDef.SelectedValue.ToString());
+                def.ident.ParseEcuFlashXml(xe,comboBoxIncludeDef.SelectedValue.ToString());
             
             StringBuilder path = new StringBuilder();
             path.Append(Settings.Default.EcuFlashDefRepoPath + "/");
-            if (def.MetaData.model != null)
+            if (def.ident.model != null)
             {
-                path.Append(def.MetaData.model.ToString());
-                if (def.MetaData.submodel != null)
+                path.Append(def.ident.model.ToString());
+                if (def.ident.submodel != null)
                 {
-                    string s = " " + def.MetaData.submodel;
+                    string s = " " + def.ident.submodel;
                     path.Append(s);
                 }
                 path.Append("/");
@@ -194,7 +194,7 @@ namespace SharpTune.GUI
         {
             if (sharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                textBoxDefXml.Text = sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].MetaData.EcuFlashXml.ToString();
+                textBoxDefXml.Text = sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].ident.EcuFlashXml.ToString();
                 comboBoxIncludeDef.SelectedItem = comboBoxCopyDef.SelectedItem;
             }
             else

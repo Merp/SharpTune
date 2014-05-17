@@ -34,10 +34,10 @@ namespace EcuMapTools
         private static String DefPath = "";
         private static TextWriterTraceListener twtl;
 
-        private readonly DeviceImage deviceImage;
+        private readonly ECU deviceImage;
         public string workingDir { get; set; }
 
-        public XMLtoIDC(DeviceImage di)
+        public XMLtoIDC(ECU di)
         {
             deviceImage = di;
             workingDir = deviceImage.FilePath;
@@ -387,7 +387,7 @@ namespace EcuMapTools
 
         #region DefineXxxx functions
 
-        private string[] DefineECUFlashTables(string functionName, SharpTuneCore.Definition def)
+        private string[] DefineECUFlashTables(string functionName, SharpTuneCore.ECUMetaData def)
         {
             string[] results = new string[2];
             WriteHeader2(functionName);
@@ -477,7 +477,7 @@ namespace EcuMapTools
 
         #endregion
 
-        private string[] WriteEcuFlashTableNames(SharpTuneCore.Definition def)
+        private string[] WriteEcuFlashTableNames(SharpTuneCore.ECUMetaData def)
         {
             int tableCount = 0;
             Trace.WriteLine("auto referenceAddress;");

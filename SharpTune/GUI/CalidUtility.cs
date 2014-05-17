@@ -28,7 +28,7 @@ namespace SharpTune
 {
     public partial class CalidUtility : Form
     {
-        private DeviceImage currentImage { get; set; }
+        private ECU currentImage { get; set; }
         private readonly SharpTuner sharpTuner;
 
         public CalidUtility(SharpTuner st, MainWindow mw)

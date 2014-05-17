@@ -34,7 +34,7 @@ namespace SharpTuneCore
     /// Describes a ROM Image opened by the patching utility.
     /// </summary>
     /// 
-    public class DeviceImage
+    public class ECU
     {
         private readonly SharpTuner sharpTuner;
 
@@ -52,7 +52,7 @@ namespace SharpTuneCore
 
         public bool isChanged { get; set; }
 
-        public Definition Definition { get; private set; }
+        public ECUMetaData Definition { get; private set; }
 
         public List<TableMetaData> tableList { get; set; }
 
@@ -66,7 +66,7 @@ namespace SharpTuneCore
         /// Constructor
         /// </summary>
         /// 
-        public DeviceImage(SharpTuner st, string fPath)
+        public ECU(SharpTuner st, string fPath)
         {
             sharpTuner = st;
             FileInfo f = new FileInfo(fPath);
@@ -124,7 +124,7 @@ namespace SharpTuneCore
                 this.imageStream = memStream;
             }
 
-            foreach (KeyValuePair<string, Definition> device in sharpTuner.AvailableDevices.DefDictionary)
+            foreach (KeyValuePair<string, ECUMetaData> device in sharpTuner.AvailableDevices.DefDictionary)
             {
                 this.imageStream.Seek(device.Value.calibrationIdAddress, SeekOrigin.Begin);
 

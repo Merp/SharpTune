@@ -70,7 +70,7 @@
     <Compile Include="AvailableDevices.cs" />
     <Compile Include="Core\Checksum\IChecksumModule.cs" />
     <Compile Include="Core\Checksum\ChecksumSubaruDBW.cs" />
-    <Compile Include="Core\DefinitionMetaData.cs" />
+    <Compile Include="Core\ECUIdentifier.cs" />
     <Compile Include="Core\FlashMethod\IFlashMethod.cs" />
     <Compile Include="Core\MemoryModel\IMemoryModel.cs" />
     <Compile Include="Core\Table\ITableReader.cs" />
@@ -85,8 +85,8 @@
     <Compile Include="EcuMapTools\EcuMap.cs" />
     <Compile Include="EcuMapTools\SSMBase.cs" />
     <Compile Include="EcuMapTools\XMLtoIDC.cs" />
-    <Compile Include="Core\Definition.cs" />
-    <Compile Include="Core\DeviceImage.cs" />
+    <Compile Include="Core\ECUMetaData.cs" />
+    <Compile Include="Core\ECU.cs" />
     <Compile Include="Core\Plugin.cs" />
     <Compile Include="Core\ResourceUtil.cs" />
     <Compile Include="Core\TableTree.cs" />
@@ -164,7 +164,7 @@
     <Compile Include="RomMod\Blob.cs" />
     <Compile Include="RomMod\BlobList.cs" />
     <Compile Include="RomMod\ModDefinition.cs" />
-    <Compile Include="Core\Lut.cs" />
+    <Compile Include="Core\Table\LookupTable.cs" />
     <Compile Include="RomMod\Mod.cs" />
     <Compile Include="RomMod\Patch.cs" />
     <Compile Include="RomMod\RomMod.cs" />

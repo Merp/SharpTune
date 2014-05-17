@@ -20,10 +20,10 @@ namespace SharpTune.GUI
 {
     public partial class XMLtoIDCGUI : Form
     {
-        private readonly DeviceImage deviceImage;
+        private readonly ECU deviceImage;
         private readonly XMLtoIDC xmlConv;
 
-        public XMLtoIDCGUI(DeviceImage di)
+        public XMLtoIDCGUI(ECU di)
         {
             deviceImage = di;
             xmlConv = new XMLtoIDC(deviceImage);
@@ -132,7 +132,7 @@ namespace SharpTune.GUI
                     }
 
                     rominfo += "FileName:  " + deviceImage.FileName + System.Environment.NewLine;
-                    foreach (var s in deviceImage.Definition.MetaData.EcuFlashXml.Elements())//TODO: use a dictionary instead.
+                    foreach (var s in deviceImage.Definition.ident.EcuFlashXml.Elements())//TODO: use a dictionary instead.
                     {
                         rominfo += s.Name.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
                     }

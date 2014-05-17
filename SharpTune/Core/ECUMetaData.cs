@@ -37,19 +37,19 @@ namespace SharpTuneCore
     /// </summary>
     /// 
     [Serializable]
-    public class Definition
+    public class ECUMetaData
     {
-        public DefinitionMetaData MetaData { get; private set; }
+        public ECUIdentifier ident { get; private set; }
         
         public bool isBase { get; private set; }
-        public String calibrationlId { get { return MetaData.CalibrationIdString; } } //TODO: put this in memorymodel
-        public int calibrationIdAddress { get { return (int)MetaData.CalibrationIdAddress; } }
+        public String calibrationlId { get { return ident.CalibrationIdString; } } //TODO: put this in memorymodel
+        public int calibrationIdAddress { get { return (int)ident.CalibrationIdAddress; } }
 
         public String EcuId
         {
             get {
-                if (MetaData.EcuIdHexString != null)//TODO: put this in memorymodel.
-                    return MetaData.EcuIdHexString;
+                if (ident.EcuIdHexString != null)//TODO: put this in memorymodel.
+                    return ident.EcuIdHexString;
                 else
                     return "Unknown";
             }
@@ -59,8 +59,8 @@ namespace SharpTuneCore
         {
             get
             {
-                if (MetaData.memoryModel != null)
-                    return MetaData.memoryModel.cpubits.ToString();
+                if (ident.memoryModel != null)
+                    return ident.memoryModel.cpubits.ToString();
                 else
                     return "Unknown";
             }
@@ -71,7 +71,7 @@ namespace SharpTuneCore
         /// </summary>
         public string filePath { get; set; }
 
-        public string include { get { return MetaData.include; } }
+        public string include { get { return ident.include; } }
         
         public Dictionary<string,TableMetaData> ExposedRomTables { get; private set;}
         public Dictionary<string,TableMetaData> ExposedRamTables { get; private set;}
@@ -79,7 +79,7 @@ namespace SharpTuneCore
         public Dictionary<string,TableMetaData> InheritedExposedRomTables { 
             get{
                 Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
-                foreach(Definition d in inheritList)
+                foreach(ECUMetaData d in inheritList)
                 {
                     foreach(TableMetaData t in d.ExposedRomTables.Values)
                     {
@@ -95,7 +95,7 @@ namespace SharpTuneCore
         public Dictionary<string,TableMetaData> InheritedExposedRamTables { 
             get{
                 Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
-                foreach(Definition d in inheritList)
+                foreach(ECUMetaData d in inheritList)
                 {
                     foreach(TableMetaData t in d.ExposedRamTables.Values)
                     {
@@ -126,7 +126,7 @@ namespace SharpTuneCore
         public Dictionary<string,TableMetaData> InheritedBaseRomTables { 
             get{
                 Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
-                foreach(Definition d in inheritList)
+                foreach(ECUMetaData d in inheritList)
                 {
                     foreach(TableMetaData t in d.BaseRomTables.Values)
                     {
@@ -142,7 +142,7 @@ namespace SharpTuneCore
         public Dictionary<string,TableMetaData> InheritedBaseRamTables { 
             get{
                 Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
-                foreach(Definition d in inheritList)
+                foreach(ECUMetaData d in inheritList)
                 {
                     foreach(TableMetaData t in d.BaseRamTables.Values)
                     {
@@ -190,24 +190,24 @@ namespace SharpTuneCore
 
         public Dictionary<string, Scaling> ScalingList { get; private set; }
 
-        public List<Definition> inheritList { get; private set; }
+        public List<ECUMetaData> inheritList { get; private set; }
 
         private readonly AvailableDevices availableDevices;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public Definition(AvailableDevices ad)
+        public ECUMetaData(AvailableDevices ad)
         {
             availableDevices = ad; 
             isBase = false;
-            MetaData = new DefinitionMetaData();
+            ident = new ECUIdentifier();
             ExposedRomTables = new Dictionary<string, TableMetaData>();
             ExposedRamTables = new Dictionary<string, TableMetaData>();
             BaseRomTables = new Dictionary<string, TableMetaData>();
             BaseRamTables = new Dictionary<string, TableMetaData>();
             ScalingList = new Dictionary<string,Scaling>();
-            inheritList = new List<Definition>();
+            inheritList = new List<ECUMetaData>();
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace SharpTuneCore
         /// TODO: Include more information about inheritance in the class for def-editing
         /// </summary>
         /// <param name="calID"></param>
-        public Definition(AvailableDevices ad, string filepath)
+        public ECUMetaData(AvailableDevices ad, string filepath)
             : this(ad)
         {
             filePath = filepath;
@@ -224,7 +224,7 @@ namespace SharpTuneCore
             ParseMetaData_ECUFlash();
         }
 
-        public Definition(AvailableDevices ad, string respath, bool isres)
+        public ECUMetaData(AvailableDevices ad, string respath, bool isres)
             : this(ad)
         {
             filePath = respath;
@@ -239,14 +239,14 @@ namespace SharpTuneCore
         /// <param name="include"></param>
         /// <param name="xromt"></param>
         /// <param name="xramt"></param>
-        public Definition(AvailableDevices ad, string fp, Mod mod) : this(ad)
+        public ECUMetaData(AvailableDevices ad, string fp, Mod mod) : this(ad)
         {
             try
             {
                 this.filePath = fp;
 
-                MetaData = availableDevices.DefDictionary[mod.InitialCalibrationId].MetaData.Clone();
-                MetaData.UpdateFromMod(mod); 
+                ident = availableDevices.DefDictionary[mod.InitialCalibrationId].ident.Clone();
+                ident.UpdateFromMod(mod); 
                 
                 Inherit();
 
@@ -277,7 +277,7 @@ namespace SharpTuneCore
             {
                 XDocument xmlDoc = XDocument.Load(filePath, LoadOptions.PreserveWhitespace);
                 XElement xRomId = xmlDoc.XPathSelectElement("/rom/romid");
-                MetaData = new DefinitionMetaData();
+                ident = new ECUIdentifier();
                 string incl;
 
                 if (xmlDoc.XPathSelectElement("/rom/include") != null)
@@ -288,7 +288,7 @@ namespace SharpTuneCore
                     isBase = true;
                 }
 
-                MetaData.ParseEcuFlashXml(xRomId, incl);
+                ident.ParseEcuFlashXml(xRomId, incl);
             }
             catch (Exception e)
             {
@@ -300,7 +300,7 @@ namespace SharpTuneCore
 
         public XElement ExportRRRomId()
         {
-            return MetaData.ExportRRMetaData();
+            return ident.ExportRRMetaData();
         }
             
         /// <summary>
@@ -322,7 +322,7 @@ namespace SharpTuneCore
 
         private void Inherit()
         {
-            Dictionary<string, Definition> dd = availableDevices.DefDictionary;
+            Dictionary<string, ECUMetaData> dd = availableDevices.DefDictionary;
             if (dd.ContainsKey(include) && dd[include].calibrationlId != null)
                 dd[include].Populate();
 
@@ -673,7 +673,7 @@ namespace SharpTuneCore
                     //TODO THIS IS REDUNDANT
                     writer.WriteStartElement("rom");
 
-                    MetaData.EcuFlashXml.WriteTo(writer);
+                    ident.EcuFlashXml.WriteTo(writer);
 
                     //Write include
                     if (this.include != null)
@@ -721,7 +721,7 @@ namespace SharpTuneCore
 
         private TableMetaData GetBaseTable(string name)
         {
-            foreach (Definition d in inheritList)
+            foreach (ECUMetaData d in inheritList)
             {
                 if (availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRomTables.ContainsKey(name))
                     return availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRomTables[name];
@@ -732,7 +732,7 @@ namespace SharpTuneCore
             return null;
         }
 
-        public void ExposeTable(string name, Lut lut)
+        public void ExposeTable(string name, LookupTable lut)
         {
             TableMetaData baseTable = GetBaseTable(name);
             if (baseTable != null)
@@ -892,7 +892,7 @@ namespace SharpTuneCore
         //    }
         //}
 
-        public void CopyTables(Definition d)
+        public void CopyTables(ECUMetaData d)
         {
             ExposedRomTables = new Dictionary<string,TableMetaData>(d.ExposedRomTables);
             ExposedRamTables = new Dictionary<string,TableMetaData>(d.ExposedRamTables);
@@ -902,21 +902,21 @@ namespace SharpTuneCore
         }
 
         #region ECUFlash XML Code
-        public void ImportMapFile(string filepath, DeviceImage image)
+        public void ImportMapFile(string filepath, ECU image)
         {
             EcuMap im = new EcuMap();
             im.ImportFromMapFileOrText(filepath);
             ReadMap(im,image);
         }
 
-        public void ImportMapText(string text, DeviceImage image)
+        public void ImportMapText(string text, ECU image)
         {
             EcuMap im = new EcuMap();
             im.ImportFromMapFileOrText(text);
             ReadMap(im,image);
         }
 
-        public void ReadMap(EcuMap idaMap,DeviceImage image)
+        public void ReadMap(EcuMap idaMap,ECU image)
         {
             //loop through base def and search for table names in map
             foreach (var romtable in AggregateBaseRomTables)
@@ -925,7 +925,7 @@ namespace SharpTuneCore
                 {
                     if (romtable.Key.EqualsDefineString(idan.Key))
                     {
-                        ExposeTable(romtable.Key, LutFactory.CreateLut(romtable.Key, uint.Parse(idan.Value.ToString(), NumberStyles.AllowHexSpecifier), image.imageStream));
+                        ExposeTable(romtable.Key, LookupTableFactory.CreateLookupTable(romtable.Key, uint.Parse(idan.Value.ToString(), NumberStyles.AllowHexSpecifier), image.imageStream));
                         break;
                     }
                 }
@@ -949,7 +949,7 @@ namespace SharpTuneCore
         {
             basetable = null;
 
-            foreach (Definition d in inheritList)
+            foreach (ECUMetaData d in inheritList)
             {
                 foreach (TableMetaData t in d.RomTables)
                 {

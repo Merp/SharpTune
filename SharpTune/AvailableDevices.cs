@@ -31,7 +31,7 @@ namespace SharpTuneCore
 {
     public class AvailableDevices
     {
-        public Dictionary<string, Definition> DefDictionary {get; private set;}
+        public Dictionary<string, ECUMetaData> DefDictionary {get; private set;}
 
         public List<string> IdentList { get; private set; }
 
@@ -42,7 +42,7 @@ namespace SharpTuneCore
         /// </summary>
         public AvailableDevices()
         {
-            DefDictionary = new Dictionary<string,Definition>();
+            DefDictionary = new Dictionary<string,ECUMetaData>();
             IdentList = new List<string>();
             this.DeviceCount = 0;
         }
@@ -102,7 +102,7 @@ namespace SharpTuneCore
         {
             Dictionary<String, String> imap = new Dictionary<String, String>();
 
-            foreach (KeyValuePair<String, Definition> pair in this.DefDictionary)
+            foreach (KeyValuePair<String, ECUMetaData> pair in this.DefDictionary)
             {
                 imap.Add(pair.Value.filePath, findInherit(pair.Key));
             }
@@ -137,7 +137,7 @@ namespace SharpTuneCore
                     {
                         try
                         {
-                            Definition d = new Definition(this, f);
+                            ECUMetaData d = new ECUMetaData(this, f);
                             if(d.isBase)
                                 d.Populate();
                             lock(DefDictionary)
@@ -195,7 +195,7 @@ namespace SharpTuneCore
             return null;
         }
 
-        public Definition getDef(string id)
+        public ECUMetaData getDef(string id)
         {
             if (DefDictionary.ContainsKey(id) && DefDictionary[id].calibrationlId != null)
             {

@@ -38,7 +38,7 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static TableMetaData CreateTable(XElement xel,string tablename, Definition def)
+        public static TableMetaData CreateTable(XElement xel,string tablename, ECUMetaData def)
         {
             TableMetaData basetable = null;
             if (def.GetBaseRomTable(tablename, out basetable))
@@ -52,7 +52,7 @@ namespace SharpTuneCore
             return CreateTableWithDimension(xel, def, basetable);
         }
 
-        public static TableMetaData CreateTableWithDimension(XElement xel, Definition def, TableMetaData basetable)
+        public static TableMetaData CreateTableWithDimension(XElement xel, ECUMetaData def, TableMetaData basetable)
         {
             string type = null;
             if (xel.Attribute("type") != null)
@@ -82,7 +82,7 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static TableMetaData CreateRamTable(XElement xel, string tablename, string type, Definition def)
+        public static TableMetaData CreateRamTable(XElement xel, string tablename, string type, ECUMetaData def)
         {
             TableMetaData basetable = null;
             //if (def.GetBaseRamTable(tablename, out basetable))
@@ -96,7 +96,7 @@ namespace SharpTuneCore
             return CreateRamTableWithDimension(xel, type, def, basetable);
         }
 
-        public static TableMetaData CreateRamTableWithDimension(XElement xel, string storageType, Definition def, TableMetaData basetable)
+        public static TableMetaData CreateRamTableWithDimension(XElement xel, string storageType, ECUMetaData def, TableMetaData basetable)
         {
             TableMetaData tempTable = null;
             string type = null;
@@ -191,8 +191,8 @@ namespace SharpTuneCore
             }
         }
 
-        public DeviceImage parentImage { get; private set; }
-        public Definition parentDef { get; protected set; }
+        public ECU parentImage { get; private set; }
+        public ECUMetaData parentDef { get; protected set; }
 
         public DataTable dataTable { get; set; }
         public List<byte[]> byteValues { get; set; }
@@ -416,7 +416,7 @@ namespace SharpTuneCore
             }
         } 
 
-        public virtual TableMetaData CreateChild(Lut lut, Definition d)
+        public virtual TableMetaData CreateChild(LookupTable lut, ECUMetaData d)
         {
             XElement xel = new XElement("table");
             xel.SetAttributeValue("name", name);
@@ -443,7 +443,7 @@ namespace SharpTuneCore
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
-        public TableMetaData(XElement xel, Definition def, TableMetaData bt)
+        public TableMetaData(XElement xel, ECUMetaData def, TableMetaData bt)
         :this(){
             try
             {
@@ -630,7 +630,7 @@ namespace SharpTuneCore
     {
         private XElement RRXML;
 
-        public RamTable(XElement xel, Definition def, TableMetaData basetable)// DeviceImage image)
+        public RamTable(XElement xel, ECUMetaData def, TableMetaData basetable)// DeviceImage image)
             : base(xel, def, basetable)
         {
             RRXML = xel;

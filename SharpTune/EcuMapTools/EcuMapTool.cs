@@ -97,7 +97,7 @@ namespace SharpTune.EcuMapTools
             ecuMap = new EcuMap();
             if (ecuMap.ImportFromHeaderAndMapFile(mapFileName, headerFileName))
             {
-                Definition def;
+                ECUMetaData def;
 
                 if (availableDevices.DefDictionary.ContainsKey(romCalId))
                     def = availableDevices.DefDictionary[romCalId];

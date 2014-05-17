@@ -11,7 +11,7 @@ using System.Xml.Linq;
 namespace SharpTune.Core
 {
     [Serializable]
-    public class DefinitionMetaData
+    public class ECUIdentifier
     {
         public bool isReady {get; private set;}
         public string xmlid { get; private set;}
@@ -264,7 +264,7 @@ namespace SharpTune.Core
             isReady = SanityCheck();
         }
 
-        public DefinitionMetaData()
+        public ECUIdentifier()
         {
             isReady = false;
         }

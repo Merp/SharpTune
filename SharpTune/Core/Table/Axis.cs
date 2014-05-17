@@ -166,7 +166,7 @@ namespace SharpTuneCore
             return xel;
         }
 
-        public virtual void Read(DeviceImage image)
+        public virtual void Read(ECU image)
         {
 
             //TODO, pull this ot and make as extension to generic axis
@@ -197,7 +197,7 @@ namespace SharpTuneCore
 
         public virtual void Write()
         {
-            DeviceImage image = this.baseTable.parentImage;
+            ECU image = this.baseTable.parentImage;
             lock (image.imageStream)
             {
                 image.imageStream.Seek(this.address, SeekOrigin.Begin);
@@ -291,7 +291,7 @@ namespace SharpTuneCore
             return xel;
         }
 
-        public override void Read(DeviceImage image)
+        public override void Read(ECU image)
         {
 
             //TODO, pull this ot and make as extension to generic axis

@@ -81,7 +81,7 @@ namespace SharpTune
             }
             else if (args[0] == "xmlconvertor")
             {
-                DeviceImage di = new DeviceImage(sharpTuner, args[1]);
+                ECU di = new ECU(sharpTuner, args[1]);
                 XMLtoIDC xti = new XMLtoIDC(di);
                 //TODO clean up this routine: xti.Run(args);
             }

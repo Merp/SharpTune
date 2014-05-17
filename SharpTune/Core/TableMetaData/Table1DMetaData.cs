@@ -30,11 +30,11 @@ namespace SharpTuneCore
     {
 
 
-        public Table1DMetaData(XElement xel, Definition def, TableMetaData basetable)
+        public Table1DMetaData(XElement xel, ECUMetaData def, TableMetaData basetable)
             : base(xel, def, basetable)
         { this.type = "1D"; }
 
-        public override TableMetaData CreateChild(Lut lut,Definition d)
+        public override TableMetaData CreateChild(LookupTable lut,ECUMetaData d)
         {
             return base.CreateChild(lut,d);
         }
@@ -43,7 +43,7 @@ namespace SharpTuneCore
 
     public class RamTable1DMetaData : Table1DMetaData
     {
-        public RamTable1DMetaData(XElement xel, Definition def, TableMetaData basetable)// DeviceImage image)
+        public RamTable1DMetaData(XElement xel, ECUMetaData def, TableMetaData basetable)// DeviceImage image)
             : base(xel, def, basetable)
         {
 

@@ -42,8 +42,8 @@ namespace SharpTune
         private IPlugin[] Plugins;
         private PluginContainer PluginHost = new PluginContainer();
         
-        private DeviceImage _activeImage;
-        public DeviceImage activeImage 
+        private ECU _activeImage;
+        public ECU activeImage 
         {
             get { return _activeImage; }
             set
@@ -54,7 +54,7 @@ namespace SharpTune
             }
         }
 
-        public List<DeviceImage> ImageList { get; set; }
+        public List<ECU> ImageList { get; set; }
 
         public AvailableDevices AvailableDevices { get; set; }
 
@@ -90,7 +90,7 @@ namespace SharpTune
             InitTraces();
             Trace.WriteLine("<--- Initializing SharpTuner --->");
             Trace.WriteLine("SharpTune Assembly Version: " + Version);
-            ImageList = new List<DeviceImage>();
+            ImageList = new List<ECU>();
             DataScalings = new List<Scaling>();
             UnitScalings = new List<Scaling>();
             PopulateAvailableDevices();
@@ -197,7 +197,7 @@ namespace SharpTune
         //    ssmInterface = s;
         //}
 
-        public void AddImage(DeviceImage d)
+        public void AddImage(ECU d)
         {
             ImageList.Add(d);
             activeImage = d;
@@ -369,7 +369,7 @@ namespace SharpTune
                 Trace.WriteLine("No external mods found");
         }
 
-        public List<Mod> GetValidMods(DeviceImage d)
+        public List<Mod> GetValidMods(ECU d)
         {
             List<Mod> tm = new List<Mod>();
             foreach (Mod m in AvailableMods)
@@ -391,7 +391,7 @@ namespace SharpTune
 
         public void RefreshImages()
         {
-            foreach (DeviceImage d in ImageList)
+            foreach (ECU d in ImageList)
             {
                 d.Refresh();
             }

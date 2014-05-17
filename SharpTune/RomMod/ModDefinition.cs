@@ -40,7 +40,7 @@ namespace SharpTune.RomMod
 
         private const uint cookieEnd = 0x00090009;
 
-        public List<Lut> RomLutList {get; private set;}
+        public List<LookupTable> RomLutList {get; private set;}
         public Dictionary<string,TableMetaData> RamTableList { get; private set; }
 
         private Mod parentMod { get; set; }
@@ -53,7 +53,7 @@ namespace SharpTune.RomMod
 
         private string outputPath {get; set;}
 
-        public Definition definition { get; private set; }
+        public ECUMetaData definition { get; private set; }
 
         private readonly AvailableDevices availableDevices;
 
@@ -61,9 +61,9 @@ namespace SharpTune.RomMod
         {
             availableDevices = ad;
             parentMod = parent;
-            RomLutList = new List<Lut>();
+            RomLutList = new List<LookupTable>();
             RamTableList = new Dictionary<string, TableMetaData>();
-            definition = new Definition(availableDevices);
+            definition = new ECUMetaData(availableDevices);
         }
 
         #region Patch ReadingCode
@@ -86,7 +86,7 @@ namespace SharpTune.RomMod
 
             if (!TryParseDefs(this.defBlob, ref offs, defPath)) return false;
 
-            definition = new Definition(availableDevices, defPath, this.parentMod);
+            definition = new ECUMetaData(availableDevices, defPath, this.parentMod);
 
             return true;
         }
@@ -111,7 +111,7 @@ namespace SharpTune.RomMod
                         
                             Blob tableBlob;
                             this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                            Lut3D lut = new Lut3D(metaString, tableBlob, metaOffset);
+                            LookupTable3D lut = new LookupTable3D(metaString, tableBlob, metaOffset);
                             if (metaString != null) RomLutList.Add(lut);
                         }
                         else
@@ -137,7 +137,7 @@ namespace SharpTune.RomMod
                         
                             Blob tableBlob;
                             this.parentMod.TryGetMetaBlob(metaOffset, 10, out tableBlob, this.parentMod.blobList.Blobs);
-                            Lut2D lut = new Lut2D(metaString, tableBlob, metaOffset);
+                            LookupTable2D lut = new LookupTable2D(metaString, tableBlob, metaOffset);
                             if (metaString != null) RomLutList.Add(lut);
                         }
                         else
@@ -161,7 +161,7 @@ namespace SharpTune.RomMod
                         if (this.TryReadDefString(metadata, out metaString, ref offset))
                         {
                         
-                            Lut lut = new Lut(metaString, metaOffset);
+                            LookupTable lut = new LookupTable(metaString, metaOffset);
                             if (metaString != null) RomLutList.Add(lut);
                         }
                         else
@@ -937,7 +937,7 @@ namespace SharpTune.RomMod
 
             XElement newRom = new XElement("rom");
             newRom.SetAttributeValue("base",this.parentMod.InitialCalibrationId);
-            newRom.Add(this.definition.MetaData.EcuFlashXml);
+            newRom.Add(this.definition.ident.EcuFlashXml);
 
 
             string paramxp = "./roms";

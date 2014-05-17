@@ -29,16 +29,16 @@ namespace SharpTuneCore
     public class Table3DMetaData : TableMetaData
     {
 
-        public Table3DMetaData(XElement xel, Definition def, TableMetaData basetable)
+        public Table3DMetaData(XElement xel, ECUMetaData def, TableMetaData basetable)
             : base(xel, def, basetable)
         {
             this.type = "3D";
         }
 
-        public override TableMetaData CreateChild(Lut ilut,Definition d)
+        public override TableMetaData CreateChild(LookupTable ilut, ECUMetaData d)
         {
             XElement xel;
-            Lut3D lut = (Lut3D)ilut;
+            LookupTable3D lut = (LookupTable3D)ilut;
             xel = new XElement("table");
             xel.SetAttributeValue("name", name);
             xel.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
@@ -55,12 +55,13 @@ namespace SharpTuneCore
             return TableFactory.CreateTable(xel, name, d);
             //TODO also set attirbutes and split this up! Copy to table2D!!
         }
+    }
 
     public class RamTable3DMetaData : Table3DMetaData
     {
 
-        public RamTable3DMetaData(XElement xel, Definition def, TableMetaData basetable)
-            : base(xel,def, basetable)
+        public RamTable3DMetaData(XElement xel, ECUMetaData def, TableMetaData basetable)
+            : base(xel, def, basetable)
         {
 
         }

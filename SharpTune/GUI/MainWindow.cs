@@ -132,14 +132,14 @@ namespace SharpTune
         {
             //Construct new romimage
             //TODO move this, application logic shouldn't be in GUI class.
-            DeviceImage newImage = new DeviceImage(sharpTuner, filename);
+            ECU newImage = new ECU(sharpTuner, filename);
             if (newImage.CalId == null)
             {
                 Trace.TraceWarning(String.Format("Unable to identify rom at {0}", newImage.FilePath.ToString()));
                 MessageBox.Show("Unable to idenfity rom at " + newImage.FilePath.ToString());
                 return;
             }
-            foreach (DeviceImage image in sharpTuner.ImageList)
+            foreach (ECU image in sharpTuner.ImageList)
             {
                 if (image.FilePath == filename)
                 {
@@ -448,13 +448,13 @@ namespace SharpTune
             Dictionary<String,String> imap = sharpTuner.AvailableDevices.BuildInheritanceMap();
             
 			foreach (String deffile in sharpTuner.AvailableDevices.DefDictionary.Keys) {
-				Definition.pullScalings (deffile, ref xblobscalings, ref xscalings);
+				ECUMetaData.pullScalings (deffile, ref xblobscalings, ref xscalings);
 			}
-			Definition.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
-			Definition.pullScalings("rommetadata\\bases\\16BITBASE.xml", ref xblobscalings, ref xscalings);
+			ECUMetaData.pullScalings("rommetadata\\bases\\32BITBASE.xml", ref xblobscalings, ref xscalings);
+			ECUMetaData.pullScalings("rommetadata\\bases\\16BITBASE.xml", ref xblobscalings, ref xscalings);
             foreach (String deffile in sharpTuner.AvailableDevices.DefDictionary.Keys)
             {
-                Definition.pullScalings(deffile, ref xblobscalings, ref xscalings);
+                ECUMetaData.pullScalings(deffile, ref xblobscalings, ref xscalings);
             }
 
             foreach (XElement xbs in xblobscalings)
@@ -462,11 +462,11 @@ namespace SharpTune
                 blobscalings.Add(xbs.Attribute("name").Value);
             }
 
-            Definition.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
-			Definition.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
+            ECUMetaData.ConvertXML ("rommetadata\\bases\\32BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
+			ECUMetaData.ConvertXML ("rommetadata\\bases\\16BITBASE.xml", ref blobscalings, ref t3d, ref t2d, ref t1d, imap, true);
 			
             foreach (String deffile in sharpTuner.AvailableDevices.DefDictionary.Keys) {
-				Definition.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
+				ECUMetaData.ConvertXML (deffile, ref blobscalings, ref t3d, ref t2d, ref t1d, imap, false);
 			}
 			
             string filename = "rommetadata\\Scalings\\";//scalings.xml";

@@ -25,7 +25,7 @@ namespace SharpTune.GUI
     public partial class DefinitionEditor : Form
     {
         private bool Unsaved;
-        private Definition Def;
+        private ECUMetaData Def;
         private Dictionary<string,TableMetaData> Unexposed;
         private Dictionary<string,TableMetaData> BaseTables;
         private Dictionary<string,TableMetaData> Exposed;
@@ -88,7 +88,7 @@ namespace SharpTune.GUI
             try
             {
                 uint address = uint.Parse(SimplePrompt.ShowDialog("Enter Hex Address of Lookup Table for " + t.name, "Enter Address"), System.Globalization.NumberStyles.AllowHexSpecifier);
-                Def.ExposeTable(t.name, new Core.Lut(t.name, address));
+                Def.ExposeTable(t.name, new Core.LookupTable(t.name, address));
                 Unsaved = true;
             }
             catch (Exception E)

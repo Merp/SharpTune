@@ -27,20 +27,20 @@ namespace SharpTuneCore
     public class Table2DMetaData : TableMetaData
     {
 
-        public Table2DMetaData(XElement xel,Definition def, TableMetaData basetable)
+        public Table2DMetaData(XElement xel,ECUMetaData def, TableMetaData basetable)
             : base(xel, def, basetable)
         {
             this.type = "2D";
         }
 
-        public override TableMetaData CreateChild(Lut ilut,Definition d)
+        public override TableMetaData CreateChild(LookupTable ilut,ECUMetaData d)
         {
             //TODO: This is a major KLUDGE.
-            if (ilut.GetType() != typeof(Lut2D))
+            if (ilut.GetType() != typeof(LookupTable2D))
                 return base.CreateChild(ilut, d);
 
             XElement xel;
-            Lut2D lut = (Lut2D)ilut;
+            LookupTable2D lut = (LookupTable2D)ilut;
             xel = new XElement("table");
             xel.SetAttributeValue("name", name);
             xel.SetAttributeValue("address", ilut.dataAddress.ToString("X"));
@@ -70,7 +70,7 @@ namespace SharpTuneCore
     public class RamTable2DMetaData : Table2DMetaData
     {
 
-        public RamTable2DMetaData(XElement xel,Definition def, TableMetaData basetable)
+        public RamTable2DMetaData(XElement xel,ECUMetaData def, TableMetaData basetable)
             : base(xel,def,basetable)
         {
 
