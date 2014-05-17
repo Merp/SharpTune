@@ -73,6 +73,12 @@
     <Compile Include="Core\DefinitionMetaData.cs" />
     <Compile Include="Core\FlashMethod\IFlashMethod.cs" />
     <Compile Include="Core\MemoryModel\IMemoryModel.cs" />
+    <Compile Include="Core\Table\ITableReader.cs" />
+    <Compile Include="Core\Table\ITableWriter.cs" />
+    <Compile Include="Core\Table\RamTableReader.cs" />
+    <Compile Include="Core\Table\RamTableWriter.cs" />
+    <Compile Include="Core\Table\RomTableReader.cs" />
+    <Compile Include="Core\Table\RomTableWriter.cs" />
     <Compile Include="EcuMapTools\EcuMapTool.cs" />
     <Compile Include="EcuMapTools\EcuLoc.cs" />
     <Compile Include="EcuMapTools\EcuLocCandidate.cs" />
@@ -265,7 +271,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\**\**\**\**\*.*" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Core\TableMetaData\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot

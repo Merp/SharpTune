@@ -26,17 +26,16 @@ using System.Runtime.Serialization;
 namespace SharpTuneCore
 {
 
-    public class Table3D : Table
+    public class Table3DMetaData : TableMetaData
     {
-        private Scaling xAxisScaling { get; set; }
 
-        public Table3D(XElement xel, Definition def, Table basetable)
+        public Table3DMetaData(XElement xel, Definition def, TableMetaData basetable)
             : base(xel, def, basetable)
         {
             this.type = "3D";
         }
 
-        public override Table CreateChild(Lut ilut,Definition d)
+        public override TableMetaData CreateChild(Lut ilut,Definition d)
         {
             XElement xel;
             Lut3D lut = (Lut3D)ilut;
@@ -57,69 +56,10 @@ namespace SharpTuneCore
             //TODO also set attirbutes and split this up! Copy to table2D!!
         }
 
-        /// <summary>
-        /// Read table bytes from ROM
-        /// And convert to display values
-        /// </summary>
-        public override void Read()
-        {
-            DeviceImage image = this.parentImage;
-            this.elements = this.xAxis.elements * this.yAxis.elements;
-
-            lock (image.imageStream)
-            {
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
-                this.byteValues = new List<byte[]>();
-                this.floatValues = new List<float>();
-                this.displayValues = new List<string>();
-
-                for (int i = 0; i < this.elements; i++)
-                {
-                    byte[] b = new byte[this.scaling.storageSize];
-                    image.imageStream.Read(b, 0, this.scaling.storageSize);
-                    if (this.scaling.endian == "big")
-                    {
-                        b.ReverseBytes();
-                    }
-                    this.byteValues.Add(b);
-                    this.displayValues.Add(this.scaling.toDisplay(b));
-                }
-
-            }
-        }
-
-        /// <summary>
-        /// Write the table bytes to ROM
-        /// </summary>
-        public override void Write()
-        {
-            DeviceImage image = this.parentImage;
-
-            lock (image.imageStream)
-            {
-                //2D only has Y axis
-                this.yAxis.Write();
-                this.xAxis.Write();
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
-
-                //write this.bytevalues!
-                foreach (byte[] bytevalue in this.byteValues)
-                {
-                    if (this.scaling.endian == "big")
-                    {
-                        bytevalue.ReverseBytes();
-                    }
-                    image.imageStream.Write(bytevalue, 0, bytevalue.Length);
-                }
-            }
-
-        }
-    }
-
-    public class RamTable3D : Table3D
+    public class RamTable3DMetaData : Table3DMetaData
     {
 
-        public RamTable3D(XElement xel, Definition def, Table basetable)
+        public RamTable3DMetaData(XElement xel, Definition def, TableMetaData basetable)
             : base(xel,def, basetable)
         {
 

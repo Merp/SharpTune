@@ -24,16 +24,16 @@ using System.Runtime.Serialization;
 
 namespace SharpTuneCore
 {
-    public class Table2D : Table
+    public class Table2DMetaData : TableMetaData
     {
 
-        public Table2D(XElement xel,Definition def, Table basetable)
+        public Table2DMetaData(XElement xel,Definition def, TableMetaData basetable)
             : base(xel, def, basetable)
         {
             this.type = "2D";
         }
 
-        public override Table CreateChild(Lut ilut,Definition d)
+        public override TableMetaData CreateChild(Lut ilut,Definition d)
         {
             //TODO: This is a major KLUDGE.
             if (ilut.GetType() != typeof(Lut2D))
@@ -65,62 +65,12 @@ namespace SharpTuneCore
             //return base.CreateChild(lut,d);
             //TODO FIX?? AND CHECK FOR STATIC AXES!!
         }
-
-        public override void Read()
-        {
-            DeviceImage image = this.parentImage;
-            this.elements = this.yAxis.elements;    // * this.yAxis.elements;TODO WTF
-
-            lock (image.imageStream)
-            {
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
-                this.byteValues = new List<byte[]>();
-                this.floatValues = new List<float>();
-                this.displayValues = new List<string>();
-
-                for (int i = 0; i < this.elements; i++)
-                {
-                    byte[] b = new byte[this.scaling.storageSize];
-                    image.imageStream.Read(b, 0, this.scaling.storageSize);
-                    if (this.scaling.endian == "big")
-                    {
-                        b.ReverseBytes();
-                    }
-                    this.byteValues.Add(b);
-                    this.displayValues.Add(this.scaling.toDisplay(b));
-                }
-
-            }
-        }
-
-        public override void Write()
-        {
-            DeviceImage image = this.parentImage;
-            lock (image.imageStream)
-            {
-                //2D only has Y axis
-                this.yAxis.Write();
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
-
-                //write this.bytevalues!
-                foreach (byte[] bytevalue in this.byteValues)
-                {
-                    if (this.scaling.endian == "big")
-                    {
-                        bytevalue.ReverseBytes();
-                    }
-                    image.imageStream.Write(bytevalue, 0, bytevalue.Length);
-                }
-            }
-
-        }
-
     }
 
-    public class RamTable2D : Table2D
+    public class RamTable2DMetaData : Table2DMetaData
     {
 
-        public RamTable2D(XElement xel,Definition def, Table basetable)
+        public RamTable2DMetaData(XElement xel,Definition def, TableMetaData basetable)
             : base(xel,def,basetable)
         {
 

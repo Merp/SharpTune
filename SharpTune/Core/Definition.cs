@@ -73,15 +73,15 @@ namespace SharpTuneCore
 
         public string include { get { return MetaData.include; } }
         
-        public Dictionary<string,Table> ExposedRomTables { get; private set;}
-        public Dictionary<string,Table> ExposedRamTables { get; private set;}
+        public Dictionary<string,TableMetaData> ExposedRomTables { get; private set;}
+        public Dictionary<string,TableMetaData> ExposedRamTables { get; private set;}
         
-        public Dictionary<string,Table> InheritedExposedRomTables { 
+        public Dictionary<string,TableMetaData> InheritedExposedRomTables { 
             get{
-                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.ExposedRomTables.Values)
+                    foreach(TableMetaData t in d.ExposedRomTables.Values)
                     {
                         if(!ret.ContainsKey(t.name))
                             ret.Add(t.name,t);
@@ -92,12 +92,12 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string,Table> InheritedExposedRamTables { 
+        public Dictionary<string,TableMetaData> InheritedExposedRamTables { 
             get{
-                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.ExposedRamTables.Values)
+                    foreach(TableMetaData t in d.ExposedRamTables.Values)
                     {
                         if(!ret.ContainsKey(t.name))
                             ret.Add(t.name,t);
@@ -108,27 +108,27 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string, Table> AggregateExposedRomTables { 
+        public Dictionary<string, TableMetaData> AggregateExposedRomTables { 
             get{
                 return Utils.AggregateDictionary(ExposedRomTables,InheritedExposedRomTables);
             }
             private set{}
         }
-        public Dictionary<string, Table> AggregateExposedRamTables { 
+        public Dictionary<string, TableMetaData> AggregateExposedRamTables { 
             get{
                 return Utils.AggregateDictionary(ExposedRamTables,InheritedExposedRamTables);
             }
             private set{}
         }
-        public Dictionary<string,Table> BaseRomTables { get; private set;}
-        public Dictionary<string,Table> BaseRamTables { get; private set;}
+        public Dictionary<string,TableMetaData> BaseRomTables { get; private set;}
+        public Dictionary<string,TableMetaData> BaseRamTables { get; private set;}
 
-        public Dictionary<string,Table> InheritedBaseRomTables { 
+        public Dictionary<string,TableMetaData> InheritedBaseRomTables { 
             get{
-                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.BaseRomTables.Values)
+                    foreach(TableMetaData t in d.BaseRomTables.Values)
                     {
                         if(!ret.ContainsKey(t.name))
                             ret.Add(t.name,t);
@@ -139,12 +139,12 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string,Table> InheritedBaseRamTables { 
+        public Dictionary<string,TableMetaData> InheritedBaseRamTables { 
             get{
-                Dictionary<string,Table> ret = new Dictionary<string,Table>();
+                Dictionary<string,TableMetaData> ret = new Dictionary<string,TableMetaData>();
                 foreach(Definition d in inheritList)
                 {
-                    foreach(Table t in d.BaseRamTables.Values)
+                    foreach(TableMetaData t in d.BaseRamTables.Values)
                     {
                         if(!ret.ContainsKey(t.name))
                             ret.Add(t.name,t);
@@ -155,22 +155,22 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public Dictionary<string, Table> AggregateBaseRomTables { 
+        public Dictionary<string, TableMetaData> AggregateBaseRomTables { 
             get{
                 return Utils.AggregateDictionary(BaseRomTables,InheritedBaseRomTables);
             }
             private set{}
         }
-        public Dictionary<string, Table> AggregateBaseRamTables { 
+        public Dictionary<string, TableMetaData> AggregateBaseRamTables { 
             get{
                 return Utils.AggregateDictionary(BaseRamTables,InheritedBaseRamTables);
             }
             private set{}
         }
 
-        public List<Table> RomTables{
+        public List<TableMetaData> RomTables{
             get{
-                List<Table> tlist = new List<Table>();
+                List<TableMetaData> tlist = new List<TableMetaData>();
                 tlist.AddRange(ExposedRomTables.Values);
                 tlist.AddRange(BaseRomTables.Values);
                 return tlist;
@@ -178,9 +178,9 @@ namespace SharpTuneCore
             private set{}
         }
 
-        public List<Table> RamTables{
+        public List<TableMetaData> RamTables{
             get{
-                List<Table> tlist = new List<Table>();
+                List<TableMetaData> tlist = new List<TableMetaData>();
                 tlist.AddRange(ExposedRomTables.Values);
                 tlist.AddRange(BaseRomTables.Values);
                 return tlist;
@@ -202,10 +202,10 @@ namespace SharpTuneCore
             availableDevices = ad; 
             isBase = false;
             MetaData = new DefinitionMetaData();
-            ExposedRomTables = new Dictionary<string, Table>();
-            ExposedRamTables = new Dictionary<string, Table>();
-            BaseRomTables = new Dictionary<string, Table>();
-            BaseRamTables = new Dictionary<string, Table>();
+            ExposedRomTables = new Dictionary<string, TableMetaData>();
+            ExposedRamTables = new Dictionary<string, TableMetaData>();
+            BaseRomTables = new Dictionary<string, TableMetaData>();
+            BaseRamTables = new Dictionary<string, TableMetaData>();
             ScalingList = new Dictionary<string,Scaling>();
             inheritList = new List<Definition>();
         }
@@ -415,7 +415,7 @@ namespace SharpTuneCore
             return true;
         }
 
-        private void AddRomTable(Table table)
+        private void AddRomTable(TableMetaData table)
         {
             if (table.isBase)
             {
@@ -433,7 +433,7 @@ namespace SharpTuneCore
             }
         }
 
-        private void AddRamTable(Table table)
+        private void AddRamTable(TableMetaData table)
         {
             if (table.isBase)
             {
@@ -691,10 +691,10 @@ namespace SharpTuneCore
                     //Write ROM tables
                     if (RomTables != null)
                     {
-                        List<Table> romExportList = (from entry in RomTables orderby entry.category ascending select entry)
+                        List<TableMetaData> romExportList = (from entry in RomTables orderby entry.category ascending select entry)
                             .ToList();
 
-                        foreach (Table table in romExportList)
+                        foreach (TableMetaData table in romExportList)
                         {
                             try
                             {
@@ -719,7 +719,7 @@ namespace SharpTuneCore
             }
         }
 
-        private Table GetBaseTable(string name)
+        private TableMetaData GetBaseTable(string name)
         {
             foreach (Definition d in inheritList)
             {
@@ -734,11 +734,11 @@ namespace SharpTuneCore
 
         public void ExposeTable(string name, Lut lut)
         {
-            Table baseTable = GetBaseTable(name);
+            TableMetaData baseTable = GetBaseTable(name);
             if (baseTable != null)
             {
 
-                Table childTable = baseTable.CreateChild(lut, this);
+                TableMetaData childTable = baseTable.CreateChild(lut, this);
                 //TODO: HANDLE STATIC AXES!!
                 if (lut.dataAddress < 0x400000)
                 {
@@ -894,10 +894,10 @@ namespace SharpTuneCore
 
         public void CopyTables(Definition d)
         {
-            ExposedRomTables = new Dictionary<string,Table>(d.ExposedRomTables);
-            ExposedRamTables = new Dictionary<string,Table>(d.ExposedRamTables);
-            BaseRomTables = new Dictionary<string, Table>(d.BaseRomTables);
-            BaseRamTables = new Dictionary<string, Table>(d.BaseRamTables);
+            ExposedRomTables = new Dictionary<string,TableMetaData>(d.ExposedRomTables);
+            ExposedRamTables = new Dictionary<string,TableMetaData>(d.ExposedRamTables);
+            BaseRomTables = new Dictionary<string, TableMetaData>(d.BaseRomTables);
+            BaseRamTables = new Dictionary<string, TableMetaData>(d.BaseRamTables);
             ScalingList = new Dictionary<string, Scaling>(d.ScalingList);
         }
 
@@ -945,13 +945,13 @@ namespace SharpTuneCore
 
         #endregion
 
-        public bool GetBaseRomTable(string tablename, out Table basetable)
+        public bool GetBaseRomTable(string tablename, out TableMetaData basetable)
         {
             basetable = null;
 
             foreach (Definition d in inheritList)
             {
-                foreach (Table t in d.RomTables)
+                foreach (TableMetaData t in d.RomTables)
                 {
                     if (t.name.ToLower() == tablename.ToLower())
                     {

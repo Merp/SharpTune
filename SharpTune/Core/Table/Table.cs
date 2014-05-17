@@ -38,9 +38,9 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Table CreateTable(XElement xel,string tablename, Definition def)
+        public static TableMetaData CreateTable(XElement xel,string tablename, Definition def)
         {
-            Table basetable = null;
+            TableMetaData basetable = null;
             if (def.GetBaseRomTable(tablename, out basetable))
             {
                 //has a base table!! therefore not a base!
@@ -52,7 +52,7 @@ namespace SharpTuneCore
             return CreateTableWithDimension(xel, def, basetable);
         }
 
-        public static Table CreateTableWithDimension(XElement xel, Definition def, Table basetable)
+        public static TableMetaData CreateTableWithDimension(XElement xel, Definition def, TableMetaData basetable)
         {
             string type = null;
             if (xel.Attribute("type") != null)
@@ -64,16 +64,16 @@ namespace SharpTuneCore
                 switch (type)
                 {
                     case "1D":
-                        return new Table1D(xel, def, basetable);
+                        return new Table1DMetaData(xel, def, basetable);
                     case "2D":
-                        return new Table2D(xel, def, basetable);
+                        return new Table2DMetaData(xel, def, basetable);
                     case "3D":
-                        return new Table3D(xel, def, basetable);
+                        return new Table3DMetaData(xel, def, basetable);
                     default:
                         break;
                 }
             }
-            return new Table(xel,def, basetable);
+            return new TableMetaData(xel,def, basetable);
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Table CreateRamTable(XElement xel, string tablename, string type, Definition def)
+        public static TableMetaData CreateRamTable(XElement xel, string tablename, string type, Definition def)
         {
-            Table basetable = null;
+            TableMetaData basetable = null;
             //if (def.GetBaseRamTable(tablename, out basetable))
             //{
                 //has a base table!! therefore not a base!
@@ -96,9 +96,9 @@ namespace SharpTuneCore
             return CreateRamTableWithDimension(xel, type, def, basetable);
         }
 
-        public static Table CreateRamTableWithDimension(XElement xel, string storageType, Definition def, Table basetable)
+        public static TableMetaData CreateRamTableWithDimension(XElement xel, string storageType, Definition def, TableMetaData basetable)
         {
-            Table tempTable = null;
+            TableMetaData tempTable = null;
             string type = null;
             if (xel.Attribute("type") != null)
                 type = xel.Attribute("type").Value.ToString();
@@ -109,13 +109,13 @@ namespace SharpTuneCore
                 switch (type)
                 {
                     case "1D":
-                        tempTable = new RamTable1D(xel, def, basetable);
+                        tempTable = new RamTable1DMetaData(xel, def, basetable);
                         break;
                     case "2D":
-                        tempTable = new RamTable2D(xel, def, basetable);
+                        tempTable = new RamTable2DMetaData(xel, def, basetable);
                         break;
                     case "3D":
-                        tempTable = new RamTable3D(xel, def, basetable);
+                        tempTable = new RamTable3DMetaData(xel, def, basetable);
                         break;
                     default:
                         tempTable = new RamTable(xel, def, basetable);
@@ -150,13 +150,13 @@ namespace SharpTuneCore
         Unknown = 0xFF
     }
 
-    public class Table
+    public class TableMetaData
     {
         public string Tag { get; set; }
 
         public bool isBase { get; private set; }
 
-        public List<Table> InheritanceList { get; private set; }
+        public List<TableMetaData> InheritanceList { get; private set; }
 
         protected XElement _xml;
         public XElement xml {
@@ -173,8 +173,8 @@ namespace SharpTuneCore
 
         public Dictionary<string, string> properties { get; set; }
 
-        protected Table _baseTable;
-        public Table baseTable { 
+        protected TableMetaData _baseTable;
+        public TableMetaData baseTable { 
             get
             {
                 return _baseTable;
@@ -416,7 +416,7 @@ namespace SharpTuneCore
             }
         } 
 
-        public virtual Table CreateChild(Lut lut, Definition d)
+        public virtual TableMetaData CreateChild(Lut lut, Definition d)
         {
             XElement xel = new XElement("table");
             xel.SetAttributeValue("name", name);
@@ -433,7 +433,7 @@ namespace SharpTuneCore
         }
 
 
-        protected Table()
+        protected TableMetaData()
         {
             dataTable = new DataTable();
             properties = new Dictionary<string, string>();
@@ -443,7 +443,7 @@ namespace SharpTuneCore
         /// Construct from XML Element
         /// </summary>
         /// <param name="xel"></param>
-        public Table(XElement xel, Definition def, Table bt)
+        public TableMetaData(XElement xel, Definition def, TableMetaData bt)
         :this(){
             try
             {
@@ -620,25 +620,17 @@ namespace SharpTuneCore
             return xel;
         }
 
-        public virtual void Read()
-        {
-        }
-
-        public virtual void Write()
-        {
-        }
-
         public virtual XElement RomRaiderXML()
         {
             return null;
         }
     }
 
-    public class RamTable : Table
+    public class RamTable : TableMetaData
     {
         private XElement RRXML;
 
-        public RamTable(XElement xel, Definition def, Table basetable)// DeviceImage image)
+        public RamTable(XElement xel, Definition def, TableMetaData basetable)// DeviceImage image)
             : base(xel, def, basetable)
         {
             RRXML = xel;
@@ -649,45 +641,5 @@ namespace SharpTuneCore
             return RRXML;
         }
 
-        public override void Read()
-        {
-            DeviceImage image = this.parentImage;
-            this.elements = 1;
-            Scaling sc;
-            if (parentDef.ScalingList.TryGetValue(this.properties["scaling"].ToString(), out sc))
-            {
-                this.defaultScaling = sc;
-            }
-            else
-                throw new Exception(String.Format("Error, scaling {0} not found!", this.properties["scaling"].ToString()));
-
-            ////Check SSM interface ID vs the device ID
-            //if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)
-            //{
-            //    throw new System.Exception("Device Image does not match connected device!");
-            //}
-
-            //SsmInterface ssmInterface = SharpTuner.ssmInterface;
-
-            //May have an issue with this while logging???
-            //Is it necessary??
-            //TODO: Find out
-            //lock (ssmInterface)
-            //{
-            //    this.byteValues = new List<byte[]>();
-            //    this.displayValues = new List<string>();
-
-            //    byte[] b = new byte[this.scaling.storageSize];
-            //    IAsyncResult result = ssmInterface.BeginBlockRead(this.address, this.scaling.storageSize, null, null);
-            //    result.AsyncWaitHandle.WaitOne();
-            //    b = ssmInterface.EndBlockRead(result);
-            //    if (this.scaling.endian == "big")
-            //    {
-            //        b.ReverseBytes();
-            //    }
-            //    this.byteValues.Add(b);
-            //    this.displayValues.Add(this.scaling.toDisplay(b));
-            //}
-        }
     }
 }

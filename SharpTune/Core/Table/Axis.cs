@@ -32,7 +32,7 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static Axis CreateAxis(XElement xel, Table table)
+        public static Axis CreateAxis(XElement xel, TableMetaData table)
         {
             if (xel.Attribute("type") != null)
             {
@@ -43,7 +43,7 @@ namespace SharpTuneCore
             return null;
         }
 
-        public static Axis CreateAxis(XElement axis1, Table table, Axis axis2)
+        public static Axis CreateAxis(XElement axis1, TableMetaData table, Axis axis2)
         {
             Axis axis;
             if(axis2.type.ContainsCI("static"))
@@ -56,7 +56,7 @@ namespace SharpTuneCore
         }
     }
 
-    public class Axis : Table
+    public class Axis : TableMetaData
     {
 
         public Axis parentAxis; //todo: resolve accessibility!
@@ -69,7 +69,7 @@ namespace SharpTuneCore
         /// Constructor from XElement
         /// </summary>
         /// <param name="xel"></param>
-        public Axis(XElement xel, Table table)
+        public Axis(XElement xel, TableMetaData table)
         {
             try
             {
@@ -228,7 +228,7 @@ namespace SharpTuneCore
     {
         protected List<string> StaticData { get; set; }
 
-        public StaticAxis(XElement xel, Table table)
+        public StaticAxis(XElement xel, TableMetaData table)
             : base(xel,table)
         {
             try

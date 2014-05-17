@@ -26,9 +26,9 @@ namespace SharpTune.GUI
     {
         private bool Unsaved;
         private Definition Def;
-        private Dictionary<string,Table> Unexposed;
-        private Dictionary<string,Table> BaseTables;
-        private Dictionary<string,Table> Exposed;
+        private Dictionary<string,TableMetaData> Unexposed;
+        private Dictionary<string,TableMetaData> BaseTables;
+        private Dictionary<string,TableMetaData> Exposed;
 
         private readonly SharpTuner sharpTuner;
 
@@ -75,7 +75,7 @@ namespace SharpTune.GUI
 
         private void defTreeView_DoubleClick(object sender, EventArgs e)
         {
-            Table t = (Table)defTreeView.SelectedNode.Tag;
+            TableMetaData t = (TableMetaData)defTreeView.SelectedNode.Tag;
             if (t == null)
                 return;
             DialogResult overWrite;
@@ -112,7 +112,7 @@ namespace SharpTune.GUI
 
         private void defTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            Table t = (Table)defTreeView.SelectedNode.Tag;
+            TableMetaData t = (TableMetaData)defTreeView.SelectedNode.Tag;
             if (t == null)
             {
                 textBoxTableInfo.Clear();

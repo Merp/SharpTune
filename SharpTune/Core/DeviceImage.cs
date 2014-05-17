@@ -54,7 +54,7 @@ namespace SharpTuneCore
 
         public Definition Definition { get; private set; }
 
-        public List<Table> tableList { get; set; }
+        public List<TableMetaData> tableList { get; set; }
 
         public TreeNode imageTree { get; set; }
 

@@ -26,103 +26,27 @@ using System.Runtime.Serialization;
 namespace SharpTuneCore
 {
 
-    public class Table1D : Table
+    public class Table1DMetaData : TableMetaData
     {
 
 
-        public Table1D(XElement xel, Definition def, Table basetable)
+        public Table1DMetaData(XElement xel, Definition def, TableMetaData basetable)
             : base(xel, def, basetable)
         { this.type = "1D"; }
 
-        public override Table CreateChild(Lut lut,Definition d)
+        public override TableMetaData CreateChild(Lut lut,Definition d)
         {
             return base.CreateChild(lut,d);
-        }
-
-        public override void Read()
-        {
-            DeviceImage image = this.parentImage;
-
-            lock (image.imageStream)
-            {
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
-                this.byteValues = new List<byte[]>();
-                this.displayValues = new List<string>();
-
-                byte[] b = new byte[this.scaling.storageSize];
-                image.imageStream.Read(b, 0, this.scaling.storageSize);
-                if (this.scaling.endian == "big")
-                {
-                    b.ReverseBytes();
-                }
-                this.byteValues.Add(b);
-                this.displayValues.Add(this.scaling.toDisplay(b));
-
-            }
-        }
-
-        public override void Write()
-        {
-            DeviceImage image = this.parentImage;
-            lock (image.imageStream)
-            {
-                //No need to write axes, they don't really exist for 1D tables!
-                image.imageStream.Seek(this.address, SeekOrigin.Begin);
-
-                //write this.bytevalues!
-                foreach (byte[] bytevalue in this.byteValues)
-                {
-                    if (this.scaling.endian == "big")
-                    {
-                        bytevalue.ReverseBytes();
-                    }
-                    image.imageStream.Write(bytevalue, 0, bytevalue.Length);
-                }
-            }
-
         }
     }
 
 
-    public class RamTable1D : Table1D
+    public class RamTable1DMetaData : Table1DMetaData
     {
-        public RamTable1D(XElement xel, Definition def, Table basetable)// DeviceImage image)
+        public RamTable1DMetaData(XElement xel, Definition def, TableMetaData basetable)// DeviceImage image)
             : base(xel, def, basetable)
         {
 
-        }
-
-        public override void Read()
-        {
-
-
-            ////Check SSM interface ID vs the device ID
-            //if (SharpTuner.ssmInterface.EcuIdentifier != this.parentImage.CalId)
-            //{
-            //    throw new System.Exception("Device Image does not match connected device!");
-            //}
-
-            //SsmInterface ssmInterface = SharpTuner.ssmInterface;
-
-            //May have an issue with this while logging???
-            //Is it necessary??
-            //TODO: Find out
-            //lock (ssmInterface)
-            //{
-            //    this.byteValues = new List<byte[]>();
-            //    this.displayValues = new List<string>();
-
-            //    byte[] b = new byte[this.scaling.storageSize];
-            //    IAsyncResult result = ssmInterface.BeginBlockRead(this.address, this.scaling.storageSize, null, null);
-            //    result.AsyncWaitHandle.WaitOne();
-            //    b = ssmInterface.EndBlockRead(result);
-            //    if (this.scaling.endian == "big")
-            //    {
-            //        b.ReverseBytes();
-            //    }
-            //    this.byteValues.Add(b);
-            //    this.displayValues.Add(this.scaling.toDisplay(b));
-            //}
         }
     }
 }

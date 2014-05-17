@@ -41,7 +41,7 @@ namespace SharpTune.RomMod
         private const uint cookieEnd = 0x00090009;
 
         public List<Lut> RomLutList {get; private set;}
-        public Dictionary<string,Table> RamTableList { get; private set; }
+        public Dictionary<string,TableMetaData> RamTableList { get; private set; }
 
         private Mod parentMod { get; set; }
         private Blob defBlob { get; set; }
@@ -62,7 +62,7 @@ namespace SharpTune.RomMod
             availableDevices = ad;
             parentMod = parent;
             RomLutList = new List<Lut>();
-            RamTableList = new Dictionary<string, Table>();
+            RamTableList = new Dictionary<string, TableMetaData>();
             definition = new Definition(availableDevices);
         }
 
@@ -192,7 +192,7 @@ namespace SharpTune.RomMod
                                 if (this.TryReadDefString(metadata, out paramName, ref offset))
                                 {
                                     // found modName, output to string!
-                                    KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, paramType);
+                                    KeyValuePair<String, TableMetaData> tempTable = CreateRomRaiderRamTable(paramName, (int)paramOffset, paramId, paramType);
                                     if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
                                 }
                                 else
@@ -244,7 +244,7 @@ namespace SharpTune.RomMod
                                         {
                                             int bit = ((j) + (8 * (i)));
                                             string bitstring = bit.ToString();
-                                            KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName + " Bit " + bitstring, (int)address, paramId, j);
+                                            KeyValuePair<String, TableMetaData> tempTable = CreateRomRaiderRamTableBit(paramName + " Bit " + bitstring, (int)address, paramId, j);
                                             if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
 
                                         }
@@ -291,7 +291,7 @@ namespace SharpTune.RomMod
                                 {
                                     int bit = bit = Utils.SingleBitBitmaskToBit((int)paramBit);
                                     // found modName, output to string!
-                                    KeyValuePair<String, Table> tempTable = CreateRomRaiderRamTableBit(paramName, (int)paramOffset, paramId, bit);
+                                    KeyValuePair<String, TableMetaData> tempTable = CreateRomRaiderRamTableBit(paramName, (int)paramOffset, paramId, bit);
                                     if (tempTable.Key != null) this.RamTableList.Add(tempTable.Key, tempTable.Value);
                                 }
                                 else
@@ -385,7 +385,7 @@ namespace SharpTune.RomMod
         private bool TryCleanDef()
         {
             List<string> removelist = new List<string>();
-            foreach (KeyValuePair<string, Table> table in this.definition.ExposedRomTables)
+            foreach (KeyValuePair<string, TableMetaData> table in this.definition.ExposedRomTables)
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
@@ -404,7 +404,7 @@ namespace SharpTune.RomMod
 
             //same operation for ramtables
             removelist.Clear();
-            foreach (KeyValuePair<string, Table> table in this.definition.AggregateExposedRamTables)
+            foreach (KeyValuePair<string, TableMetaData> table in this.definition.AggregateExposedRamTables)
             {
                 if (table.Value.xml.Attribute("address") != null)
                 {
@@ -609,7 +609,7 @@ namespace SharpTune.RomMod
 
         #region RR XML Code
         
-        public void NewRRLogDefInheritWithTemplate(Dictionary<string, Table> ramTableList, string outPath, string template, string inheritIdent, string ident)
+        public void NewRRLogDefInheritWithTemplate(Dictionary<string, TableMetaData> ramTableList, string outPath, string template, string inheritIdent, string ident)
         {
             try
             {
@@ -751,7 +751,7 @@ namespace SharpTune.RomMod
         }
 
         //TODO: USE table ID instead
-        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, Table> ramTableList, string ident, Dictionary<string,string> ExtIdentifiers)
+        private static void PopulateRRLogDefTables(ref XDocument xmlDoc, string outPath, Dictionary<string, TableMetaData> ramTableList, string ident, Dictionary<string,string> ExtIdentifiers)
         {
             var items = from pair in ExtIdentifiers
                         where pair.Value.ContainsCI("merpmod")
@@ -766,7 +766,7 @@ namespace SharpTune.RomMod
             else
                 lastMerpModExt = 2000;
 
-            foreach (KeyValuePair<string, Table> table in ramTableList)
+            foreach (KeyValuePair<string, TableMetaData> table in ramTableList)
             {
                 string xp = "./logger/protocols/protocol/ecuparams/ecuparam[@name='" + table.Key.ToString() + "']";
                 XElement exp = xmlDoc.XPathSelectElement(xp);
@@ -881,7 +881,7 @@ namespace SharpTune.RomMod
             }
         }
 
-        private KeyValuePair<string, Table> CreateRomRaiderRamTableBit(string name, int offset, string id, int bit)
+        private KeyValuePair<string, TableMetaData> CreateRomRaiderRamTableBit(string name, int offset, string id, int bit)
         {
             
             XElement xel = XElement.Parse(@"
@@ -901,10 +901,10 @@ namespace SharpTune.RomMod
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("bit").Value = bit.ToString();
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel, name, "uint8", this.definition));
+            return new KeyValuePair<string, TableMetaData>(name, TableFactory.CreateRamTable(xel, name, "uint8", this.definition));
         }
 
-        private KeyValuePair<string, Table> CreateRomRaiderRamTable(string name, int offset, string id, string type)
+        private KeyValuePair<string, TableMetaData> CreateRomRaiderRamTable(string name, int offset, string id, string type)
         {
             XElement xel = XElement.Parse(@"
                 <ecu id="""">
@@ -926,7 +926,7 @@ namespace SharpTune.RomMod
             if(length > 1)
                 xel.Element("address").SetAttributeValue("length",length.ToString());
 
-            return new KeyValuePair<string, Table>(name, TableFactory.CreateRamTable(xel,name,type,this.definition));
+            return new KeyValuePair<string, TableMetaData>(name, TableFactory.CreateRamTable(xel,name,type,this.definition));
         }
         #endregion
 

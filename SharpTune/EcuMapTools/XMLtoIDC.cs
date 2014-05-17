@@ -482,9 +482,9 @@ namespace EcuMapTools
             int tableCount = 0;
             Trace.WriteLine("auto referenceAddress;");
 
-            foreach (KeyValuePair<string, SharpTuneCore.Table> t in def.AggregateExposedRomTables)
+            foreach (KeyValuePair<string, SharpTuneCore.TableMetaData> t in def.AggregateExposedRomTables)
             {
-                SharpTuneCore.Table table = t.Value; //TODO: put this code in Table class! "getIDCTable"
+                SharpTuneCore.TableMetaData table = t.Value; //TODO: put this code in Table class! "getIDCTable"
                 try
                 {
                     if (table.type.ToUpper() == "1D")
