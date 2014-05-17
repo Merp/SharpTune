@@ -93,10 +93,10 @@
     <Compile Include="Core\Table\Axis.cs" />
     <Compile Include="Core\Table\Range.cs" />
     <Compile Include="Core\Table\Scaling.cs" />
-    <Compile Include="Core\Table\Table.cs" />
-    <Compile Include="Core\Table\Table1D.cs" />
-    <Compile Include="Core\Table\Table2D.cs" />
-    <Compile Include="Core\Table\Table3D.cs" />
+    <Compile Include="Core\TableMetaData\TableMetaData.cs" />
+    <Compile Include="Core\TableMetaData\Table1DMetaData.cs" />
+    <Compile Include="Core\TableMetaData\Table2DMetaData.cs" />
+    <Compile Include="Core\TableMetaData\Table3DMetaData.cs" />
     <Compile Include="ExpressionEvaluator.cs" />
     <Compile Include="GUI\AboutWindow.cs">
       <SubType>Form</SubType>
@@ -271,9 +271,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\**\**\**\**\*.*" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\TableMetaData\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>Copy ..\..\..\..\MerpMod\MerpMod\TestRom\partial-patch.mot partial-patch.mot
