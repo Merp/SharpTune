@@ -349,9 +349,12 @@ namespace SharpTuneCore
         public bool ReadXML(string path)
         {
             if (path == null) return false;
-            XDocument xmlDoc = XDocument.Load(path, LoadOptions.PreserveWhitespace);
+            LoadOptions lo = LoadOptions.SetLineInfo & LoadOptions.PreserveWhitespace;
+
+            XDocument xmlDoc = XDocument.Load(path, lo);
 
             //Read Scalings
+            IXmlLineInfo info = null;
             try
             {
                 var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
@@ -359,6 +362,7 @@ namespace SharpTuneCore
                                    select sc;
                 foreach (XElement scaling in scalingQuery)
                 {
+                    info = scaling;
                     //skip scalings with no name
                     if (scaling.Attribute("name") == null) continue;
                     string scalingname = scaling.Attribute("name").Value.ToString();
@@ -370,7 +374,7 @@ namespace SharpTuneCore
             }
             catch (Exception crap)
             {
-                Trace.WriteLine("Error reading scaling in " + path);
+                Trace.WriteLine("Error reading scaling in " + path + " Line number: " + info.LineNumber);
                 throw;
             }
 
@@ -381,15 +385,16 @@ namespace SharpTuneCore
                                  select t;
                 foreach (XElement table in tableQuery)
                 {
+                    info = table;
                     if (table.Attribute("name") == null)
                         continue;
                     string tablename = table.Attribute("name").Value.ToString();
-                    AddRomTable(TableFactory.CreateTable(table, tablename, this));
+                    AddRomTable(TableFactory.CreateTable(table, tablename, this), info.LineNumber);
                 }
             }
             catch (Exception crap)
             {
-                Trace.WriteLine("Error reading tables in " + path);
+                Trace.WriteLine("Error reading tables in " + path + " Line number: " + info.LineNumber);
                 throw;
             }
 
@@ -400,54 +405,55 @@ namespace SharpTuneCore
                                     select t;
                 foreach (XElement table in ramtableQuery)
                 {
+                    info = table;
                     if (table.Attribute("name") == null)
                         continue;
                     string tablename = table.Attribute("name").Value.ToString();
 
-                    AddRamTable(TableFactory.CreateTable(table, tablename, this));
+                    AddRamTable(TableFactory.CreateTable(table, tablename, this), info.LineNumber);
                 }
             }
             catch (Exception crap)
             {
-                Trace.WriteLine("Error reading RAM tables in " + path);
+                Trace.WriteLine("Error reading RAM tables in " + path + " Line number: " + info.LineNumber);
                 throw;
             }
             return true;
         }
 
-        private void AddRomTable(TableMetaData table)
+        private void AddRomTable(TableMetaData table, int line)
         {
             if (table.isBase)
             {
                 if (!BaseRomTables.ContainsKey(table.name))
                     BaseRomTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
             }
             else
             {
                 if (!ExposedRomTables.ContainsKey(table.name))
                     ExposedRomTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
             }
         }
 
-        private void AddRamTable(TableMetaData table)
+        private void AddRamTable(TableMetaData table, int line)
         {
             if (table.isBase)
             {
                 if (!BaseRamTables.ContainsKey(table.name))
                     BaseRamTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
             }
             else
             {
                 if (!ExposedRamTables.ContainsKey(table.name))
                     ExposedRamTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
                     
             }
         }
