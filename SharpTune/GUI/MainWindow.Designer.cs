@@ -360,9 +360,10 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(3, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(107, 13);
+            this.label3.Size = new System.Drawing.Size(66, 13);
             this.label3.TabIndex = 1;
-            this.label3.Text = "Open Device Images";
+            this.label3.Text = "Open ROMs";
+            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // treeView1
             // 
