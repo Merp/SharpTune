@@ -1072,6 +1072,9 @@ namespace EcuMapTools
                 }
             }
 
+            // Clean double underscores
+            builder.Replace("__", "_");
+
             // Make sure it's unique
             string name = builder.ToString();
             while (names.Contains(name))
