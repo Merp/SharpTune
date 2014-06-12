@@ -48,7 +48,7 @@ namespace SharpTuneCore
         public String EcuId
         {
             get {
-                if (ident.EcuIdHexString != null)//TODO: put this in memorymodel.
+                if (ident.EcuIdHexString != null)
                     return ident.EcuIdHexString;
                 else
                     return "Unknown";
@@ -314,7 +314,7 @@ namespace SharpTuneCore
                 Clear();
                 if (include != null)
                     Inherit();
-                if (ReadXML(filePath))
+                if (ReadXML())
                     return true;
             }
             return false;
@@ -346,64 +346,80 @@ namespace SharpTuneCore
         /// <summary>
         /// Load parameters from XML an XML file
         /// </summary>
-        public bool ReadXML(string path)
+        public bool ReadXML()
         {
             if (path == null) return false;
             LoadOptions lo = LoadOptions.SetLineInfo & LoadOptions.PreserveWhitespace;
-
             XDocument xmlDoc = XDocument.Load(path, lo);
 
             //Read Scalings
             IXmlLineInfo info = null;
-            try
+
+            bool scalingTest = ReadEcuFlashScalings(xmlDoc, info);
+            bool romTableTest = ReadEcuFlashRomTables(xmlDoc, info);
+            bool ramTableTest = ReadEcuFlashRamTables(xmlDoc, info);
+
+            return scalingTest && romTableTest && ramTableTest;
+        }
+
+        public bool ReadEcuFlashScalings(XDocument xmlDoc, IXmlLineInfo info)
+        {
+            var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
+                                //where table.Ancestors("table").First().IsEmpty
+                                select sc;
+            foreach (XElement scaling in scalingQuery)
             {
-                var scalingQuery = from sc in xmlDoc.XPathSelectElements("/rom/scaling")
-                                   //where table.Ancestors("table").First().IsEmpty
-                                   select sc;
-                foreach (XElement scaling in scalingQuery)
-                {
+                try{
                     info = scaling;
                     //skip scalings with no name
-                    if (scaling.Attribute("name") == null) continue;
+                    if (scaling.Attribute("name") == null) throw new Exception("Error, scaling name is null!");
                     string scalingname = scaling.Attribute("name").Value.ToString();
                     if (!this.ScalingList.ContainsKey(scalingname))
                     {
                         this.ScalingList.Add(scalingname, ScalingFactory.CreateScaling(scaling));
                     }
                 }
+                catch (Exception crap)
+                {
+                    Trace.WriteLine("Error reading scaling in " + filePath + " Line number: " + info.LineNumber);
+                    Trace.WriteLine(crap.Message);
+                    throw;
+                }
             }
-            catch (Exception crap)
-            {
-                Trace.WriteLine("Error reading scaling in " + path + " Line number: " + info.LineNumber);
-                throw;
-            }
+        }
 
+        public bool ReadEcuFlashRomTables(XDocument xmlDoc, IXmlLineInfo info)
+        {
             // ROM table fetches here!
-            try
+            var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
+                                select t;
+            foreach (XElement table in tableQuery)
             {
-                var tableQuery = from t in xmlDoc.XPathSelectElements("/rom/table")
-                                 select t;
-                foreach (XElement table in tableQuery)
+                try
                 {
                     info = table;
                     if (table.Attribute("name") == null)
-                        continue;
+                        throw new Exception("Error, table name is null!");
                     string tablename = table.Attribute("name").Value.ToString();
                     AddRomTable(TableFactory.CreateTable(table, tablename, this), info.LineNumber);
                 }
+                catch (Exception crap)
+                {
+                    Trace.WriteLine("Error reading tables in " + filePath + " Line number: " + info.LineNumber);
+                    Trace.WriteLine(crap.Message);
+                    throw;
+                }
             }
-            catch (Exception crap)
-            {
-                Trace.WriteLine("Error reading tables in " + path + " Line number: " + info.LineNumber);
-                throw;
-            }
+        }
 
+        public bool ReadEcuFlashRamTables(XDocument xmlDoc, IXmlLineInfo info)
+        {
             // RAM table feteches here!
-            try
+            var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
+                                select t;
+            foreach (XElement table in ramtableQuery)
             {
-                var ramtableQuery = from t in xmlDoc.XPathSelectElements("/ram/table")
-                                    select t;
-                foreach (XElement table in ramtableQuery)
+                try
                 {
                     info = table;
                     if (table.Attribute("name") == null)
@@ -412,13 +428,14 @@ namespace SharpTuneCore
 
                     AddRamTable(TableFactory.CreateTable(table, tablename, this), info.LineNumber);
                 }
+                catch (Exception crap)
+                {
+                    Trace.WriteLine("Error reading RAM tables in " + filePath + " Line number: " + info.LineNumber);
+                    Trace.WriteLine(crap.Message);
+                    throw;
+                }
             }
-            catch (Exception crap)
-            {
-                Trace.WriteLine("Error reading RAM tables in " + path + " Line number: " + info.LineNumber);
-                throw;
-            }
-            return true;
+            return true;  
         }
 
         private void AddRomTable(TableMetaData table, int line)
