@@ -65,30 +65,33 @@ namespace SharpTune
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             sharpTuner = new SharpTuner();
-            sharpTuner.Init();
             if (args.Length < 1)
             {
-                SharpTune.Program.RomModGui();
+                Application.Run(sharpTuner.mainWindow);
                 return true;
             }
-            if (args[0] == "ecumaptool")
+            else
             {
-                return EcuMapTool.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));
-            }
-            else if (args[0] == "rommod")
-            {
-                return SharpTune.RomMod.RomMod.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));
-            }
-            else if (args[0] == "xmlconvertor")
-            {
-                ECU di = new ECU(sharpTuner, args[1]);
-                XMLtoIDC xti = new XMLtoIDC(di);
-                //TODO clean up this routine: xti.Run(args);
-            }
-            else if (args.Length == 2 && args[0] == "help")
-            {
-                PrintHelp_RomMod(args[1]);
-                return true;
+                sharpTuner.Init();
+                if (args[0] == "ecumaptool")
+                {
+                    return EcuMapTool.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));
+                }
+                else if (args[0] == "rommod")
+                {
+                    return SharpTune.RomMod.RomMod.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));
+                }
+                else if (args[0] == "xmlconvertor")
+                {
+                    ECU di = new ECU(sharpTuner, args[1]);
+                    XMLtoIDC xti = new XMLtoIDC(di);
+                    //TODO clean up this routine: xti.Run(args);
+                }
+                else if (args.Length == 2 && args[0] == "help")
+                {
+                    PrintHelp_RomMod(args[1]);
+                    return true;
+                }
             }
             return false;
         }
@@ -128,13 +131,5 @@ namespace SharpTune
                     break;
             }
         }
-        
-        public static void RomModGui()
-        {
-            Application.Run(sharpTuner.mainWindow);
-        }
-
-    }
-
-    
+    }  
 }
