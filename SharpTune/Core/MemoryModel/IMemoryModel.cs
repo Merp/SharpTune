@@ -17,7 +17,7 @@ namespace SharpTune.Core.MemoryModel
     public class MemoryModelDefault : IMemoryModel
     {
         public string name{
-            get{return null;}
+            get{return "DEFAULT - SH7058";}
         }
         public int cpubits{
             get{return 32;}
