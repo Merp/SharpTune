@@ -58,14 +58,17 @@
             this.licensingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.TableTreeView = new System.Windows.Forms.TreeView();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.ModTreeView = new System.Windows.Forms.TreeView();
             this.openDeviceListBox = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.treeView1 = new System.Windows.Forms.TreeView();
             this.button1 = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.buttonPatchRom = new System.Windows.Forms.Button();
-            this.selectedModTextBox = new System.Windows.Forms.TextBox();
+            this.DataTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -73,6 +76,9 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtConsole
@@ -316,23 +322,78 @@
             // 
             // splitContainer2.Panel1
             // 
+            this.splitContainer2.Panel1.Controls.Add(this.tabControl1);
             this.splitContainer2.Panel1.Controls.Add(this.openDeviceListBox);
-            this.splitContainer2.Panel1.Controls.Add(this.label1);
             this.splitContainer2.Panel1.Controls.Add(this.label3);
-            this.splitContainer2.Panel1.Controls.Add(this.treeView1);
             // 
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.button1);
             this.splitContainer2.Panel2.Controls.Add(this.label4);
             this.splitContainer2.Panel2.Controls.Add(this.buttonPatchRom);
-            this.splitContainer2.Panel2.Controls.Add(this.selectedModTextBox);
+            this.splitContainer2.Panel2.Controls.Add(this.DataTextBox);
             this.splitContainer2.Panel2.Controls.Add(this.txtConsole);
             this.splitContainer2.Panel2.Controls.Add(this.label2);
             this.splitContainer2.Panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer2_Panel2_Paint);
             this.splitContainer2.Size = new System.Drawing.Size(1125, 520);
             this.splitContainer2.SplitterDistance = 534;
             this.splitContainer2.TabIndex = 12;
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Location = new System.Drawing.Point(6, 191);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(523, 324);
+            this.tabControl1.TabIndex = 44;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.TableTreeView);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(515, 298);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Tables";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // TableTreeView
+            // 
+            this.TableTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableTreeView.Location = new System.Drawing.Point(6, 6);
+            this.TableTreeView.Name = "TableTreeView";
+            this.TableTreeView.Size = new System.Drawing.Size(503, 286);
+            this.TableTreeView.TabIndex = 42;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.ModTreeView);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(515, 298);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Mods";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // ModTreeView
+            // 
+            this.ModTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ModTreeView.Location = new System.Drawing.Point(6, 6);
+            this.ModTreeView.Name = "ModTreeView";
+            this.ModTreeView.Size = new System.Drawing.Size(503, 286);
+            this.ModTreeView.TabIndex = 41;
+            this.ModTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
             // openDeviceListBox
             // 
@@ -342,18 +403,9 @@
             this.openDeviceListBox.IntegralHeight = false;
             this.openDeviceListBox.Location = new System.Drawing.Point(6, 16);
             this.openDeviceListBox.Name = "openDeviceListBox";
-            this.openDeviceListBox.Size = new System.Drawing.Size(519, 169);
+            this.openDeviceListBox.Size = new System.Drawing.Size(513, 169);
             this.openDeviceListBox.TabIndex = 2;
             this.openDeviceListBox.SelectedValueChanged += new System.EventHandler(this.openDeviceListBox_SelectedValueChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 191);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(79, 13);
-            this.label1.TabIndex = 43;
-            this.label1.Text = "Available Mods";
             // 
             // label3
             // 
@@ -363,17 +415,6 @@
             this.label3.Size = new System.Drawing.Size(66, 13);
             this.label3.TabIndex = 1;
             this.label3.Text = "Open ROMs";
-            this.label3.Click += new System.EventHandler(this.label3_Click);
-            // 
-            // treeView1
-            // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView1.Location = new System.Drawing.Point(6, 207);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(519, 296);
-            this.treeView1.TabIndex = 41;
-            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
             // button1
             // 
@@ -409,24 +450,24 @@
             this.buttonPatchRom.UseVisualStyleBackColor = true;
             this.buttonPatchRom.Click += new System.EventHandler(this.buttonPatchRom_Click);
             // 
-            // selectedModTextBox
+            // DataTextBox
             // 
-            this.selectedModTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.DataTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.selectedModTextBox.Location = new System.Drawing.Point(7, 16);
-            this.selectedModTextBox.Multiline = true;
-            this.selectedModTextBox.Name = "selectedModTextBox";
-            this.selectedModTextBox.Size = new System.Drawing.Size(569, 181);
-            this.selectedModTextBox.TabIndex = 42;
+            this.DataTextBox.Location = new System.Drawing.Point(7, 16);
+            this.DataTextBox.Multiline = true;
+            this.DataTextBox.Name = "DataTextBox";
+            this.DataTextBox.Size = new System.Drawing.Size(569, 181);
+            this.DataTextBox.TabIndex = 42;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(49, 13);
+            this.label2.Size = new System.Drawing.Size(30, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Mod Info";
+            this.label2.Text = "Data";
             // 
             // MainWindow
             // 
@@ -450,6 +491,9 @@
             this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -484,9 +528,8 @@
         private System.Windows.Forms.ToolStripMenuItem xMLToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem definitionLocationToolStripMenuItem;
         private System.Windows.Forms.Button buttonPatchRom;
-        private System.Windows.Forms.TextBox selectedModTextBox;
-        private System.Windows.Forms.TreeView treeView1;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox DataTextBox;
+        private System.Windows.Forms.TreeView ModTreeView;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ToolStripMenuItem xMLToIDCToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem iDAToHEWToolStripMenuItem;
@@ -495,6 +538,10 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ToolStripMenuItem sharpTuningForumToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem definitionEditorToolStripMenuItem;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TreeView TableTreeView;
     }
 }
 

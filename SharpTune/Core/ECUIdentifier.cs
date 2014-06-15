@@ -9,63 +9,123 @@ using System.Text;
 using System.Xml.Linq;
 
 namespace SharpTune.Core
-{
+{    
+    public static class ECUIdTags{
+        public const string caseid = "caseid";
+        public const string xmlid = "xmlid";
+        public const string filesize = "filesize";
+        public const string calidaddress = "internalidaddress";
+        public const string calidstring = "internalidstring";
+        public const string calidhex = "internalidhex";
+        public const string ecuidstring = "ecuidstring";
+        public const string ecuidhex = "ecuid";
+        public const string year = "year";
+        public const string make = "make";
+        public const string model = "model";
+        public const string transmission = "transmission";
+        public const string market = "market";
+        public const string submodel = "submodel";
+        public const string memorymodel = "memmodel";
+        public const string flashmethod = "flashmethod";
+        public const string checksummodule = "checksummodule";
+        public const string include = "include";
+    }
+
     [Serializable]
     public class ECUIdentifier
     {
+
+        public Dictionary<string, string> propertyBag { get; private set; }
+
         public bool isReady {get; private set;}
-        public string xmlid { get; private set;}
-        public string caseid { get; private set; }
-        
-        private string _filesize;
-        public string filesize {
+        public string xmlid
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.xmlid))
+                    return propertyBag[ECUIdTags.xmlid];
+                else
+                    return null;
+            }
+            private set { propertyBag[ECUIdTags.xmlid] = value; }
+        }
+
+        public string caseid {
             get { 
-                if(_filesize != null)
-                    return _filesize;
+                if(propertyBag.ContainsKey(ECUIdTags.caseid))
+                    return propertyBag[ECUIdTags.caseid];
                 else
                     return memoryModel.filesizebytes.ToKiloBytesString();
             }
-            private set { _filesize = value;}
+            private set { propertyBag[ECUIdTags.caseid] = value;}
         }
 
-        public long CalibrationIdAddress {get; private set;}
+        public string filesize {
+            get { 
+                if(propertyBag.ContainsKey(ECUIdTags.filesize))
+                    return propertyBag[ECUIdTags.filesize];
+                else
+                    return memoryModel.filesizebytes.ToKiloBytesString();
+            }
+            private set { propertyBag[ECUIdTags.filesize] = value;}
+        }
+
+        public long? CalibrationIdAddress
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.calidaddress))
+                    return long.Parse(propertyBag[ECUIdTags.calidaddress]);
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.calidaddress] = value.ToString();
+            }
+        }
         private void setCalibrationIdAddressFromHex(string hex){
             CalibrationIdAddress = hex.ConvertHexToLong();
         }
 
-        private string _calibrationIdHexString;
-        private string _calibrationIdString;
-        private Byte[] _calibrationIdHexBytes;
-
         public string CalibrationIdString {
             get{
-                return _calibrationIdString;}
+                if (propertyBag.ContainsKey(ECUIdTags.calidstring))
+                    return propertyBag[ECUIdTags.calidstring];
+                else
+                    return null;
+             }
              private set{
-                 _calibrationIdString = value;
-                 _calibrationIdHexString = value.ConvertStringToHex(memoryModel.encoding);
-                 _calibrationIdHexBytes = value.ConvertStringToBytes(memoryModel.encoding);
+                 propertyBag[ECUIdTags.calidstring] = value;
+                 propertyBag[ECUIdTags.calidhex]= value.ConvertStringToHex(memoryModel.encoding);
              }
         }
 
         public string CalibrationIdHexString {
             get{
-                return _calibrationIdHexString;
+                if (propertyBag.ContainsKey(ECUIdTags.calidhex))
+                    return propertyBag[ECUIdTags.calidhex];
+                else
+                    return null;
             }
             private set{
-                _calibrationIdHexString = value;
-                _calibrationIdString = value.ConvertHexToString(memoryModel.encoding);
-                _calibrationIdHexBytes = value.ToByteArray();
+                propertyBag[ECUIdTags.calidhex] = value;
+                propertyBag[ECUIdTags.calidstring] = value.ConvertHexToString(memoryModel.encoding);
             }
         }
 
         public Byte[] CalibrationIdHexBytes {
             get{
-                return _calibrationIdHexBytes;
+                if (propertyBag.ContainsKey(ECUIdTags.calidhex))
+                    return propertyBag[ECUIdTags.calidhex].ToByteArray();
+                else if (propertyBag.ContainsKey(ECUIdTags.calidstring))
+                    return propertyBag[ECUIdTags.calidstring].ConvertStringToBytes(memoryModel.encoding);
+                else
+                    return null;
             }
             private set{
-                _calibrationIdHexBytes = value;
-                _calibrationIdHexString = value.ConvertBytesToHexString();
-                _calibrationIdString = value.ConvertBytesToString(memoryModel.encoding);
+                propertyBag[ECUIdTags.calidstring] = value.ConvertBytesToString(memoryModel.encoding);
+                propertyBag[ECUIdTags.calidhex] = value.ConvertBytesToHexString();
             }
         }
 
@@ -75,12 +135,16 @@ namespace SharpTune.Core
 
         public string EcuIdString {
             get{
-                return _ecuIdString;}
+                if(propertyBag.ContainsKey(ECUIdTags.ecuidstring))
+                    return propertyBag[ECUIdTags.ecuidstring];
+                else
+                    return null;
+            }
              private set{
                  try
                  {
-                     _ecuIdString = value;
-                     _ecuIdHexString = value.ConvertStringToHex(memoryModel.encoding);
+                     propertyBag[ECUIdTags.ecuidstring] = value;
+                     propertyBag[ECUIdTags.ecuidhex] = value.ConvertStringToHex(memoryModel.encoding);
                      _ecuIdHexBytes = value.ConvertStringToBytes(memoryModel.encoding);
                  }
                  catch (Exception crap)
@@ -93,14 +157,16 @@ namespace SharpTune.Core
 
         public string EcuIdHexString {
             get{
-                return _ecuIdHexString;
+                if(propertyBag.ContainsKey(ECUIdTags.ecuidhex))
+                    return propertyBag[ECUIdTags.ecuidhex];
+                else
+                    return null;
             }
             private set{
                 try
                 {
-                    _ecuIdHexString = value;
-                    _ecuIdString = value.ConvertHexToString(memoryModel.encoding);
-                    _ecuIdHexBytes = value.ToByteArray();
+                    propertyBag[ECUIdTags.ecuidhex] = value;
+                    propertyBag[ECUIdTags.ecuidstring] = value.ConvertHexToString(memoryModel.encoding);
                 }
                 catch (Exception crap)
                 {
@@ -112,43 +178,183 @@ namespace SharpTune.Core
 
         public Byte[] EcuIdHexBytes {
             get{
-                return _ecuIdHexBytes;
+                if (propertyBag.ContainsKey(ECUIdTags.ecuidstring))
+                    return propertyBag[ECUIdTags.ecuidstring].ConvertStringToBytes(memoryModel.encoding);
+                else if (propertyBag.ContainsKey(ECUIdTags.ecuidhex))
+                    return propertyBag[ECUIdTags.ecuidhex].ToByteArray();
+                else
+                    return null;
             }
             private set{
-                _ecuIdHexBytes = value;
-                _ecuIdHexString = value.ConvertBytesToHexString();
-                _ecuIdString = value.ConvertBytesToString(memoryModel.encoding);
+                propertyBag[ECUIdTags.ecuidhex] = value.ConvertBytesToHexString();
+                propertyBag[ECUIdTags.ecuidstring] = value.ConvertBytesToString(memoryModel.encoding);
             }
         }
 
-        public string year {get; private set;}
-        public string market {get; private set;}
-        public string make {get; private set;}
-        public string model {get; private set;}
-        public string submodel {get; private set;}
-        public string transmission {get; private set;}
+        public string year
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.year))
+                    return propertyBag[ECUIdTags.year];
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.year] = value;
+            }
+        }
 
-        public string include {get; set;} //todo make private and internalize operations for undefined roms.
-   
-        public IMemoryModel memoryModel {get; private set;}
-        private void setMemoryModel(string mm){
+        public string market
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.year))
+                    return propertyBag[ECUIdTags.year];
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.year] = value;
+            }
+        }
+        public string make
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.make))
+                    return propertyBag[ECUIdTags.make];
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.make] = value;
+            }
+        }
+        public string model
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.model))
+                    return propertyBag[ECUIdTags.model];
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.model] = value;
+            }
+        }
+        public string submodel
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.submodel))
+                    return propertyBag[ECUIdTags.submodel];
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.submodel] = value;
+            }
+        }
+        public string transmission
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.transmission))
+                    return propertyBag[ECUIdTags.transmission];
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.transmission] = value;
+            }
+        }
+        public string include
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.include))
+                    return propertyBag[ECUIdTags.include];
+                else
+                    return null;
+            }
+            set //TODO FIX KLUDGE
+            {
+                propertyBag[ECUIdTags.include] = value;
+            }
+        }
+
+        public IMemoryModel memoryModel
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.memorymodel))
+                    return MemoryModels.GetMemoryModel(propertyBag[ECUIdTags.memorymodel]);
+                else
+                    return MemoryModels._Default;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.memorymodel] = value.name;
+            }
+        }
+
+        private void setMemoryModel(string mm)
+        {
             memoryModel = MemoryModels.GetMemoryModel(mm);
         }
    
-        public IFlashMethod flashMethod {get; private set;}
-        private void setFlashMethod(string fm){
+        public IFlashMethod flashMethod
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.flashmethod))
+                    return FlashMethods.GetFlashMethod(propertyBag[ECUIdTags.flashmethod]);
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.flashmethod] = value.name;
+            }
+        }
+
+        public void setFlashMethod(string fm)
+        {
             flashMethod = FlashMethods.GetFlashMethod(fm);
         }
 
-        public IChecksumModule checksumModule {get; private set;}
-        private void setChecksumModule(string csm){
+        public IChecksumModule checksumModule
+        {
+            get
+            {
+                if (propertyBag.ContainsKey(ECUIdTags.checksummodule))
+                    return ChecksumModules.GetChecksumModule(propertyBag[ECUIdTags.checksummodule]);
+                else
+                    return null;
+            }
+            private set
+            {
+                propertyBag[ECUIdTags.checksummodule] = value.Name;
+            }
+        }
+
+        public void setChecksumModule(string csm)
+        {
             checksumModule = ChecksumModules.GetChecksumModule(csm);
         }
 
         public void UpdateFromMod(RomMod.Mod mod)
         {
             if(memoryModel == null)
-                memoryModel =MemoryModels._Default;
+                memoryModel = MemoryModels._Default;
             include = mod.InitialCalibrationId;
             CalibrationIdAddress = mod.ModIdentAddress;
             CalibrationIdString = mod.ModIdent.ToString();
@@ -194,65 +400,65 @@ namespace SharpTune.Core
                 string v = element.Value.ToString();
                 if (v != null && v.Length > 0)
                 {
-                    switch (element.Name.ToString())
+                    switch (element.Name.ToString().ToLower())
                     {
-                        case "xmlid":
+                        case ECUIdTags.xmlid:
                             xmlid = v;
                             break;
 
-                        case "internalidaddress":
+                        case ECUIdTags.calidaddress:
                             setCalibrationIdAddressFromHex(v);
                             break;
 
-                        case "internalidstring":
+                        case ECUIdTags.calidstring:
                             CalibrationIdString = v;
                             break;
 
-                        case "internalidhex":
+                        case ECUIdTags.calidhex:
                             CalibrationIdHexString = v;
                             break;
 
-                        case "ecuid":
+                        case ECUIdTags.ecuidhex:
                             EcuIdHexString = v; //TODO: move these to memorymodels??? in subaru this is HEX, but this is inconsistent with calibrationid :(
                             break;
 
-                        case "caseid":
+                        case ECUIdTags.caseid:
                             caseid = v;
                             break;
 
-                        case "checksummodule":
+                        case ECUIdTags.checksummodule:
                             setChecksumModule(v);
                             break;
 
-                        case "flashmethod":
+                        case ECUIdTags.flashmethod:
                             setFlashMethod(v);
                             break;
 
-                        case "include":
+                        case ECUIdTags.include:
                             include = v;
                             break;
 
-                        case "year":
+                        case ECUIdTags.year:
                             year = v;
                             break;
 
-                        case "market":
+                        case ECUIdTags.market:
                             market = v;
                             break;
 
-                        case "make":
+                        case ECUIdTags.make:
                             make = v;
                             break;
 
-                        case "model":
+                        case ECUIdTags.model:
                             model = v;
                             break;
 
-                        case "submodel":
+                        case ECUIdTags.submodel:
                             submodel = v;
                             break;
 
-                        case "transmission":
+                        case ECUIdTags.transmission:
                             transmission = v;
                             break;
 
@@ -266,9 +472,9 @@ namespace SharpTune.Core
 
         public ECUIdentifier()
         {
+            propertyBag = new Dictionary<string, string>();
             isReady = false;
         }
-
        
         /// <summary>
         /// Holds all XElements pulled from XML for ROM tables
@@ -278,36 +484,40 @@ namespace SharpTune.Core
             get
             {
                 XElement x = new XElement("romid");
-                if(xmlid != null)
-                    x.Add(new XElement("xmlid", xmlid));
-                if(caseid != null)
-                    x.Add(new XElement("caseid", caseid));
-                if (filesize != null)
-                    x.Add(new XElement("filesize", filesize));
-                if (memoryModel != null && memoryModel.name != null)
-                    x.Add(new XElement("memmodel", memoryModel.name));
-                if(flashMethod != null && flashMethod.name != null)
-                    x.Add(new XElement("flashmethod", flashMethod.name));
-                if(checksumModule!= null && checksumModule.Name != null)
-                    x.Add(new XElement("checksummodule", checksumModule.Name));
-                if(CalibrationIdAddress != null)
-                    x.Add(new XElement("internalidaddress", CalibrationIdAddress.ConvertLongToHexString()));
-                if(CalibrationIdString != null)
-                    x.Add(new XElement("internalidstring", CalibrationIdString));//TODO: conditionally output hex??
-                if(EcuIdHexString != null)
-                    x.Add(new XElement("ecuid", EcuIdHexString));
-                if(year != null)
-                    x.Add(new XElement("year", year));
-                if(market != null)
-                    x.Add(new XElement("market", market));
-                if(make != null)
-                    x.Add(new XElement("make", make));
-                if(model != null)
-                    x.Add(new XElement("model", model));
-                if(submodel != null)
-                    x.Add(new XElement("submodel", submodel));
-                if(transmission != null)
-                    x.Add(new XElement("transmission", transmission));
+                foreach (KeyValuePair<string, string> prop in propertyBag)
+                {
+                    x.Add(new XElement(prop.Key, prop.Value));
+                }
+                //if(xmlid != null)
+                //    x.Add(new XElement("xmlid", xmlid));
+                //if(caseid != null)
+                //    x.Add(new XElement("caseid", caseid));
+                //if (filesize != null)
+                //    x.Add(new XElement("filesize", filesize));
+                //if (memoryModel != null && memoryModel.name != null)
+                //    x.Add(new XElement("memmodel", memoryModel.name));
+                //if(flashMethod != null && flashMethod.name != null)
+                //    x.Add(new XElement("flashmethod", flashMethod.name));
+                //if(checksumModule!= null && checksumModule.Name != null)
+                //    x.Add(new XElement("checksummodule", checksumModule.Name));
+                //if(CalibrationIdAddress != null)
+                //    x.Add(new XElement("internalidaddress", CalibrationIdAddress.ConvertLongToHexString()));
+                //if(CalibrationIdString != null)
+                //    x.Add(new XElement("internalidstring", CalibrationIdString));//TODO: conditionally output hex??
+                //if(EcuIdHexString != null)
+                //    x.Add(new XElement(ECUIdTags.ecuidstring, EcuIdHexString));
+                //if(year != null)
+                //    x.Add(new XElement("year", year));
+                //if(market != null)
+                //    x.Add(new XElement("market", market));
+                //if(make != null)
+                //    x.Add(new XElement("make", make));
+                //if(model != null)
+                //    x.Add(new XElement("model", model));
+                //if(submodel != null)
+                //    x.Add(new XElement("submodel", submodel));
+                //if(transmission != null)
+                //    x.Add(new XElement("transmission", transmission));
                 return x;
             }            
         }

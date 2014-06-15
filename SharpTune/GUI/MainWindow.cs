@@ -249,6 +249,7 @@ namespace SharpTune
         public override void Refresh()
         {
             RefreshImageInfo();
+            RefreshTableTree();
             RefreshModTree();
             RefreshModInfo();
             base.Refresh();
@@ -283,22 +284,22 @@ namespace SharpTune
                 else
                     buttonPatchRom.Text = "Remove Mod";
 
-                selectedModTextBox.Text = "FileName: " +
+                DataTextBox.Text = "FileName: " +
                     m.FileName +
                     Environment.NewLine;
-                selectedModTextBox.AppendText(
+                DataTextBox.AppendText(
                     "Mod Identifier: " +
                     m.ModIdent +
                     Environment.NewLine);
-                selectedModTextBox.AppendText(
+                DataTextBox.AppendText(
                     "Version: " +
                     m.ModBuild +
                     Environment.NewLine);
-                selectedModTextBox.AppendText(
+                DataTextBox.AppendText(
                     "Author: " +
                     m.ModAuthor +
                     Environment.NewLine);
-               selectedModTextBox.AppendText(
+               DataTextBox.AppendText(
                     "Description: " + 
                     m.ModInfo + 
                     Environment.NewLine);
@@ -306,35 +307,78 @@ namespace SharpTune
             catch (System.Exception excpt)
             {
                 string derp = excpt.Message;
-                selectedModTextBox.Clear();
+                DataTextBox.Clear();
                 buttonPatchRom.Enabled = false;
                 buttonPatchRom.Text = "Select a patch";
             }
             
         }
 
-        public void RefreshModTree()
+        public void RefreshTableTree()
         {
-            treeView1.Nodes.Clear();
+            TableTreeView.Nodes.Clear();
             if (sharpTuner.activeImage == null)
             {
-                treeView1.Nodes.Add("");
+                TableTreeView.Nodes.Add("");
+                return;
+            }
+
+            if (sharpTuner.activeImage.romTableList != null && sharpTuner.activeImage.romTableList.Count > 0)
+            {
+                TableTreeView.Nodes.Add(sharpTuner.activeImage.FileName);
+
+                TreeNode infoTree = new TreeNode("ROM Info");
+                foreach(KeyValuePair<string,string> prop in sharpTuner.activeImage.Definition.ident.propertyBag)
+                {
+                    infoTree.Nodes.Add(prop.Key + ": " + prop.Value);
+                }
+               
+                TableTreeView.Nodes.Add(infoTree);
+
+                foreach (string category in sharpTuner.activeImage.romTableCategories)
+                {
+                    TreeNode catTree = new TreeNode(category);
+                    catTree.Tag = category;
+
+                    foreach(TableMetaData table in sharpTuner.activeImage.romTableList.Values)
+                    {
+                        if(category.EqualsCI(table.category))
+                        {
+                            TreeNode tableTree = new TreeNode(table.name);
+                            tableTree.Tag = table.name;
+                            catTree.Nodes.Add(tableTree);
+                        }
+                    }
+
+                    TableTreeView.Nodes.Add(catTree);
+                }
+            }
+            else
+                TableTreeView.Nodes.Add("No Tables Found for " + sharpTuner.activeImage.FileName);
+        }
+
+        public void RefreshModTree()
+        {
+            ModTreeView.Nodes.Clear();
+            if (sharpTuner.activeImage == null)
+            {
+                ModTreeView.Nodes.Add("");
                 return;
             }
 
             if (sharpTuner.activeImage.ModList.Count > 0)
             {
-                treeView1.Nodes.Add("Compatible MODs for " + sharpTuner.activeImage.FileName);
+                ModTreeView.Nodes.Add("Compatible MODs for " + sharpTuner.activeImage.FileName);
                 foreach (Mod mod in sharpTuner.activeImage.ModList)
                 {
                     TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
                     patchTree.Tag = mod.FilePath;
 
-                    treeView1.Nodes.Add(patchTree);
+                    ModTreeView.Nodes.Add(patchTree);
                 }
             }
             else
-                treeView1.Nodes.Add("No Mods Found for " + sharpTuner.activeImage.CalId.ToString());
+                ModTreeView.Nodes.Add("No Mods Found for " + sharpTuner.activeImage.FileName);
         }
 
         private void buttonPatchRom_Click(object sender, EventArgs e)
@@ -392,11 +436,11 @@ namespace SharpTune
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if ((treeView1.SelectedNode != null) && (treeView1.SelectedNode.Tag != null) && (treeView1.SelectedNode.Tag.ToString().Contains(".patch")))
+            if ((ModTreeView.SelectedNode != null) && (ModTreeView.SelectedNode.Tag != null) && (ModTreeView.SelectedNode.Tag.ToString().Contains(".patch")))
             {
                 buttonPatchRom.Enabled = true;
                 //buttonTestPatch.Enabled = true;
-                selectedModIndex = sharpTuner.activeImage.ModList.FindIndex(m => m.FilePath == treeView1.SelectedNode.Tag.ToString());
+                selectedModIndex = sharpTuner.activeImage.ModList.FindIndex(m => m.FilePath == ModTreeView.SelectedNode.Tag.ToString());
                 
                 RefreshModInfo();
             }

@@ -286,6 +286,16 @@ namespace SharpTune
             return offs.ToString("X");
         }
 
+        public static string ConvertLongToHexString(this long? offs)
+        {
+            if(offs != null)
+            {
+                long loffs = (long)offs;
+                return loffs.ToString("X");
+            }
+            return null;
+        }
+
         public static string ConvertBytesToHexString(this Byte[] input)
         {
             return BitConverter.ToString(input).Replace("-", "");

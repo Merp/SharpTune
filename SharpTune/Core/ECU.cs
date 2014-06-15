@@ -54,7 +54,26 @@ namespace SharpTuneCore
 
         public ECUMetaData Definition { get; private set; }
 
-        public List<TableMetaData> tableList { get; set; }
+        public Dictionary<string,TableMetaData> romTableList {
+            get {
+                if (Definition != null)
+                    return Definition.AggregateExposedRomTables;
+                return null;
+            }
+            private set { }
+        }
+
+        public List<string> romTableCategories
+        {
+            get
+            {
+                List<string> cats = new List<string>();
+                if (Definition != null)
+                    return Definition.AggregateExposedRomTableCategories;
+                return null;
+            }
+            private set { }
+        }
 
         public TreeNode imageTree { get; set; }
 

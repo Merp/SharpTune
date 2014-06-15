@@ -114,6 +114,22 @@ namespace SharpTuneCore
             }
             private set{}
         }
+
+        public List<string> AggregateExposedRomTableCategories
+        {
+            get
+            {
+                List<string> cats = new List<string>();
+                foreach (TableMetaData table in this.AggregateExposedRomTables.Values)
+                {
+                    if (!cats.ContainsCI(table.category))
+                        cats.Add(table.category);
+                }
+                return cats;
+            }
+            private set { }
+        }
+
         public Dictionary<string, TableMetaData> AggregateExposedRamTables { 
             get{
                 return Utils.AggregateDictionary(ExposedRamTables,InheritedExposedRamTables);
@@ -348,9 +364,9 @@ namespace SharpTuneCore
         /// </summary>
         public bool ReadXML()
         {
-            if (path == null) return false;
+            if (this.filePath == null) return false;
             LoadOptions lo = LoadOptions.SetLineInfo & LoadOptions.PreserveWhitespace;
-            XDocument xmlDoc = XDocument.Load(path, lo);
+            XDocument xmlDoc = XDocument.Load(filePath, lo);
 
             //Read Scalings
             IXmlLineInfo info = null;
@@ -386,6 +402,7 @@ namespace SharpTuneCore
                     throw;
                 }
             }
+            return true;
         }
 
         public bool ReadEcuFlashRomTables(XDocument xmlDoc, IXmlLineInfo info)
@@ -410,6 +427,7 @@ namespace SharpTuneCore
                     throw;
                 }
             }
+            return true;
         }
 
         public bool ReadEcuFlashRamTables(XDocument xmlDoc, IXmlLineInfo info)
