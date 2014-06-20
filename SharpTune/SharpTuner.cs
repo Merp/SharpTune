@@ -403,14 +403,14 @@ namespace SharpTune
         // First step: create the trace source object
         TraceSource ts = new TraceSource("myTraceSource");
         ts.Switch = new SourceSwitch("mySwitch", "my switch");
-        ts.Switch.Level = SourceLevels.All; // Enable only warning, error and critical events
+        ts.Switch.Level = Settings.Default.LogLevel; // Enable only warning, error and critical events
 
         ts.Listeners.Clear();
         Trace.Listeners.Clear();
 
         ConsoleTraceListener cl = new ConsoleTraceListener();
         cl.TraceOutputOptions = TraceOptions.None;
-        cl.Filter = new EventTypeFilter(SourceLevels.Information);
+        cl.Filter = new EventTypeFilter(Settings.Default.LogLevel);
         ts.Listeners.Add(cl);
         Trace.Listeners.Add(cl);
 
@@ -419,7 +419,7 @@ namespace SharpTune
 
         TextWriterTraceListener tr = new TextWriterTraceListener(Settings.Default.LogFilePath);
         tr.TraceOutputOptions = TraceOptions.DateTime | TraceOptions.Timestamp | TraceOptions.Callstack;
-        tr.Filter = new EventTypeFilter(SourceLevels.Warning);
+        tr.Filter = new EventTypeFilter(Settings.Default.LogLevel);
         ts.Listeners.Add(tr);
         Trace.Listeners.Add(tr);
 

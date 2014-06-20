@@ -190,5 +190,17 @@ namespace SharpTune.Properties {
                 this["ForumUrl"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("All")]
+        public global::System.Diagnostics.SourceLevels LogLevel {
+            get {
+                return ((global::System.Diagnostics.SourceLevels)(this["LogLevel"]));
+            }
+            set {
+                this["LogLevel"] = value;
+            }
+        }
     }
 }

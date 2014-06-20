@@ -44,5 +44,8 @@
     <Setting Name="ForumUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="LogLevel" Type="System.Diagnostics.SourceLevels" Scope="User">
+      <Value Profile="(Default)">All</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
