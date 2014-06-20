@@ -22,7 +22,7 @@ namespace SharpTune.Core.Checksum
             throw new Exception(String.Format("ChecksumModule {0} not found !!", n));
         }
 
-        static ChecksumSubaruDBW _subarudbw = new ChecksumSubaruDBW();
+        static ChecksumSubaruDBW _subarudbw = new ChecksumSubaruDBW();//TODO: need to use a factory!
 
         public static List<IChecksumModule> checksumModules = new List<IChecksumModule>() {
             _subarudbw,

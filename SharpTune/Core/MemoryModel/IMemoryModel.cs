@@ -10,6 +10,7 @@ namespace SharpTune.Core.MemoryModel
         string name { get; }
         int cpubits {get; }
         int filesizebytes { get; }
+        int checksumtable { get; }
         System.Text.Encoding encoding { get;}
     }
 
@@ -24,6 +25,10 @@ namespace SharpTune.Core.MemoryModel
         }
         public int filesizebytes{
             get{return 1048576;}
+        }
+        public int checksumtable
+        {
+            get { return 0xFFB80; }
         }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
@@ -42,6 +47,10 @@ namespace SharpTune.Core.MemoryModel
         public int filesizebytes{
             get{return 524288;}
         }
+        public int checksumtable
+        {
+            get { return 0xFFB80; }
+        }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
         }
@@ -59,11 +68,37 @@ namespace SharpTune.Core.MemoryModel
         public int filesizebytes{
             get{return 1048576;}
         }
+        public int checksumtable
+        {
+            get { return 0xFFB80; }
+        }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
         }
     }
 
+    [Serializable]
+    public class MemoryModelSubaruSH7059 : IMemoryModel
+    {
+        public string name{
+            get{return "SH7059";}
+        }
+        public int cpubits{
+            get{return 32;}
+        }
+        public int filesizebytes{
+            get { throw new Exception("ERROR, SH7059 filesize not defined!!");}// return 1048576; }//TODO: WHAT IS THIS???
+        }
+        public int checksumtable
+        {
+            get { return 0x17FB80; }
+        }
+        public System.Text.Encoding encoding{
+            get{return System.Text.Encoding.UTF8;}
+        }
+    }
+
+    
     [Serializable]
     public class MemoryModelSubaruSH72531 : IMemoryModel
     {
@@ -75,6 +110,10 @@ namespace SharpTune.Core.MemoryModel
         }
         public int filesizebytes{
             get{return 1572864;}
+        }
+        public int checksumtable
+        {
+            get { throw new Exception("ERROR, SH72531 checksum table not defined!!"); }// return 0x17FB80; }
         }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
@@ -93,6 +132,10 @@ namespace SharpTune.Core.MemoryModel
         public int filesizebytes{
             get{return 196608;}
         }
+        public int checksumtable
+        {
+            get { throw new Exception("ERROR, SHC16 checksum table not defined!!"); }// return 0x17FB80; }
+        }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
         }
@@ -109,6 +152,10 @@ namespace SharpTune.Core.MemoryModel
         }
         public int filesizebytes{
             get{return 1048576;}
+        }
+        public int checksumtable
+        {
+            get { throw new Exception("ERROR, H8 checksum table not defined!!"); }// return 0x17FB80; }
         }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
@@ -127,6 +174,10 @@ namespace SharpTune.Core.MemoryModel
         public int filesizebytes{
             get{return 1048576;}
         }
+        public int checksumtable
+        {
+            get { throw new Exception("ERROR, SH7052 checksum table not defined!!"); }// return 0x17FB80; }
+        }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
         }
@@ -143,6 +194,10 @@ namespace SharpTune.Core.MemoryModel
         }
         public int filesizebytes{
             get{return 1048576;}
+        }
+        public int checksumtable
+        {
+            get { throw new Exception("ERROR, M32R checksum table not defined!!"); }// return 0x17FB80; }
         }
         public System.Text.Encoding encoding{
             get{return System.Text.Encoding.UTF8;}
@@ -163,6 +218,7 @@ namespace SharpTune.Core.MemoryModel
 
         static MemoryModelSubaruSH7055 _SubaruSH7055 = new MemoryModelSubaruSH7055();
         static MemoryModelSubaruSH7058 _SubaruSH7058 = new MemoryModelSubaruSH7058();
+        static MemoryModelSubaruSH7059 _SubaruSH7059 = new MemoryModelSubaruSH7059();
         static MemoryModelSubaruSH72531 _SubaruSH72531 = new MemoryModelSubaruSH72531();
         static MemoryModelSubaruHC16 _Subaru68HC16Y5 = new MemoryModelSubaruHC16();
         static MemoryModelMitsubishiH8539F _MitsubishiH8539F = new MemoryModelMitsubishiH8539F();
@@ -170,7 +226,7 @@ namespace SharpTune.Core.MemoryModel
         static MemoryModelMitsubishiSH7052 _MitsubishiSH7052 = new MemoryModelMitsubishiSH7052();
 
         public static List<IMemoryModel> memoryModels = new List<IMemoryModel>() {
-            _SubaruSH7055, _SubaruSH7058, _SubaruSH72531, _Subaru68HC16Y5,
+            _SubaruSH7055, _SubaruSH7058, _SubaruSH7059, _SubaruSH72531, _Subaru68HC16Y5,
             _MitsubishiH8539F, _MitsubishiM32186F8, _MitsubishiSH7052,
             _Default
         };
