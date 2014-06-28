@@ -70,22 +70,23 @@ namespace SharpTune.Core
             private set { propertyBag[ECUIdTags.filesize] = value;}
         }
 
-        public long? CalibrationIdAddress
+        public int? CalibrationIdAddress
         {
             get
             {
                 if (propertyBag.ContainsKey(ECUIdTags.calidaddress))
-                    return long.Parse(propertyBag[ECUIdTags.calidaddress]);
+                    return propertyBag[ECUIdTags.calidaddress].ConvertHexToInt();
                 else
                     return null;
             }
             private set
             {
-                propertyBag[ECUIdTags.calidaddress] = value.ToString();
+                propertyBag[ECUIdTags.calidaddress] = value.ConvertIntToHexString();
             }
         }
+
         private void setCalibrationIdAddressFromHex(string hex){
-            CalibrationIdAddress = hex.ConvertHexToLong();
+            CalibrationIdAddress = hex.ConvertHexToInt();
         }
 
         public string CalibrationIdString {
@@ -114,8 +115,10 @@ namespace SharpTune.Core
             }
         }
 
-        public Byte[] CalibrationIdHexBytes {
-            get{
+        public Byte[] CalibrationIdHexBytes
+        {
+            get
+            {
                 if (propertyBag.ContainsKey(ECUIdTags.calidhex))
                     return propertyBag[ECUIdTags.calidhex].ToByteArray();
                 else if (propertyBag.ContainsKey(ECUIdTags.calidstring))
@@ -123,15 +126,12 @@ namespace SharpTune.Core
                 else
                     return null;
             }
-            private set{
+            private set
+            {
                 propertyBag[ECUIdTags.calidstring] = value.ConvertBytesToString(memoryModel.encoding);
                 propertyBag[ECUIdTags.calidhex] = value.ConvertBytesToHexString();
             }
         }
-
-        private string _ecuIdHexString;
-        private string _ecuIdString;
-        private Byte[] _ecuIdHexBytes;
 
         public string EcuIdString {
             get{
@@ -144,8 +144,6 @@ namespace SharpTune.Core
                  try
                  {
                      propertyBag[ECUIdTags.ecuidstring] = value;
-                     propertyBag[ECUIdTags.ecuidhex] = value.ConvertStringToHex(memoryModel.encoding);
-                     _ecuIdHexBytes = value.ConvertStringToBytes(memoryModel.encoding);
                  }
                  catch (Exception crap)
                  {
@@ -166,7 +164,6 @@ namespace SharpTune.Core
                 try
                 {
                     propertyBag[ECUIdTags.ecuidhex] = value;
-                    propertyBag[ECUIdTags.ecuidstring] = value.ConvertHexToString(memoryModel.encoding);
                 }
                 catch (Exception crap)
                 {
@@ -187,7 +184,6 @@ namespace SharpTune.Core
             }
             private set{
                 propertyBag[ECUIdTags.ecuidhex] = value.ConvertBytesToHexString();
-                propertyBag[ECUIdTags.ecuidstring] = value.ConvertBytesToString(memoryModel.encoding);
             }
         }
 
@@ -356,7 +352,7 @@ namespace SharpTune.Core
             if(memoryModel == null)
                 memoryModel = MemoryModels._Default;
             include = mod.InitialCalibrationId;
-            CalibrationIdAddress = mod.ModIdentAddress;
+            CalibrationIdAddress = (int?)mod.ModIdentAddress;
             CalibrationIdString = mod.ModIdent.ToString();
             EcuIdHexString = mod.FinalEcuId.ToString();
             xmlid = mod.ModIdent.ToString();
