@@ -40,7 +40,7 @@ namespace EcuMapTools
         public XMLtoIDC(ECU di)
         {
             deviceImage = di;
-            workingDir = deviceImage.FilePath;
+            workingDir = deviceImage.FileDirectory;
         }
 
         public void GuiRun(string[] args, string outpath, string def, string loggerdef, string loggerdtd)

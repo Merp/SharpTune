@@ -119,61 +119,68 @@ namespace SharpTune.GUI
         private void XMLtoIDC_Load(object sender, EventArgs e)
         {
             //Populate rom info section
-           
-                try
-                {
-                    //rominfo = SharpTuner.activeImage.Definition.carInfo.ToString() + System.Environment.NewLine;
 
-                    if (deviceImage.Definition != null)
+            try
+            {
+                //rominfo = SharpTuner.activeImage.Definition.carInfo.ToString() + System.Environment.NewLine;
+
+                if (deviceImage.Definition != null)
+                {
+                    checkBoxUseDef.Enabled = true;
+                    checkBoxUseDef.Checked = true;
+                    comboBoxEcuDef.Enabled = false;
+                }
+
+                rominfo += "FileName:  " + deviceImage.FileName + System.Environment.NewLine;
+                foreach (var s in deviceImage.Definition.ident.EcuFlashXml.Elements())//TODO: use a dictionary instead.
+                {
+                    rominfo += s.Name.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
+                }
+
+                RomInfoTextBox.Text = rominfo;
+
+                //search through defs for logger.dtd
+                loggerdtds = Utils.DirSearchCI(Settings.Default.RomRaiderDefRepoPath, new List<string>() { "logger.dtd" });
+                if (loggerdtds != null)
+                {
+                    Utils.getFilePaths(loggerdtds, ref loggerdtdfiles);
+                    comboBoxLoggerDTD.DataSource = loggerdtdfiles;
+
+                    //search through defs for logger defs
+                    loggerdefs = Utils.DirSearchCI(Settings.Default.SubaruDefsRepoPath, new List<string>() { "logger", ".xml" });
+                    Utils.getFilePaths(loggerdefs, ref loggerdeffiles);
+                    comboBoxLoggerDef.DataSource = loggerdeffiles;
+                    foreach (string d in loggerdeffiles)
                     {
-                        checkBoxUseDef.Enabled = true;
-                        checkBoxUseDef.Checked = true;
-                        comboBoxEcuDef.Enabled = false;
+                        if (d.ContainsCI("en") && d.ContainsCI("std"))
+                            comboBoxLoggerDef.SelectedItem = d;
                     }
 
-                    rominfo += "FileName:  " + deviceImage.FileName + System.Environment.NewLine;
-                    foreach (var s in deviceImage.Definition.ident.EcuFlashXml.Elements())//TODO: use a dictionary instead.
+                    //search through defs for ecu defs
+                    ecudefs = Utils.DirSearchCI(Settings.Default.RomRaiderDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
+                    Utils.getFilePaths(ecudefs, ref ecudeffiles);
+                    comboBoxEcuDef.DataSource = ecudeffiles;
+                    foreach (string d in ecudeffiles)
                     {
-                        rominfo += s.Name.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
+
+                        if (d.ContainsCI("ecu_defs")) ///TODO update RR repo and add search for "STD"
+                            comboBoxEcuDef.SelectedItem = d;
+                        else if (d.ContainsCI(deviceImage.CalId))
+                        {
+                            comboBoxEcuDef.SelectedItem = d;
+                            break; //gives precedence to def with CALID
+                        }
                     }
                 }
-                catch (Exception er)
+                else
                 {
-                    Console.Write(er.Message);
-               
-            }
-
-            RomInfoTextBox.Text = rominfo;
-
-            //search through defs for logger.dtd
-            loggerdtds = Utils.DirSearchCI(Settings.Default.RomRaiderDefRepoPath, new List<string>() { "logger.dtd" });
-            Utils.getFilePaths(loggerdtds, ref loggerdtdfiles);
-            comboBoxLoggerDTD.DataSource = loggerdtdfiles;
-
-            //search through defs for logger defs
-            loggerdefs = Utils.DirSearchCI(Settings.Default.SubaruDefsRepoPath, new List<string>() { "logger" , ".xml" });
-            Utils.getFilePaths(loggerdefs, ref loggerdeffiles);
-            comboBoxLoggerDef.DataSource = loggerdeffiles;
-            foreach (string d in loggerdeffiles)
-            {
-                if (d.ContainsCI("en") && d.ContainsCI("std"))
-                    comboBoxLoggerDef.SelectedItem = d;
-            }
-
-            //search through defs for ecu defs
-            ecudefs = Utils.DirSearchCI(Settings.Default.RomRaiderDefRepoPath, new List<string>() { ".xml" }, new List<string>() { "log" });
-            Utils.getFilePaths(ecudefs, ref ecudeffiles);
-            comboBoxEcuDef.DataSource = ecudeffiles;
-            foreach (string d in ecudeffiles)
-            {
-                
-                if(d.ContainsCI("ecu_defs")) ///TODO update RR repo and add search for "STD"
-                    comboBoxEcuDef.SelectedItem = d;
-                else if (d.ContainsCI(deviceImage.CalId))
-                {
-                    comboBoxEcuDef.SelectedItem = d;
-                    break; //gives precedence to def with CALID
+                    Console.WriteLine("ERROR: XMLtoIDC could not find any definitions!! Is definition repo location set??");
                 }
+            }
+            catch (Exception er)
+            {
+                Console.Write(er.Message);
+                throw;
             }
         }
 
