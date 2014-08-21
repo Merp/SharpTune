@@ -208,7 +208,7 @@ namespace SharpTuneCore
             {
                 if (_type != null)
                     return _type;
-                else if (baseTable.type != null)
+                else if (baseTable != null && baseTable.type != null)
                     return baseTable.type;
                 else
                     return "unknown type";
@@ -223,7 +223,7 @@ namespace SharpTuneCore
             {
                 if (_category != null)
                     return _category;
-                else if (baseTable.category != null)
+                else if (baseTable != null && baseTable.category != null)
                     return baseTable.category;
                 else
                     return "unknown category";
@@ -238,7 +238,7 @@ namespace SharpTuneCore
             {
                 if (_description != null)
                     return _description;
-                else if (baseTable.description != null)
+                else if (baseTable != null && description != null)
                     return baseTable.description;
                 else
                     return "unknown description";
@@ -253,7 +253,7 @@ namespace SharpTuneCore
             {
                 if (_storageTypeString != null)
                     return _storageTypeString;
-                else if (baseTable.storageTypeString != null)
+                else if (baseTable != null && baseTable.storageTypeString != null)
                     return baseTable.storageTypeString;
                 else
                     return "unknown storageTypeString";
@@ -268,7 +268,7 @@ namespace SharpTuneCore
             {
                 if (_storageTypeHex != StorageType.Unknown)
                     return _storageTypeHex;
-                else if (baseTable.storageTypeHex != StorageType.Unknown)
+                else if (baseTable != null && baseTable.storageTypeHex != StorageType.Unknown)
                     return baseTable.storageTypeHex;
                 else
                     return StorageType.Unknown;
@@ -384,7 +384,7 @@ namespace SharpTuneCore
             {
                 if (_defaultScaling != null)
                     return _defaultScaling;
-                else if (baseTable.defaultScaling != null)
+                else if (baseTable != null && baseTable.defaultScaling != null)
                     return baseTable.defaultScaling;
                 else
                 {
@@ -551,16 +551,16 @@ namespace SharpTuneCore
                     string name = axis.Attribute("name").Value;
                     if (name.EqualsCI("x") || name.ContainsCI("x axis"))
                     {
-                        if (baseTable.xAxis != null)// && name.EqualsCI(baseTable.xAxis.name)))
+                        if (baseTable != null && baseTable.xAxis != null)// && name.EqualsCI(baseTable.xAxis.name)))
                             this.xAxis = AxisFactory.CreateAxis(axis, this, baseTable.xAxis);
-                        else if (baseTable.yAxis != null)
+                        else if (baseTable != null && baseTable.yAxis != null)
                             this.xAxis = AxisFactory.CreateAxis(axis, this, baseTable.yAxis);
                     }
                     else if (name.EqualsCI("y") || name.ContainsCI("y axis"))
                     {
-                        if (baseTable.yAxis != null) //&& name.EqualsCI(baseTable.yAxis.name)))
+                        if (baseTable != null && baseTable.yAxis != null) //&& name.EqualsCI(baseTable.yAxis.name)))
                             this.yAxis = AxisFactory.CreateAxis(axis, this, baseTable.yAxis);
-                        else if (baseTable.xAxis != null)
+                        else if (baseTable != null && baseTable.xAxis != null)
                             this.yAxis = AxisFactory.CreateAxis(axis, this, baseTable.xAxis);
                     }
                 }
@@ -605,7 +605,7 @@ namespace SharpTuneCore
 
                 xel.SetAttributeValue("address", this.address.ToString("X"));
 
-                if(_elements != null && baseTable.elements != null && _elements != baseTable.elements) //TODO FIX KLUDGE!
+                if (_elements != null && baseTable != null && baseTable.elements != null && _elements != baseTable.elements) //TODO FIX KLUDGE!
                     xel.SetAttributeValue("elements",_elements);
 
                 if(_xAxis != null)
