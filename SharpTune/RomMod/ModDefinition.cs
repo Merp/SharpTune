@@ -707,7 +707,6 @@ namespace SharpTune.RomMod
         private static List<string> GetDefs(string path)
         {
             List<string> loggerdefs = new List<string>();
-            List<string> remlist = new List<string>();
 
             loggerdefs.AddRange(Directory.GetFiles(path));
             loggerdefs.FilterOnly(".xml");
@@ -721,6 +720,35 @@ namespace SharpTune.RomMod
             return loggerdefs;
         }
 
+        private static List<string> GetRRECUDefs(string path, string calid)
+        {
+            List<string> defs = new List<string>();
+
+            foreach(string def in Directory.GetFiles(path).ToList().FilterOnly(".xml"))
+            {
+                if (HasBaseRRECUDef(def, calid))
+                    defs.Add(Path.GetFileName(def));
+            }
+
+            defs.Sort();
+            defs.Reverse();
+            return defs;
+        }
+
+        private static bool HasBaseRRECUDef(string path, string calid)
+        {
+            XDocument ecuXml = XDocument.Load(path);
+
+            string xp = "./roms/rom/romid/xmlid";
+            IEnumerable<XElement> rexp = ecuXml.XPathSelectElements(xp);
+            foreach(XElement xe in rexp)
+            {
+                if (xe.Value.EqualsCI(calid))
+                    return true;
+            }
+            return false;
+        }
+
         private XDocument SelectGetRRLogDef()
         {
             string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetDefs(Settings.Default.RomRaiderLoggerDefPath));
@@ -731,7 +759,7 @@ namespace SharpTune.RomMod
 
         private XDocument SelectGetRREcuDef()
         {
-            string ldl = SimpleCombo.ShowDialog("Select ecu base", "Select ecu base", GetDefs(Settings.Default.RomRaiderEcuDefPath));
+            string ldl = SimpleCombo.ShowDialog("Select ecu base", "Select ecu base", GetRRECUDefs(Settings.Default.RomRaiderEcuDefPath, this.parentMod.InitialCalibrationId));
             XDocument ecuXml = XDocument.Load(Settings.Default.RomRaiderEcuDefPath + ldl);
             return ecuXml;
         }
