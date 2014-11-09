@@ -477,13 +477,15 @@ namespace SharpTune.Core
         /// Holds all XElements pulled from XML for ROM tables
         /// Includes inherited XML
         /// </summary>
-        public XElement EcuFlashXml {
+        /// //todo fix kludge!!!!
+        public XElement EcuFlashXml_SH705x {
             get
             {
                 XElement x = new XElement("romid");
                 foreach (KeyValuePair<string, string> prop in propertyBag)
                 {
-                    x.Add(new XElement(prop.Key, prop.Value));
+                    if(!prop.Key.ContainsCI("calidhex"))
+                        x.Add(new XElement(prop.Key, prop.Value));
                 }
                 //if(xmlid != null)
                 //    x.Add(new XElement("xmlid", xmlid));
@@ -524,7 +526,7 @@ namespace SharpTune.Core
         {
             XElement xe = new XElement("rom");
             xe.SetAttributeValue("base",this.include);
-            XElement xeromid = EcuFlashXml;
+            XElement xeromid = EcuFlashXml_SH705x;
             xe.Add(xeromid);
             return xe;
         }

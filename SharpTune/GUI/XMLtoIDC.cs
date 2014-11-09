@@ -132,7 +132,7 @@ namespace SharpTune.GUI
                 }
 
                 rominfo += "FileName:  " + deviceImage.FileName + System.Environment.NewLine;
-                foreach (var s in deviceImage.Definition.ident.EcuFlashXml.Elements())//TODO: use a dictionary instead.
+                foreach (var s in deviceImage.Definition.ident.EcuFlashXml_SH705x.Elements())//TODO: use a dictionary instead.
                 {
                     rominfo += s.Name.ToString() + ":  " + s.Value.ToString() + System.Environment.NewLine;
                 }

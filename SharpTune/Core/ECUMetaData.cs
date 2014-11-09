@@ -714,7 +714,7 @@ namespace SharpTuneCore
                     //TODO THIS IS REDUNDANT
                     writer.WriteStartElement("rom");
 
-                    ident.EcuFlashXml.WriteTo(writer);
+                    ident.EcuFlashXml_SH705x.WriteTo(writer);
 
                     //Write include
                     if (this.include != null)

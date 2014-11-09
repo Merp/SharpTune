@@ -965,7 +965,7 @@ namespace SharpTune.RomMod
 
             XElement newRom = new XElement("rom");
             newRom.SetAttributeValue("base",this.parentMod.InitialCalibrationId);
-            newRom.Add(this.definition.ident.EcuFlashXml);
+            newRom.Add(this.definition.ident.EcuFlashXml_SH705x);
 
 
             string paramxp = "./roms";

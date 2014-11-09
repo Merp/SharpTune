@@ -99,7 +99,7 @@ namespace SharpTune.GUI
                 if(dialogResult == DialogResult.Yes)
                 {
                     def.ident.setIdForUndefined(id);
-                    textBoxDefXml.Text = def.ident.EcuFlashXml.ToString();
+                    textBoxDefXml.Text = def.ident.EcuFlashXml_SH705x.ToString();
 
                 }
                 else if (dialogResult == DialogResult.No)
@@ -194,7 +194,7 @@ namespace SharpTune.GUI
         {
             if (sharpTuner.AvailableDevices.DefDictionary.ContainsKey(comboBoxCopyDef.SelectedItem.ToString()))
             {
-                textBoxDefXml.Text = sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].ident.EcuFlashXml.ToString();
+                textBoxDefXml.Text = sharpTuner.AvailableDevices.DefDictionary[comboBoxCopyDef.SelectedItem.ToString()].ident.EcuFlashXml_SH705x.ToString();
                 comboBoxIncludeDef.SelectedItem = comboBoxCopyDef.SelectedItem;
             }
             else
