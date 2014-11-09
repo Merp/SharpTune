@@ -206,14 +206,14 @@ namespace SharpTune.Core
         {
             get
             {
-                if (propertyBag.ContainsKey(ECUIdTags.year))
-                    return propertyBag[ECUIdTags.year];
+                if (propertyBag.ContainsKey(ECUIdTags.market))
+                    return propertyBag[ECUIdTags.market];
                 else
                     return null;
             }
             private set
             {
-                propertyBag[ECUIdTags.year] = value;
+                propertyBag[ECUIdTags.market] = value;
             }
         }
         public string make
@@ -299,6 +299,7 @@ namespace SharpTune.Core
             private set
             {
                 propertyBag[ECUIdTags.memorymodel] = value.name;
+                filesize = (value.filesizebytes / 1000).ToString("D") + "kb";
             }
         }
 
