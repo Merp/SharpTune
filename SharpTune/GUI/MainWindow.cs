@@ -48,7 +48,7 @@ namespace SharpTune
 
         TextWriter _writer = null;
 
-        private int selectedModIndex;
+        private KeyValuePair<Mod,ModDirection> selectedMod;
 
         public OpenFileDialog ofd = new OpenFileDialog();
 
@@ -277,12 +277,13 @@ namespace SharpTune
         {
             try
             {
-                Mod m = sharpTuner.activeImage.ModList[selectedModIndex];
-                
-                if (!sharpTuner.activeImage.ModList[selectedModIndex].isApplied)
+                Mod m = selectedMod.Key;
+                if (selectedMod.Value == ModDirection.Apply)
                     buttonPatchRom.Text = "Apply Mod";
-                else
+                else if (selectedMod.Value == ModDirection.Remove)
                     buttonPatchRom.Text = "Remove Mod";
+                else if (selectedMod.Value == ModDirection.Upgrade)
+                    buttonPatchRom.Text = "Upgrade Mod";
 
                 DataTextBox.Text = "FileName: " +
                     m.FileName +
@@ -369,10 +370,10 @@ namespace SharpTune
             if (sharpTuner.activeImage.ModList.Count > 0)
             {
                 ModTreeView.Nodes.Add("Compatible MODs for " + sharpTuner.activeImage.FileName);
-                foreach (Mod mod in sharpTuner.activeImage.ModList)
+                foreach (KeyValuePair<Mod,ModDirection> mod in sharpTuner.activeImage.ModList)
                 {
-                    TreeNode patchTree = new TreeNode(mod.direction + ": " + mod.FileName);
-                    patchTree.Tag = mod.FilePath;
+                    TreeNode patchTree = new TreeNode(mod.Key.ToString() + ": " + mod.Key.FileName);
+                    patchTree.Tag = mod.Key.FilePath;
 
                     ModTreeView.Nodes.Add(patchTree);
                 }
@@ -383,7 +384,7 @@ namespace SharpTune
 
         private void buttonPatchRom_Click(object sender, EventArgs e)
         {
-            Mod currentmod = sharpTuner.activeImage.ModList[selectedModIndex];
+            Mod currentmod = selectedMod.Key;
             SaveFileDialog d = new SaveFileDialog();
             d.InitialDirectory = sharpTuner.activeImage.FilePath;
             d.Filter = "Binary/Hex files (*.bin; *.hex)|*.bin;*.hex";
@@ -413,25 +414,71 @@ namespace SharpTune
                 MessageBox.Show("No output file specified! Try again!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!currentmod.isApplied && currentmod.TryCheckApplyMod(sharpTuner.activeImage.FilePath, d.FileName, true, true))
+            if (selectedMod.Value == ModDirection.Apply)
             {
-                MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                sharpTuner.fileQueued = true;
-                sharpTuner.QueuedFilePath = d.FileName;
+                TryApplyMod(currentmod,sharpTuner.activeImage.FilePath,d.FileName);
             }
-            else if(currentmod.isApplied && currentmod.TryCheckApplyMod(sharpTuner.activeImage.FilePath, d.FileName, false, true))
+            else if(selectedMod.Value == ModDirection.Remove)
             {
-                MessageBox.Show("MOD SUCCESSFULLY REMOVED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                sharpTuner.fileQueued = true;
-                sharpTuner.QueuedFilePath = d.FileName;
-            }              
+                TryRemoveMod(currentmod,sharpTuner.activeImage.FilePath, d.FileName);
+            }
+            else if (selectedMod.Value == ModDirection.Upgrade)
+            {
+                TryUpgradeMod(currentmod, d.FileName);
+            }
             else
             {
                 MessageBox.Show("MOD FAILED!" + System.Environment.NewLine + "See Log for details!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             Refresh();
+        }
+
+        private bool TryApplyMod(Mod m, string infile, string outfile)
+        {
+            if (m.TryCheckApplyMod(infile, outfile, true, true))
+            {
+                MessageBox.Show("MOD SUCCESSFULLY APPLIED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                sharpTuner.fileQueued = true;
+                sharpTuner.QueuedFilePath = outfile;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TryRemoveMod(Mod m, string infile, string outfile)
+        {
+            if (m.TryCheckApplyMod(infile, outfile, false, true))
+            {
+                MessageBox.Show("MOD SUCCESSFULLY REMOVED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                sharpTuner.fileQueued = true;
+                sharpTuner.QueuedFilePath = outfile;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TryUpgradeMod(Mod m, string outfile)
+        {
+            foreach (KeyValuePair<Mod,ModDirection> mkvp in sharpTuner.activeImage.ModList)
+            {
+                if (mkvp.Value == ModDirection.Remove)
+                {
+                    if (m.TryCheckApplyMod(sharpTuner.activeImage.FilePath, outfile, false, true))
+                    {
+                        if (m.TryCheckApplyMod(outfile, outfile, true, true))
+                        {
+                            MessageBox.Show("MOD SUCCESSFULLY UPGRADED!", "SharpTune", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            sharpTuner.fileQueued = true;
+                            sharpTuner.QueuedFilePath = outfile;
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
@@ -440,7 +487,7 @@ namespace SharpTune
             {
                 buttonPatchRom.Enabled = true;
                 //buttonTestPatch.Enabled = true;
-                selectedModIndex = sharpTuner.activeImage.ModList.FindIndex(m => m.FilePath == ModTreeView.SelectedNode.Tag.ToString());
+                selectedMod = sharpTuner.activeImage.ModList.Single(m => m.Key.FilePath == ModTreeView.SelectedNode.Tag.ToString());
                 
                 RefreshModInfo();
             }

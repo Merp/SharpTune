@@ -24,6 +24,30 @@ using SharpTuneCore;
 
 namespace SharpTune.RomMod
 {
+
+    public sealed class ModDirection
+    {
+
+        private readonly String name;
+        private readonly int value;
+
+        public static readonly ModDirection Apply = new ModDirection(1, "Apply");
+        public static readonly ModDirection Remove = new ModDirection(2, "Remove");
+        public static readonly ModDirection Upgrade = new ModDirection(3, "Ugrade");
+
+        private ModDirection(int value, String name)
+        {
+            this.name = name;
+            this.value = value;
+        }
+
+        public override String ToString()
+        {
+            return name;
+        }
+
+    }
+
     /// <summary>
     /// Defines and Applies a Mod (series of patches) to a ROM.
     /// </summary>

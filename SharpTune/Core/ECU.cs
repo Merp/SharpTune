@@ -79,7 +79,7 @@ namespace SharpTuneCore
 
         public Stream imageStream;
 
-        public List<Mod> ModList { get; private set; }
+        public Dictionary<Mod,ModDirection> ModList { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -164,7 +164,7 @@ namespace SharpTuneCore
                     //}
                     //this.imageTree = new TableTree(this);
                     this.imageTree = new TreeNode("(" + this.CalId + ") " + this.FileName);
-                    ModList = sharpTuner.GetValidMods(this); //FAN OUT
+                    ModList = sharpTuner.GetValidMods(this.CalId,false); //FAN OUT
                     return true;
                 }
             }

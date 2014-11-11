@@ -369,20 +369,30 @@ namespace SharpTune
                 Trace.WriteLine("No external mods found");
         }
 
-        public List<Mod> GetValidMods(ECU d)
+        public Dictionary<Mod,ModDirection> GetValidMods(string calId, bool upgrade)
         {
-            List<Mod> tm = new List<Mod>();
+            Dictionary<Mod,ModDirection> tm = new Dictionary<Mod,ModDirection>();
             foreach (Mod m in AvailableMods)
             {
                 //TODO: When a mod is loaded, detect "FFFFFFF" CALID!!!
-                if (m.InitialCalibrationId == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", true, false))
+                if (m.InitialCalibrationId == calId)//&& m.TryCheckApplyMod(filePath, filePath + ".temp", true, false))
                 {
-                    tm.Add(m);
+                    if(!upgrade)
+                        tm.Add(m,ModDirection.Apply);
+                    else
+                        tm.Add(m,ModDirection.Upgrade);
                     Trace.WriteLine("Loaded Mod: " + m.FileName);
                 }
-                else if (m.ModIdent == d.CalId && m.TryCheckApplyMod(d.FilePath, d.FilePath + ".temp", false, false))
+                else if (!upgrade && m.ModIdent == calId)//&& m.TryCheckApplyMod(filePath, filePath + ".temp", false, false))
                 {
-                    tm.Add(m);
+                    tm.Add(m,ModDirection.Remove);
+                    Dictionary<Mod, ModDirection> tmu = new Dictionary<Mod, ModDirection>();
+                    tmu = GetValidMods(m.InitialCalibrationId, true);
+                    foreach (KeyValuePair<Mod, ModDirection> kvp in tmu)
+                    {
+                        if (!tm.ContainsKey(kvp.Key))
+                            tm.Add(kvp.Key, kvp.Value);
+                    }
                     Trace.WriteLine("Loaded Mod: " + m.FileName);
                 }
             }
