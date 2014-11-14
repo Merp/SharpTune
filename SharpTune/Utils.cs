@@ -306,7 +306,7 @@ namespace SharpTune
             return encoding.GetString(input);
         }
 
-        public static byte[] ToByteArray(this String hexString)
+        public static byte[] ConvertHexStringToByteArray(this String hexString)
         {
 
             if (hexString.Length % 2 != 0)
@@ -326,7 +326,6 @@ namespace SharpTune
 
             return HexAsBytes;
         }
-
 
         public static readonly Regex r = new Regex(@"^[0-9A-F]+$");
         public static bool VerifyHex(string _hex)

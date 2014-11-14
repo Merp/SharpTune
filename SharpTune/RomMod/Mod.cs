@@ -1061,11 +1061,11 @@ namespace SharpTune.RomMod
 
                 patch.Baseline = new Blob(
                     EcuIdAddress + Mod.BaselineOffset,
-                    InitialEcuId.ToByteArray());
+                    InitialEcuId.ConvertHexStringToByteArray());
 
                 patch.Payload = new Blob(
                     EcuIdAddress,
-                    FinalEcuId.ToByteArray());
+                    FinalEcuId.ConvertHexStringToByteArray());
 
                 this.patchList.AddPatch(patch);
             }

@@ -453,8 +453,8 @@ namespace SharpTuneCore
                 {
                     case "data":
                         //Will also have to convert this to blobs
-                        this.validBlobs.Add(child.Attribute("name").Value.ToString(), child.Attribute("value").Value.ToString().ToByteArray());
-                        this.blobLength = child.Attribute("value").Value.ToString().ToByteArray().Length;
+                        this.validBlobs.Add(child.Attribute("name").Value.ToString(), child.Attribute("value").Value.ToString().ConvertHexStringToByteArray());
+                        this.blobLength = child.Attribute("value").Value.ToString().ConvertHexStringToByteArray().Length;
                         break;
 
                     default:

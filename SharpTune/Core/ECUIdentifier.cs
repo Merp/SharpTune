@@ -120,7 +120,7 @@ namespace SharpTune.Core
             get
             {
                 if (propertyBag.ContainsKey(ECUIdTags.calidhex))
-                    return propertyBag[ECUIdTags.calidhex].ToByteArray();
+                    return propertyBag[ECUIdTags.calidhex].ConvertHexStringToByteArray();
                 else if (propertyBag.ContainsKey(ECUIdTags.calidstring))
                     return propertyBag[ECUIdTags.calidstring].ConvertStringToBytes(memoryModel.encoding);
                 else
@@ -178,7 +178,7 @@ namespace SharpTune.Core
                 if (propertyBag.ContainsKey(ECUIdTags.ecuidstring))
                     return propertyBag[ECUIdTags.ecuidstring].ConvertStringToBytes(memoryModel.encoding);
                 else if (propertyBag.ContainsKey(ECUIdTags.ecuidhex))
-                    return propertyBag[ECUIdTags.ecuidhex].ToByteArray();
+                    return propertyBag[ECUIdTags.ecuidhex].ConvertHexStringToByteArray();
                 else
                     return null;
             }
