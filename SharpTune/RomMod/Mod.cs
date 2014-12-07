@@ -1181,7 +1181,7 @@ namespace SharpTune.RomMod
 
                      char[] splitter = { '\0' }; //TODO FIX THIS
                      string tempstring = System.Text.Encoding.ASCII.GetString(tempbytelist.ToArray());
-                     metaString = tempstring.Split(splitter)[0];
+                     metaString = tempstring.Split(splitter)[0].Replace("\"", string.Empty);
                      return true;
                  }
 

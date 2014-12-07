@@ -10,6 +10,7 @@ using System.Xml;
 using System.Text.RegularExpressions;
 using SharpTuneCore;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace SharpTune.EcuMapTools
 {
@@ -70,7 +71,11 @@ namespace SharpTune.EcuMapTools
                 }
                 else if (args[0].ContainsCI(".xml") && args[1].ContainsCI(".map") && args[2].ContainsCI(".h") && args[3].ContainsCI(".txt") && args.Length == 6)
                 {
-                    prog.UpdateTargetHeader(args[0], args[1], args[2], args[3], args[4], args[5]);
+                    prog.UpdateTargetHeader(args[0], args[1], args[2], args[3], args[4], args[5], null);
+                }
+                else if (args[0].ContainsCI(".xml") && args[1].ContainsCI(".map") && args[2].ContainsCI(".h") && args[3].ContainsCI(".txt") && args.Length == 7)
+                {
+                    prog.UpdateTargetHeader(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
                 }
                 else
                     WriteHelp();
@@ -83,7 +88,7 @@ namespace SharpTune.EcuMapTools
             }
         }
 
-        public void UpdateTargetHeader(string xmlFileName, string mapFileName, string headerFileName, string linkerScriptFileName, string romCalId, string buildConfig)
+        public void UpdateTargetHeader(string xmlFileName, string mapFileName, string headerFileName, string linkerScriptFileName, string romCalId, string buildConfig, string ver)
         {
             Trace.WriteLine("Begin updating target header");
             String Build;
@@ -107,7 +112,7 @@ namespace SharpTune.EcuMapTools
                     return;
                 }
 
-                FindAndWriteDefines(headerFileName, Build, Config, def.calibrationlId, def.EcuId);
+                FindAndWriteDefines(headerFileName, Build, Config, def.calibrationlId, def.EcuId, ver);
                 FindAndWriteSections(linkerScriptFileName);
                 Trace.WriteLine("Target header update success!!");
             }
@@ -237,12 +242,71 @@ namespace SharpTune.EcuMapTools
             }
         }        
 
-        public void FindAndWriteDefines(string outfilename, String Build, String Config, String CalId, String EcuId)
+        public void FindAndWriteDefines(string outfilename, String Build, String Config, String CalId, String EcuId, String Ver)
         {
             //write date tag!
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
-                writer.WriteLine("#define MOD_DATE " + DateTime.Today.Year.ToString().Substring(2) + "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." + DateTime.Now.Hour.ToString() + DateTime.Now.Minute.ToString() + System.Environment.NewLine);
+                StringBuilder moddate = new StringBuilder(DateTime.Today.Year.ToString().Substring(2) +
+                    "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." +
+                    DateTime.Now.Hour.ToString("00") + DateTime.Now.Minute.ToString("00"));
+
+                StringBuilder modid = new StringBuilder(CalId + ".MeRpMoD." + Config + ".");
+                if(!Build.ContainsCI("release"))
+                    modid.Append(Build + ".");
+
+                if(Ver != null)
+                {
+                    modid.Append("v" + Ver + ".");
+                    if(!Build.ContainsCI("release"))
+                        modid.Append("d" + moddate.ToString());
+                }
+                else
+                    modid.Append("v"+moddate.ToString());
+
+                SHA256 sha = SHA256.Create();
+                byte[] modecuidbytes = sha.ComputeHash(modid.ToString().ConvertStringToBytes(Encoding.ASCII));
+                string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 4); //TODO CHANGE TO 2 bytes hash, 2 bytes version, 1 byte build/config
+                modecuid += Ver.Replace(".", "").Substring(0,4);
+                switch(Build.ToLower())
+                {
+                    case "release":
+                        modecuid += "3";
+                        break;
+
+                    case "testing":
+                        modecuid += "2";
+                        break;
+
+                    case "debug":
+                        modecuid += "1";
+                        break;
+                    
+                    default:
+                        modecuid += "0";
+                        break;
+                }
+                switch(Config.ToLower())
+                {
+                    case "switch":
+                        modecuid += "3";
+                        break;
+
+                    case "flash":
+                        modecuid += "2";
+                        break;
+
+                    case "gratis":
+                        modecuid += "1";
+                        break;
+
+                    default:
+                        modecuid += "0";
+                        break;
+                }
+                writer.WriteLine("#define MOD_IDENTIFIER STRI(" + modid.ToString() + ")");
+                writer.WriteLine("#define MOD_ECUID " + modecuid.Substring(0,10));
+                writer.WriteLine("#define MOD_DATE " + moddate.ToString());
                 writer.WriteLine(@"#include """ + Config + @".h""");
                 writer.WriteLine("#define MOD_CONFIG " + Config);
                 writer.WriteLine("#define MOD_BUILD " + Build);

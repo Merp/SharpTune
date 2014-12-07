@@ -372,7 +372,7 @@ namespace SharpTune
                 ModTreeView.Nodes.Add("Compatible MODs for " + sharpTuner.activeImage.FileName);
                 foreach (KeyValuePair<Mod,ModDirection> mod in sharpTuner.activeImage.ModList)
                 {
-                    TreeNode patchTree = new TreeNode(mod.Key.ToString() + ": " + mod.Key.FileName);
+                    TreeNode patchTree = new TreeNode(mod.Value.ToString() + ": " + mod.Key.FileName);
                     patchTree.Tag = mod.Key.FilePath;
 
                     ModTreeView.Nodes.Add(patchTree);
