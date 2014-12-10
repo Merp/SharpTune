@@ -732,6 +732,8 @@ namespace SharpTune.RomMod
 
             defs.Sort();
             defs.Reverse();
+            if (defs.Count < 1)
+                Trace.WriteLine(String.Format("Error: No base definitions found in {0} for CALID {1}", path, calid));
             return defs;
         }
 
@@ -751,7 +753,10 @@ namespace SharpTune.RomMod
 
         private XDocument SelectGetRRLogDef()
         {
-            string ld = SimpleCombo.ShowDialog("Select logger base", "Select logger base", GetDefs(Settings.Default.RomRaiderLoggerDefPath));
+            string mess = "Select logger base from " + Settings.Default.RomRaiderLoggerDefPath;
+            Trace.WriteLine(mess);
+            string ld = SimpleCombo.ShowDialog(mess, "Select logger base", GetDefs(Settings.Default.RomRaiderLoggerDefPath));
+            Trace.WriteLine(String.Format("Selected logger base {0}", ld));
             XDocument xmlDoc = XDocument.Load(Settings.Default.RomRaiderLoggerDefPath + ld);//, LoadOptions.PreserveWhitespace);
             XDocument xmlDoc2 = new XDocument(xmlDoc);
             return xmlDoc2;
@@ -759,7 +764,10 @@ namespace SharpTune.RomMod
 
         private XDocument SelectGetRREcuDef()
         {
-            string ldl = SimpleCombo.ShowDialog("Select ecu base", "Select ecu base", GetRRECUDefs(Settings.Default.RomRaiderEcuDefPath, this.parentMod.InitialCalibrationId));
+            string mess = "Select ecu base from " + Settings.Default.RomRaiderLoggerDefPath;
+            Trace.WriteLine(mess);
+            string ldl = SimpleCombo.ShowDialog(mess, "Select ecu base", GetRRECUDefs(Settings.Default.RomRaiderEcuDefPath, this.parentMod.InitialCalibrationId));
+            Trace.WriteLine(String.Format("Selected ecu base {0}", ldl));
             XDocument ecuXml = XDocument.Load(Settings.Default.RomRaiderEcuDefPath + ldl);
             return ecuXml;
         }

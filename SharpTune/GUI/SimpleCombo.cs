@@ -20,23 +20,48 @@ namespace SharpTune
 {
     public static class SimpleCombo
     {
+        private static Form prompt;
+        private static Label textLabel;
+        private static ComboBox comboBox;
+        private static Button confirmation;
+
         public static string ShowDialog(string text, string caption, List<string> comboitems)
         {
-            Form prompt = new Form();
-            prompt.Width = 500;
-            prompt.Height = 200;
+            prompt = new Form();
+            prompt.SizeChanged += new System.EventHandler(SimpleCombo_SizeChanged);
+            prompt.AutoSizeMode = AutoSizeMode.GrowOnly;
+            prompt.Padding = new Padding(50);
             prompt.Text = caption;
-            Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Width = 300 };
-            ComboBox comboBox = new ComboBox() { Left = 50, Top = 50, DataSource = comboitems, Width = 400 };
-            Button confirmation = new Button() { Text = "OK", Left = 350, Width = 100, Top = 70 };
+            textLabel = new Label() { Text = text, AutoSize = true};
+            textLabel.Left = (int)Math.Ceiling((double)(prompt.Width - textLabel.Width) * 0.5);
+            textLabel.Top = (int)Math.Ceiling((double)(prompt.Height - textLabel.Height) * 0.25);
+            comboBox = new ComboBox() { DataSource = comboitems, MinimumSize = new System.Drawing.Size(500,20)};
+            comboBox.Left = (int)Math.Ceiling((double)(prompt.Width - comboBox.Width) * 0.5);
+            comboBox.Top = (int)Math.Ceiling((double)(prompt.Height - comboBox.Height) * 0.5);
+            confirmation = new Button() {Text = "OK" };
+            confirmation.Left = (int)Math.Ceiling((double)(prompt.Width - confirmation.Width) * 0.5);
+            confirmation.Top = (int)Math.Ceiling((double)(prompt.Height - confirmation.Height) * 0.75);
             confirmation.Click += (sender, e) => { prompt.Close(); };
             prompt.Controls.Add(confirmation);
             prompt.Controls.Add(textLabel);
             prompt.Controls.Add(comboBox);
             prompt.AcceptButton = confirmation;
+            prompt.AutoSize = true;
+            prompt.Refresh();
             prompt.ShowDialog();
             return comboBox.SelectedItem.ToString();
         }
+
+        private static void SimpleCombo_SizeChanged(object sender, EventArgs e)
+        {
+            textLabel.Left = (int)Math.Ceiling((double)(prompt.Width - textLabel.Width) * 0.5);
+            textLabel.Top = (int)Math.Ceiling((double)(prompt.Height - textLabel.Height) * 0.25);
+            comboBox.Left = (int)Math.Ceiling((double)(prompt.Width - comboBox.Width) * 0.5);
+            comboBox.Top = (int)Math.Ceiling((double)(prompt.Height - comboBox.Height) * 0.5);
+            confirmation.Left = (int)Math.Ceiling((double)(prompt.Width - confirmation.Width) * 0.5);
+            confirmation.Top = (int)Math.Ceiling((double)(prompt.Height - confirmation.Height) * 0.75);
+        }
+
     }
 
 }
