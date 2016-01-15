@@ -249,7 +249,7 @@ namespace SharpTune.EcuMapTools
             {
                 StringBuilder moddate = new StringBuilder(DateTime.Today.Year.ToString().Substring(2) +
                     "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." +
-                    DateTime.Now.Hour.ToString("00") + DateTime.Now.Minute.ToString("00"));
+                    DateTime.Now.TimeOfDay.TotalMinutes.ToString());
 
                 StringBuilder modid = new StringBuilder(CalId + ".MeRpMoD." + Config + ".");
                 if(!Build.ContainsCI("release"))
