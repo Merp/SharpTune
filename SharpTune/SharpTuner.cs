@@ -73,7 +73,7 @@ namespace SharpTune
 
         public string QueuedFilePath { get; set; }
 
-        public string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public string Version = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit

@@ -1,4 +1,5 @@
 #gitignore
+SharpTune/Properties/AssemblyInfo.cs
 [Oo]bj
 [Bb]in
 *.user
@@ -6,9 +7,9 @@
 *.[Cc]ache
 *.bak
 *.ncb
-*.log 
+*.log
 *.DS_Store
-[Tt]humbs.db 
+[Tt]humbs.db
 _ReSharper.*
 *.resharper
 Ankh.NoLoad
