@@ -134,47 +134,57 @@ namespace SharpTune.EcuMapTools
 
         private void LoadFromMapFile(string filename)
         {
-            using (StreamReader reader = new StreamReader(filename))
-            {
-                bool isram = false;
-                string line;
-                int offset = 0;
-                int offsetdelta = 0;
-                bool start = false;
-                while ((line = reader.ReadLine()) != null)
+            try {
+                using (StreamReader reader = new StreamReader(filename))
                 {
-                    if (line.ContainsCI("Publics by Value"))
+                    bool isram = false;
+                    string line;
+                    int offset = 0;
+                    int offsetdelta = 0;
+                    bool start = false;
+                    int linenumber = 0;
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        start = true;
-                        continue;
-                    }
-                    if (start && line.Length > 21)
-                    {
-                        string offsetstr = line.Substring(6, 8);
-                        int offs = int.Parse(offsetstr, System.Globalization.NumberStyles.HexNumber);
-                        offsetdelta = offs - offset;
-                        offset = offs;
-                        if (offsetdelta < 0) isram = true;
-                        if (line.ToString().ContainsCI("BITMASK"))
+                        linenumber++;
+                        string linecache = line;
+                        try
                         {
-                            offsetstr = line.Substring(line.Length - 2, 2);
-                            string name = line.Substring(21, line.Length - 26);
-                            if (Locs.ContainsKey(name))
-                                Locs.Remove(name);
-                            Locs.Add(name, offsetstr);
+                            if (line.ContainsCI("Publics by Value"))
+                            {
+                                start = true;
+                                continue;
+                            }
+                            if (start && line.Length > 21)
+                            {
+                                string offsetstr = line.Substring(6, 8);
+                                int offs = int.Parse(offsetstr, System.Globalization.NumberStyles.HexNumber);
+                                offsetdelta = offs - offset;
+                                offset = offs;
+                                if (offsetdelta < 0) isram = true;
+                                if (line.ToString().ContainsCI("BITMASK"))
+                                {
+                                    offsetstr = line.Substring(line.Length - 2, 2);
+                                    string name = line.Substring(21, line.Length - 26);
+                                    if (Locs.ContainsKey(name))
+                                        Locs.Remove(name);
+                                    Locs.Add(name, offsetstr);
+                                }
+                                else
+                                {
+                                    if (!isram) offsetstr = line.Substring(6, 8);
+                                    else offsetstr = "FFFF" + line.Substring(10, 4);
+                                    string name = line.Substring(21, line.Length - 21);
+                                    if (Locs.ContainsKey(name))
+                                        Locs.Remove(name);
+                                    Locs.Add(name, offsetstr);
+                                }
+                            }
                         }
-                        else
-                        {
-                            if (!isram) offsetstr = line.Substring(6, 8);
-                            else offsetstr = "FFFF" + line.Substring(10, 4);
-                            string name = line.Substring(21, line.Length - 21);
-                            if (Locs.ContainsKey(name))
-                                Locs.Remove(name);
-                            Locs.Add(name, offsetstr);
-                        }
+                        catch (Exception e) { Console.WriteLine("Error processing map file line " + linenumber.ToString() + " :"); Console.WriteLine(linecache); Console.WriteLine(e.Message.ToString()); }
                     }
                 }
-            }
+            } catch(IOException e) { Console.WriteLine("IO Error reading map file"); Console.WriteLine(e.Message.ToString()); }
+            catch(Exception e) { Console.WriteLine("Unknown Error processing map file"); Console.WriteLine(e.Message.ToString()); }
         }   
 
         private void LoadFromMapString(string str)
