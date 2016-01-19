@@ -365,7 +365,7 @@ namespace SharpTuneCore
         public bool ReadXML()
         {
             if (this.filePath == null) return false;
-            LoadOptions lo = LoadOptions.SetLineInfo & LoadOptions.PreserveWhitespace;
+            LoadOptions lo = LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace;
             XDocument xmlDoc = XDocument.Load(filePath, lo);
 
             //Read Scalings
@@ -386,7 +386,7 @@ namespace SharpTuneCore
             foreach (XElement scaling in scalingQuery)
             {
                 try{
-                    info = scaling;
+                    info = (IXmlLineInfo)scaling;
                     //skip scalings with no name
                     if (scaling.Attribute("name") == null) throw new Exception("Error, scaling name is null!");
                     string scalingname = scaling.Attribute("name").Value.ToString();
@@ -414,7 +414,7 @@ namespace SharpTuneCore
             {
                 try
                 {
-                    info = table;
+                    info = (IXmlLineInfo)table;
                     if (table.Attribute("name") == null)
                         throw new Exception("Error, table name is null!");
                     string tablename = table.Attribute("name").Value.ToString();
@@ -439,7 +439,7 @@ namespace SharpTuneCore
             {
                 try
                 {
-                    info = table;
+                    info = (IXmlLineInfo)table;
                     if (table.Attribute("name") == null)
                         continue;
                     string tablename = table.Attribute("name").Value.ToString();
