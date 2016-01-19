@@ -24,7 +24,7 @@ using System.Drawing;
 using SharpTune.Core;
 using System.Runtime.Serialization;
 using System.Diagnostics;
-
+using System.Xml;
 
 namespace SharpTuneCore
 {
@@ -158,6 +158,16 @@ namespace SharpTuneCore
 
         public List<TableMetaData> InheritanceList { get; private set; }
 
+        public int LineNumber { get
+            {
+                if (_xml != null)
+                { 
+                    IXmlLineInfo ixli = (IXmlLineInfo)_xml;
+                    return ixli.LineNumber;
+                }
+                return 0;
+            }
+        }
         protected XElement _xml;
         public XElement xml {
             get

@@ -458,38 +458,51 @@ namespace SharpTuneCore
 
         private void AddRomTable(TableMetaData table, int line)
         {
+            TableMetaData dupe;
             if (table.isBase)
             {
                 if (!BaseRomTables.ContainsKey(table.name))
                     BaseRomTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
+                {
+                    BaseRomTables.TryGetValue(table.name, out dupe);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line numbers: " + line + " and " + dupe.LineNumber);
+                }
             }
             else
             {
                 if (!ExposedRomTables.ContainsKey(table.name))
                     ExposedRomTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
+                {
+                    ExposedRomTables.TryGetValue(table.name, out dupe);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line numbers: " + line + " and " + dupe.LineNumber);
+                }
             }
         }
 
         private void AddRamTable(TableMetaData table, int line)
         {
+            TableMetaData dupe;
             if (table.isBase)
             {
                 if (!BaseRamTables.ContainsKey(table.name))
                     BaseRamTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
+                {
+                    BaseRamTables.TryGetValue(table.name, out dupe);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line numbers: " + line + " and " + dupe.LineNumber);
+                }
             }
             else
             {
                 if (!ExposedRamTables.ContainsKey(table.name))
                     ExposedRamTables.Add(table.name, table);
                 else
-                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line number: " + line);
-                    
+                {
+                    ExposedRamTables.TryGetValue(table.name, out dupe);
+                    Trace.WriteLine("Warning, duplicate table: " + table.name + ". Please check the definition: " + this.filePath + " Line numbers: " + line + " and " + dupe.LineNumber);
+                }
             }
         }
 
