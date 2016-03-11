@@ -98,7 +98,7 @@ namespace SharpTune
             _writer = new TextBoxStreamWriter(txtConsole);
             // Redirect the out Console stream
             Console.SetOut(_writer);
-            sharpTuner.Init();
+            sharpTuner.InitGUI();
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -599,7 +599,7 @@ namespace SharpTune
                 Settings.Default.SubaruDefsRepoPath = d.SelectedPath.ToString();
                 Settings.Default.Save();
                 Trace.WriteLine("Definition Repo Path Changed to: " + Settings.Default.SubaruDefsRepoPath);
-                sharpTuner.Init();
+                sharpTuner.InitGUI();
                 sharpTuner.RefreshImages();
             } 
         }

@@ -72,7 +72,7 @@ namespace SharpTune
             }
             else
             {
-                sharpTuner.Init();
+                sharpTuner.InitCMD();
                 if (args[0] == "ecumaptool")
                 {
                     return EcuMapTool.Run(sharpTuner.AvailableDevices, Utils.ShiftLeftTruncate(args));

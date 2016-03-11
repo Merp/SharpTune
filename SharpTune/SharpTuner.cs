@@ -84,11 +84,11 @@ namespace SharpTune
             mainWindow = new MainWindow(this);
         }
 
-        public void Init()
+        public void InitGUI()
         {
             InitSettings();
             InitTraces();
-            Trace.WriteLine("<--- Initializing SharpTuner --->");
+            Trace.WriteLine("<--- Initializing SharpTuner GUI--->");
             Trace.WriteLine("SharpTune Assembly Version: " + Version);
             ImageList = new List<ECU>();
             DataScalings = new List<Scaling>();
@@ -96,7 +96,23 @@ namespace SharpTune
             PopulateAvailableDevices();
             LoadMods();
             LoadPlugins();
-            Trace.WriteLine("<--Finished Initializing SharpTuner --->");
+            Trace.WriteLine("<--Finished Initializing SharpTuner GUI--->");
+        }
+
+        public void InitCMD()
+        {
+
+            InitSettings();
+            InitTraces();
+            Trace.WriteLine("<--- Initializing SharpTuner CLI--->");
+            Trace.WriteLine("SharpTune Assembly Version: " + Version);
+            ImageList = new List<ECU>();
+            DataScalings = new List<Scaling>();
+            UnitScalings = new List<Scaling>();
+            PopulateAvailableDevices();
+            LoadMods();
+            LoadPlugins();
+            Trace.WriteLine("<--Finished Initializing SharpTuner CLI --->");
         }
 
         public void InitSettings()
@@ -105,6 +121,8 @@ namespace SharpTune
             Console.WriteLine("Found user directory: " + userdir);
 
             Settings.Default.SettingsPath = userdir + @"\.SharpTune";
+
+            Settings.Default.LogLevel = System.Diagnostics.SourceLevels.All;
 
             if (Settings.Default.LogFilePath == null | Settings.Default.LogFilePath == "")
                 Settings.Default.LogFilePath = Settings.Default.SettingsPath;
