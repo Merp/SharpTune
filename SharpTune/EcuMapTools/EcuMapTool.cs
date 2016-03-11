@@ -265,9 +265,14 @@ namespace SharpTune.EcuMapTools
                     modid.Append("v"+moddate.ToString());
 
                 SHA256 sha = SHA256.Create();
-                byte[] modecuidbytes = sha.ComputeHash(modid.ToString().ConvertStringToBytes(Encoding.ASCII));
-                string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 4); //TODO CHANGE TO 2 bytes hash, 2 bytes version, 1 byte build/config
-                modecuid += Ver.Replace(".", "").Substring(0,4);
+                string hashseed = CalId + "MERPMOD";
+                byte[] modecuidbytes = sha.ComputeHash(CalId.ConvertStringToBytes(Encoding.ASCII));
+                string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 4); //TODO CHANGE TO 2 bytes hash, 2 bytes version, 1 byte build/config?
+                if (Ver != null && Ver.Length > 5)
+                    modecuid += Ver.Replace(".", "").Substring(0, 4);
+                else
+                    modecuid += "BEEF";
+
                 switch(Build.ToLower())
                 {
                     case "release":
