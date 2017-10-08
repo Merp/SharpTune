@@ -277,7 +277,9 @@
 Copy ..\..\..\..\MerpMod\MerpMod\TestRom\oem.bin oem.bin
 Copy oem.bin patched.bin
 xcopy "..\..\..\..\MerpMod\Release" "..\..\Resources\Mods\" /s /e /k /y
-xcopy "..\..\..\..\SubaruDefs\ECUFlash\subaru standard" "..\..\Resources\Defs\" /s /e /k /y</PreBuildEvent>
+xcopy "..\..\..\..\SubaruDefs\ECUFlash\subaru standard" "..\..\Resources\Defs\" /s /e /k /y
+CD $(SolutionDir)SharpTune
+GitVersionUpdate.bat</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>Copy SharpTune.exe "..\..\..\..\MerpMod\SharpTune.exe"
