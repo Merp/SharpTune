@@ -267,48 +267,8 @@ namespace SharpTune.EcuMapTools
                 SHA256 sha = SHA256.Create();
                 string hashseed = CalId + "MERPMOD";
                 byte[] modecuidbytes = sha.ComputeHash(CalId.ConvertStringToBytes(Encoding.ASCII));
-                string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 4); //TODO CHANGE TO 2 bytes hash, 2 bytes version, 1 byte build/config?
-                if (Ver != null && Ver.Length > 5)
-                    modecuid += Ver.Replace(".", "").Substring(0, 4);
-                else
-                    modecuid += "BEEF";
+                string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 10); //TODO: How likely is collision with existing ecuid? Add a check against current set?
 
-                switch(Build.ToLower())
-                {
-                    case "release":
-                        modecuid += "3";
-                        break;
-
-                    case "testing":
-                        modecuid += "2";
-                        break;
-
-                    case "debug":
-                        modecuid += "1";
-                        break;
-                    
-                    default:
-                        modecuid += "0";
-                        break;
-                }
-                switch(Config.ToLower())
-                {
-                    case "switch":
-                        modecuid += "3";
-                        break;
-
-                    case "flash":
-                        modecuid += "2";
-                        break;
-
-                    case "gratis":
-                        modecuid += "1";
-                        break;
-
-                    default:
-                        modecuid += "0";
-                        break;
-                }
                 writer.WriteLine("#define MOD_IDENTIFIER STRI(" + modid.ToString() + ")");
                 writer.WriteLine("#define MOD_ECUID " + modecuid.Substring(0,10));
                 writer.WriteLine("#define MOD_DATE " + moddate.ToString());
