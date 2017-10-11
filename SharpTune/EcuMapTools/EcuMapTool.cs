@@ -268,7 +268,7 @@ namespace SharpTune.EcuMapTools
                 byte[] modecuidbytes = sha.ComputeHash(CalId.ConvertStringToBytes(Encoding.ASCII));
                 string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 10); //TODO: How likely is collision with existing ecuid? Add a check against current set?
 
-                writer.WriteLine("#define MOD_IDENTIFIER STRI(" + modid.ToString() + ")");
+                //writer.WriteLine("#define MOD_IDENTIFIER STRI(" + modid.ToString() + ")"); //This is commented out if HEW creates the mod identifier
                 writer.WriteLine("#define MOD_ECUID " + modecuid.Substring(0,10));
                 writer.WriteLine("#define MOD_DATE " + moddate.ToString());
                 writer.WriteLine(@"#include """ + Config + @".h""");
