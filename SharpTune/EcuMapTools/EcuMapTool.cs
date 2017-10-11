@@ -247,9 +247,8 @@ namespace SharpTune.EcuMapTools
             //write date tag!
             using (StreamWriter writer = new StreamWriter(outfilename))
             {
-                StringBuilder moddate = new StringBuilder(DateTime.Today.Year.ToString().Substring(2) +
-                    "." + DateTime.Today.Month.ToString() + "." + DateTime.Today.Day.ToString() + "." +
-                    DateTime.Now.TimeOfDay.TotalMinutes.ToString());
+
+                String moddate = DateTime.Now.ToString("dd.MM.yy.HH.mm");
 
                 StringBuilder modid = new StringBuilder(CalId + ".MeRpMoD." + Config + ".");
                 if(!Build.ContainsCI("release"))
