@@ -826,6 +826,8 @@ namespace SharpTune.RomMod
                 }
                 else
                 {
+                    Trace.WriteLine("--!!WARNING!!-- , RR Logger base table not found for " + table.Key.ToString());
+                    
                     /*<ecuparam id="E21511" name="MerpMod TEST char4" desc="E2000" target="1">
                           <ecu id="14418178FF">
                             <address length="1">0xFF97B7</address>

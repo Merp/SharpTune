@@ -782,7 +782,7 @@ namespace SharpTuneCore
                 else if (availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRamTables.ContainsKey(name))//TODO FIX RAMTABLES
                     return availableDevices.DefDictionary[d.calibrationlId].AggregateBaseRamTables[name];
             }
-            Trace.WriteLine("Warning: base table for " + name + " not found");
+            Trace.WriteLine("--!!Warning!!-- ECUFlash definition base table not found for " + name);
             return null;
         }
 
