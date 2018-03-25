@@ -88,6 +88,8 @@ namespace SharpTuneCore
                     switch (attribute.Name.ToString())
                     {
                         case "name":
+                            if (attribute.Value.ToString().EqualsCI("y"))
+                                this.isXAxis = false;
                             if (parentAxis != null && parentAxis.name != null)
                                 break;
                             this.name = attribute.Value.ToString();
@@ -112,7 +114,7 @@ namespace SharpTuneCore
 
                         case "type":
                             this.type = attribute.Value.ToString();
-                            if (this.type.ToString().Contains("y"))
+                            if (this.type.ToString().ContainsCI("y"))
                             {
                                 this.isXAxis = false;
                             }
