@@ -197,25 +197,25 @@ namespace SharpTune.RomMod
                                 }
                                 else
                                 {
-                                    Trace.WriteLine("Invalid definition found.");
+                                    Trace.WriteLine("Invalid definition found in mod metadata.");
                                     return false;
                                 }
                             }
                             else
                             {
-                                Trace.WriteLine("Invalid definition found.");
+                                Trace.WriteLine("Invalid definition found in mod metadata.");
                                 return false;
                             }
                         }
                         else
                         {
-                            Trace.WriteLine("Invalid definition found.");
+                            Trace.WriteLine("Invalid definition found in mod metadata.");
                             return false;
                         }
                     }
                     else
                     {
-                        Trace.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found in mod metadata.");
                         return false;
                     }
                 }
@@ -253,25 +253,25 @@ namespace SharpTune.RomMod
                                 }
                                 else
                                 {
-                                    Trace.WriteLine("Invalid definition found.");
+                                    Trace.WriteLine("Invalid definition found in mod metadata.");
                                     return false;
                                 }
                             }
                             else
                             {
-                                Trace.WriteLine("Invalid definition found.");
+                                Trace.WriteLine("Invalid definition found in mod metadata.");
                                 return false;
                             }
                         }
                         else
                         {
-                            Trace.WriteLine("Invalid definition found.");
+                            Trace.WriteLine("Invalid definition found in mod metadata.");
                             return false;
                         }
                     }
                     else
                     {
-                        Trace.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found in mod metadata.");
                         return false;
                     }
                 }
@@ -296,25 +296,25 @@ namespace SharpTune.RomMod
                                 }
                                 else
                                 {
-                                    Trace.WriteLine("Invalid definition found.");
+                                    Trace.WriteLine("Invalid definition found in mod metadata.");
                                     return false;
                                 }
                             }
                             else
                             {
-                                Trace.WriteLine("Invalid definition found.");
+                                Trace.WriteLine("Invalid definition found in mod metadata.");
                                 return false;
                             }
                         }
                         else
                         {
-                            Trace.WriteLine("Invalid definition found.");
+                            Trace.WriteLine("Invalid definition found in mod metadata.");
                             return false;
                         }
                     }
                     else
                     {
-                        Trace.WriteLine("Invalid definition found.");
+                        Trace.WriteLine("Invalid definition found in mod metadata.");
                         return false;
                     }
                 }
