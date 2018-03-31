@@ -82,7 +82,7 @@ namespace SharpTuneCore
         /// </summary>
         /// <param name="xel"></param>
         /// <returns></returns>
-        public static TableMetaData CreateRamTable(XElement xel, string tablename, string type, ECUMetaData def)
+        public static TableMetaData CreateRamTable(XElement xel, string tablename, string type, ECUMetaData def, string id)
         {
             TableMetaData basetable = null;
             //if (def.GetBaseRamTable(tablename, out basetable))
@@ -93,10 +93,10 @@ namespace SharpTuneCore
             if (xel.Attribute("address") == null)
                 basetable = null;//sure???
 
-            return CreateRamTableWithDimension(xel, type, def, basetable);
+            return CreateRamTableWithDimension(xel, type, def, basetable, id);
         }
 
-        public static TableMetaData CreateRamTableWithDimension(XElement xel, string storageType, ECUMetaData def, TableMetaData basetable)
+        public static TableMetaData CreateRamTableWithDimension(XElement xel, string storageType, ECUMetaData def, TableMetaData basetable, string id)
         {
             TableMetaData tempTable = null;
             string type = null;
@@ -125,6 +125,7 @@ namespace SharpTuneCore
             if (tempTable == null)
                 tempTable = new RamTable(xel, def, basetable);
             tempTable.storageTypeString = storageType;
+            tempTable.id = id;
             return tempTable;
         }
         public static Scaling NewScalingHandler(XElement xel)
@@ -241,6 +242,20 @@ namespace SharpTuneCore
             protected set { _category = value; }
         }
 
+        protected string _id;
+        public string id
+        {
+            get
+            {
+                if (_id != null)
+                    return _id;
+                else if (baseTable != null && baseTable.id != null)
+                    return baseTable.id;
+                else
+                    return "unknown";
+            }
+            set { _id = value; } //TODO: make this protected! add ID creation to factory.
+        }
         protected string _description;
         public string description
         {
@@ -248,7 +263,7 @@ namespace SharpTuneCore
             {
                 if (_description != null)
                     return _description;
-                else if (baseTable != null && description != null)
+                else if (baseTable != null && baseTable.description != null)
                     return baseTable.description;
                 else
                     return "unknown description";

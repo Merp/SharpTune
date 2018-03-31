@@ -834,12 +834,20 @@ namespace SharpTune.RomMod
                           </ecu>
                           <conversions>
                             <conversion units="rawdata" expr="x" format="0" />
-                          </conversions>
+                          </conversions
                         </ecuparam>*/
                     XElement newParam = new XElement("ecuparam");
-                    newParam.SetAttributeValue("id","E"+lastMerpModExt);
+                    if (table.Value.id != null && table.Value.id != "E")
+                    {
+                        newParam.SetAttributeValue("id", table.Value.id);
+                        newParam.SetAttributeValue("desc", table.Value.id);
+                    }
+                    else
+                    {
+                        newParam.SetAttributeValue("id", "E" + lastMerpModExt);
+                        newParam.SetAttributeValue("desc", "E" + lastMerpModExt);
+                    }
                     newParam.SetAttributeValue("name", table.Key);
-                    newParam.SetAttributeValue("desc", "E"+lastMerpModExt);
                     newParam.SetAttributeValue("target","1");
 
                     XElement conv = XElement.Parse(@"
@@ -939,7 +947,7 @@ namespace SharpTune.RomMod
             xel.Element("address").Value = "0x" + ts;
             xel.Element("address").Attribute("bit").Value = bit.ToString();
 
-            return new KeyValuePair<string, TableMetaData>(name, TableFactory.CreateRamTable(xel, name, "uint8", this.definition));
+            return new KeyValuePair<string, TableMetaData>(name, TableFactory.CreateRamTable(xel, name, "uint8", this.definition, id));
         }
 
         private KeyValuePair<string, TableMetaData> CreateRomRaiderRamTable(string name, int offset, string id, string type)
@@ -964,7 +972,9 @@ namespace SharpTune.RomMod
             if(length > 1)
                 xel.Element("address").SetAttributeValue("length",length.ToString());
 
-            return new KeyValuePair<string, TableMetaData>(name, TableFactory.CreateRamTable(xel,name,type,this.definition));
+            KeyValuePair<string, TableMetaData> tempkvp =  new KeyValuePair<string, TableMetaData>(name, TableFactory.CreateRamTable(xel,name,type,this.definition,id));
+
+            return tempkvp;
         }
         #endregion
 
