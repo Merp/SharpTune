@@ -264,8 +264,7 @@ namespace SharpTune.EcuMapTools
                     modid.Append("v"+moddate.ToString());
 
                 SHA256 sha = SHA256.Create();
-                string hashseed = CalId + "MERPMOD";
-                byte[] modecuidbytes = sha.ComputeHash(CalId.ConvertStringToBytes(Encoding.ASCII));
+                byte[] modecuidbytes = sha.ComputeHash(modid.ToString().ConvertStringToBytes(Encoding.ASCII));
                 string modecuid = modecuidbytes.ConvertBytesToHexString().Substring(0, 10); //TODO: How likely is collision with existing ecuid? Add a check against current set?
 
                 //writer.WriteLine("#define MOD_IDENTIFIER STRI(" + modid.ToString() + ")"); //This is commented out if HEW creates the mod identifier
